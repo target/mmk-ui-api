@@ -1,0 +1,17 @@
+{
+  "name": "merrymaker",
+  "private": true,
+  "version": "2.0",
+  "repository": {
+    "type": "git",
+    "url": "github.com/target/mmk-ui-api"
+  },
+  "description": "Merry Maker",
+  "author": "Target Brands, Inc.",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "backend",
+    "scanner",
+    "frontend"
+  ]
+}

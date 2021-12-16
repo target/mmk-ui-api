@@ -1,0 +1,68 @@
+{
+  "port": 3030,
+  "server": {
+    "uri": "http://localhost:8080",
+    "ca": "/path/to/cert.crt"
+  },
+  "auth": {
+    "strategy": "local"
+  },
+  "postgres": {
+    "host": "localhost",
+    "user": "admin",
+    "password": "password",
+    "database": "merrymaker",
+    "secure": false,
+    "ca": "none"
+  },
+  "redis": {
+    "uri": "redis://localhost:6379",
+    "useSentinel": false,
+    "nodes": ["localhost"],
+    "sentinelPort": 26379,
+    "master": "",
+    "sentinelPassword": ""
+  },
+  "authorizations": {
+    "admin": "CN=MerryMaker-Admin",
+    "user": "CN=MerryMaker-User",
+    "transport": "CN=MerryMaker-transport"
+  },
+  "transport": {
+    "enabled": true,
+    "port": 3031,
+    "mTLS": false
+  },
+  "quantumTunnel": {
+    "enabled": "false",
+    "clientID": "fake",
+    "secret": "fake",
+    "user": "string",
+    "password": "string",
+    "key": "string",
+    "url": "string"
+  },
+  "oauth": {
+    "authURL": "string",
+    "tokenURL": "string",
+    "clientID": "string",
+    "secret": "string",
+    "redirectURL": "string",
+    "scope": "string"
+  },
+  "alerts": {
+    "kafka": {
+      "clientID": "mmk2",
+      "enabled": false,
+      "host": "localhost",
+      "port": 9093,
+      "topic": "merrymaker-raw",
+      "cert": "path/to/cert.crt",
+      "key": "path/to/key.key"
+    },
+    "goAlert": {
+      "enabled": false,
+      "url": "https://webalertdomain.com"
+    }
+  }
+}

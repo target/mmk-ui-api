@@ -1,0 +1,48 @@
+{
+  "name": "scanner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Merry Maker Scanner",
+  "repository": {
+    "type": "git",
+    "url": "github.com/target/mmk-ui-api"
+  },
+  "author": "Target Brands, Inc.",
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^3.2.0",
+    "bull": "^3.29.0",
+    "global": "^4.4.0",
+    "ioredis": "^4.17.3",
+    "js-beautify": "^1.13.0",
+    "lru-native2": "^1.2.2",
+    "node-config-ts": "^3.0.4",
+    "node-fetch": "^2.6.1",
+    "nodemon": "^2.0.4",
+    "pino": "^6.11.3",
+    "tldts": "^5.6.54",
+    "yara": "https://github.com/S03D4-164/node-yara.git#dev"
+  },
+  "devDependencies": {
+    "@merrymaker/types": "^1.0.6",
+    "@types/bull": "^3.15.0",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.0.27",
+    "@types/node-fetch": "^2.5.7",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "eslint": "^8.1.0",
+    "jest": "^26.2.2",
+    "ts-jest": "^26.4.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "build": "tsc && cp src/rules/*.yara dist/rules",
+    "postinstall": "node-config-ts",
+    "start": "nodemon",
+    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
+    "lint:eslint": "eslint --ext .ts"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "port": 3001,
+  "postgres": {
+    "host": "postgres",
+    "user": "admin",
+    "password": "password",
+    "database": "merrymaker",
+    "secure": false
+  },
+  "redis": {
+    "uri": "redis://redis:6379",
+    "nodes": [],
+    "useSentinel": false
+  }
+}

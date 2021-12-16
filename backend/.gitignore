@@ -1,0 +1,4 @@
+coverage/*
+test.log
+config/deployment/stage.json
+config/deployment/prod.json
