@@ -11,7 +11,12 @@
     "strategy": "local"
   },
   "redis": {
-    "uri": "redis://localhost:6379"
+    "uri": "redis://localhost:6379",
+    "useSentinel": false,
+    "nodes": ["localhost"],
+    "sentinelPort": 26379,
+    "master": "",
+    "sentinelPassword": ""
   },
   "oauth": {
     "authURL": "https://localhost/oauth/auth",
