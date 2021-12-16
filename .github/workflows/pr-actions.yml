@@ -1,0 +1,56 @@
+name: pr-actions
+on: [pull_request]
+
+jobs:
+  backend-jest-test:
+    runs-on: alpine_latest
+    container: node:14.17.6-alpine
+
+    services:
+      postgres:
+        image: postgres:12.7
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_DB: merrymaker
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isreadery
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+
+    steps:
+      - name: Check out repo code
+        uses: actions/checkout@v2
+
+      - name: Install yara
+        run: |
+          apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing yara
+          apk add --no-cache openssh bash git
+          apk add --no-cache --virtual .gyp python3 make g++
+        env:
+          LANG: C.UTF.8
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      - name: Audit deps
+        run: /bin/bash -c 'yarn audit; [[ $? -ge 8 ]] & exit || exit 0'
+
+      - name: Linting & testing
+        run: |
+          cd backend
+          yarn lint:eslint
+          yarn test
+          cd ../frontend
+          yarn lint
+          cd ../scanner
+          yarn lint:eslint
+          yarn test
+        env:
+          NODE_ENV: test
+          MMK_REDIS_HOST: redis
+          DEPLOYMENT: docker
