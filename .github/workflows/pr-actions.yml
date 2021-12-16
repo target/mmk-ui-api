@@ -3,7 +3,7 @@ on: [pull_request]
 
 jobs:
   backend-jest-test:
-    runs-on: alpine_latest
+    runs-on: ubuntu-latest
     container: node:14.17.6-alpine
 
     services:
