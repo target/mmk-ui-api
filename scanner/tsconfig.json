@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "commonjs",
+    "outDir": "dist",
+    "noUnusedLocals": true,
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true ,
+    "baseUrl": ".",
+    "lib": [
+      "ES2020.Promise"
+    ],
+    "paths": {
+      "*": ["node_modules/*", "src/types/*"]
+    }
+  },
+  "files":["src/globals.d.ts"],
+  "include":["src/**/*", "config/**/*", "src/global.d.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

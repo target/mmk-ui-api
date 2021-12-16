@@ -1,0 +1,32 @@
+{
+  "port": 3001,
+  "postgres": {
+    "host": "localhost",
+    "user": "admin",
+    "password": "password",
+    "database": "merrymaker_test",
+    "secure": false
+  },
+  "auth": {
+    "strategy": "local"
+  },
+  "redis": {
+    "uri": "redis://localhost:6379"
+  },
+  "oauth": {
+    "authURL": "https://localhost/oauth/auth",
+    "tokenURL": "https://localhost/oauth/token",
+    "clientID": "token",
+    "secret": "not-a-secret",
+    "redirectURL": "https://localhost",
+    "scope": "openid"
+  },
+  "alerts": {
+    "goAlert": {
+      "enabled": false
+    },
+    "kafka": {
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "port": "@@MMK_PORT",
+  "env": "@@NODE_ENV",
+  "server": {
+    "uri": "http://localhost:8080",
+    "ca": "@@MMK_SERVER_CA"
+  },
+  "auth": {
+    "strategy": "@@MMK_AUTH_STRATEGY"
+  },
+  "redis": {
+    "uri": "@@MMK_REDIS_URI",
+    "useSentinel": "@@MMK_REDIS_USE_SENTINEL",
+    "nodes": "@@MMK_REDIS_SENTINEL_NODES",
+    "master": "@@MMK_REDIS_SENTINEL_MASTER",
+    "sentinelPort": "@@MMK_REDIS_SENTINEL_PORT",
+    "sentinelPassword": "@@MMK_REDIS_SENTINEL_PASSWORD"
+  },
+  "postgres": {
+    "host": "@@MMK_POSTGRES_HOST",
+    "user": "@@MMK_POSTGRES_USER",
+    "password": "@@MMK_POSTGRES_PASSWORD",
+    "database": "@@MMK_POSTGRES_DATABASE",
+    "secure": "@@MMK_POSTGRES_SECURE",
+    "ca": "@@MMK_POSTGRES_CA"
+  },
+  "session": {
+    "secret": "foobar",
+    "maxAge": 604800000
+  },
+  "oauth": {
+    "authURL": "@@MMK_OAUTH_AUTH_URL",
+    "tokenURL": "@@MMK_OAUTH_TOKEN_URL",
+    "clientID": "@@MMK_OAUTH_CLIENT_ID",
+    "secret": "@@MMK_OAUTH_SECRET",
+    "redirectURL": "@@MMK_OAUTH_REDIRECT_URL",
+    "scope": "@@MMK_OAUTH_SCOPE"
+  },
+  "transport": {
+    "cert": "@@MMK_TRANSPORT_CERT",
+    "key": "@@MMK_TRANSPORT_KEY",
+    "port": "@@MMK_TRANSPORT_HOST",
+    "mTLS": "@@MMK_TRANSPORT_MTLS_ENABLED",
+    "enabled": "@@MMK_TRANSPORT_ENABLED"
+  },
+  "authorizations": {
+    "admin": "@@MMK_AUTH_AD_ADMIN",
+    "user": "@@MMK_AUTH_AD_USER",
+    "transport": "@@MMK_AUTH_AD_TRANSPORT"
+  },
+  "quantumTunnel": {
+    "enabled": "@@MMK_QT_ENABLED",
+    "clientID": "@@MMK_OAUTH_QT_CLIENT_ID",
+    "secret": "@@MMK_OAUTH_QT_SECRET",
+    "user": "@@MMK_QT_USER",
+    "password": "@@MMK_QT_PASSWORD",
+    "key": "@@MMK_QT_API_KEY",
+    "url": "@@MMK_QT_TOKEN_URL"
+  },
+  "alerts": {
+    "goAlert": {
+      "enabled": "@@MMK_GO_ALERT_ENABLED",
+      "url": "@@MMK_GO_ALERT_URL",
+      "token": "@@MMK_GO_ALERT_TOKEN"
+    },
+    "kafka": {
+      "enabled": "@@MMK_KAFKA_ENABLED",
+      "host": "@@MMK_KAFKA_HOST",
+      "port": "@@MMK_KAKFA_PORT",
+      "topic": "@@MMK_KAFKA_TOPIC",
+      "cert": "@@MMK_KAFKA_CERT",
+      "key": "@@MMK_KAFKA_KEY",
+      "clientID": "@@MMK_KAFKA_CLIENTID"
+    }
+  }
+}

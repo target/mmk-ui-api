@@ -1,0 +1,10 @@
+node_modules/
+.nyc_output
+.DS_Store
+.sass-cache
+.vscode
+.vim
+files/*.js
+dist/
+yarn-error.log
+screenshots

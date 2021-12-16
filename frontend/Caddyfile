@@ -1,0 +1,13 @@
+:2015, :2015/dist {
+  root /srv
+  header / {
+    Strict-Transport-Security "max-age=31536000;"
+		X-XSS-Protection "1; mode=block"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+  }
+	rewrite {
+		regexp .*
+		to {path} /
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "port": "@@MMK_PORT",
+  "env": "@@NODE_ENV",
+  "redis": {
+    "uri": "@@MMK_REDIS_URI",
+    "useSentinel": "@@MMK_REDIS_USE_SENTINEL",
+    "nodes": "@@MMK_REDIS_SENTINEL_NODES",
+    "master": "@@MMK_REDIS_SENTINEL_MASTER",
+    "sentinelPort": "@@MMK_REDIS_SENTINEL_PORT",
+    "sentinelPassword": "@@MMK_REDIS_SENTINEL_PASSWORD"
+  },
+  "session": {
+    "secret": "foobar",
+    "maxAge": 604800000
+  },
+  "oauth": {
+    "authURL": "@@MMK_OAUTH_AUTH_URL",
+    "tokenURL": "@@MMK_OAUTH_TOKEN_URL",
+    "clientID": "@@MMK_OAUTH_CLIENT_ID",
+    "secret": "@@MMK_OAUTH_SECRET",
+    "redirectURL": "@@MMK_OAUTH_REDIRECT_URL",
+    "scope": "@@MMK_OAUTH_SCOPE"
+  },
+  "transport": {
+    "http": "@@MMK_TRANSPORT_URL"
+  }
+}

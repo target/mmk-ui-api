@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2016",
+    "module": "commonjs",
+    "outDir": "dist",
+    "noUnusedLocals": true,
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop":true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true ,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "src/types/*"]
+    },
+    "typeRoots": [
+      "./@types",
+      "./node_modules/@types",
+      "../node_modules/@types"
+    ]
+  },
+  "files":["src/global.d.ts"],
+  "include":["src/**/*", "config/**/*", "global.d.ts", "src/**/**/*"],
+  "exclude": ["src/**/*.test.ts"]
+}
