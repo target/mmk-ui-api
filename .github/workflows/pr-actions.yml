@@ -43,6 +43,7 @@ jobs:
       - name: Linting & testing
         run: |
           cd backend
+          yarn install
           yarn lint:eslint
           yarn test
           cd ../frontend
