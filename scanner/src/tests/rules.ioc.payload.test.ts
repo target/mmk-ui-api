@@ -14,38 +14,6 @@ const testCases = [
     'https://example.com?cc=NDAxMjAwMDA3Nzc3Nzc3Nw',
     1,
   ],
-  ['ioc_payload_wallet_clear_cc', 'https://example.com?cc=5424180279791765', 1],
-  [
-    'ioc_payload_wallet_b64_cc',
-    'https://example.com?cc=NTQyNDE4MDI3OTc5MTc2NQ',
-    1,
-  ],
-  [
-    'ioc_payload_giftcards_clear_cc',
-    'https://example.com?cc=041399012207400',
-    1,
-  ],
-  [
-    'ioc_payload_giftcards_clear_cc',
-    'https://example.com?cc=439408432908905',
-    1,
-  ],
-  [
-    'ioc_payload_giftcards_b64_cc',
-    'https://example.com?cc=MDQxMzk5MDEyMjA3NDAw',
-    1,
-  ],
-  [
-    'ioc_payload_giftcards_b64_cc',
-    'https://example.com?cc=NDM5NDA4NDMyOTA4OTA1',
-    1,
-  ],
-  ['ioc_payload_guest_clear_cc', 'https://example.com?cc=222334454657563', 1],
-  [
-    'ioc_payload_guest_base64_cc',
-    'https://example.com?cc=MjIyMzM0NDU0NjU3NTYz',
-    1,
-  ],
 ]
 
 describe('IOC Payload Rules', () => {
