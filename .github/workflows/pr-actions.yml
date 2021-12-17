@@ -54,4 +54,4 @@ jobs:
         env:
           NODE_ENV: test
           MMK_REDIS_HOST: redis
-          DEPLOYMENT: test
+          DEPLOYMENT: docker
