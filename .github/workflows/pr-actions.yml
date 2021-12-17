@@ -4,7 +4,7 @@ on: [pull_request]
 jobs:
   backend-jest-test:
     runs-on: ubuntu-latest
-    container: node:14.17.6-alpine
+    container: node:14.18.1-alpine
 
     services:
       postgres:
@@ -48,9 +48,10 @@ jobs:
           cd ../frontend
           yarn lint
           cd ../scanner
+          yarn install
           yarn lint:eslint
           yarn test
         env:
           NODE_ENV: test
           MMK_REDIS_HOST: redis
-          DEPLOYMENT: docker
+          DEPLOYMENT: test
