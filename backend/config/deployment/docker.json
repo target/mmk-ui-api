@@ -11,5 +11,8 @@
     "uri": "redis://redis:6379",
     "nodes": [],
     "useSentinel": false
+  },
+  "auth": {
+    "strategy": "local"
   }
 }
