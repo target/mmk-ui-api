@@ -4,7 +4,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
-import '@/assets/sass/_footer.sass'
+import '@/assets/sass/_footer.scss'
 
 Vue.prototype.$http = Axios
 Vue.config.productionTip = false
