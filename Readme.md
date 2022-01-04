@@ -1,5 +1,16 @@
 # Merry Maker 2.0
 
+Merry Maker is a fully scalable tool to detect the presence of digital skimmers.
+
+## Features
+
+- [Puppeteer](https://pptr.dev/) scripts to simulate user interactions
+- Yara rules for static analysis
+- Hooks native JavaScript function calls for detection and attribution
+- Near real-time browser event detection and alerting
+- Distributed event scanning (rule engine)
+- Role based UI with local and OAuth2 authentication options
+
 ## Full Stack Demo
 
 ```
