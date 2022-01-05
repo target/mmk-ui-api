@@ -2,7 +2,7 @@ import { Scan, ScanLog, Site, Source } from '../models'
 import { Queue, Job } from 'bull'
 import logger from '../loaders/logger'
 import { ScanLogLevels } from '../models/scan_logs'
-import { raw } from 'objection'
+import { QueryBuilder, raw } from 'objection'
 import MerryMaker from '@merrymaker/types'
 
 type ScheduledScan = { scan: Scan; job: Job }
@@ -25,7 +25,10 @@ const isBulkActive = async (ids: string[]): Promise<boolean> => {
 }
 
 const view = async (id: string): Promise<Scan> =>
-  Scan.query().findById(id).skipUndefined().throwIfNotFound()
+  Scan.query()
+    .findById(id)
+    .skipUndefined()
+    .throwIfNotFound()
 
 const destroy = async (id: string): Promise<number> =>
   Scan.query().deleteById(id)
@@ -44,19 +47,19 @@ const schedule = async (
   if (opts.site) {
     options = {
       site_id: opts.site.id,
-      source_id: opts.site.source_id,
+      source_id: opts.site.source_id
     }
     name = opts.site.name
     // update `last_run` to prevent scheduling
     // again before it completes
     await Site.query()
       .patch({
-        last_run: new Date(),
+        last_run: new Date()
       })
       .where('id', opts.site.id)
   } else if (opts.source) {
     options = {
-      source_id: opts.source.id,
+      source_id: opts.source.id
     }
     name = opts.source.name
   }
@@ -64,7 +67,7 @@ const schedule = async (
     ...options,
     created_at: new Date(),
     state: 'scheduled',
-    test: opts.test,
+    test: opts.test
   })
   const jobInst = await queue.add(
     'scan-queue',
@@ -72,7 +75,7 @@ const schedule = async (
       name,
       scan_id: scanInst.id,
       source_id: options.source_id,
-      test: opts.test,
+      test: opts.test
     },
     {
       // manually removed in `jobs`
@@ -81,7 +84,7 @@ const schedule = async (
       attempts: opts.test ? 1 : 3,
       // fail after 30 minutes
       timeout: 1000 * 60 * 30,
-      removeOnFail: true,
+      removeOnFail: true
     }
   )
   await ScanLog.query().insertAndFetch({
@@ -90,12 +93,12 @@ const schedule = async (
       Scheduled ${name} to run
       with source_id ${options.source_id} and
       job_id ${jobInst.id}
-      `,
+      `
     },
     entry: 'log-message',
     scan_id: scanInst.id,
     level: 'info',
-    created_at: new Date(),
+    created_at: new Date()
   })
   return { scan: scanInst, job: jobInst }
 }
@@ -106,14 +109,14 @@ const schedule = async (
  *   Appends a Scan Log Entry on state change
  */
 const updateState = async (
-  job: Job,
+  scan_id: string,
   state: string,
   err?: string
-): Promise<void> => {
-  logger.info(`Attempting to update ${job.data.scan_id} to state "${state}`)
-  const scanInst = await Scan.query().findById(job.data.scan_id)
+): Promise<Scan> => {
+  logger.info(`Attempting to update ${scan_id} to state "${state}`)
+  const scanInst = await Scan.query().findById(scan_id)
   if (scanInst === null) {
-    logger.warn(`Unable to find scan with id ${job.data.scan_id}`)
+    logger.warn(`Unable to find scan with id ${scan_id}`)
     return
   }
   if (scanInst.state === 'completed') {
@@ -129,8 +132,8 @@ const updateState = async (
   if (err) {
     event = `${event} : ${err}`
     level = 'error'
-    logger.warn(`Error while running job scan_id ${job.data.scan_id}`, {
-      error: err,
+    logger.warn(`Error while running job scan_id ${scan_id}`, {
+      error: err
     })
   }
   await ScanLog.query().insert({
@@ -138,15 +141,16 @@ const updateState = async (
     event: { message: event },
     level,
     scan_id: scanInst.id,
-    created_at: new Date(),
+    created_at: new Date()
   })
-  console.log('Patching site with last_run')
+  logger.info('Patching site with last_run')
   // update Site last_run
   await Site.query()
     .patch({
-      last_run: new Date(),
+      last_run: new Date()
     })
     .where('id', scanInst.site_id)
+  return scanInst
 }
 
 /**
@@ -160,6 +164,15 @@ const purge = async (maxDays: number): Promise<number> =>
     .where(raw("created_at <= NOW() - INTERVAL '?? days'", [maxDays]))
 
 /**
+ * ruleAlertEvent
+ *
+ * QueryBuilder for fetching scanLog events
+ * where { alert: true } exists
+ */
+const ruleAlertEvent = (builder: QueryBuilder<ScanLog, ScanLog>) =>
+  builder.whereRaw('event::jsonb @> ?', [{ alert: true }])
+
+/**
  * purgeTests
  *
  * Delete test scans older than or equal to `maxHours`
@@ -171,10 +184,14 @@ const purgeTests = async (maxHours: number): Promise<number> =>
     .andWhere('test', true)
 
 const bulkDelete = async (ids: string[]): Promise<number> =>
-  Scan.query().delete().whereIn('id', ids)
+  Scan.query()
+    .delete()
+    .whereIn('id', ids)
 
 const totalScheduled = async (): Promise<number> =>
-  Scan.query().where('state', '=', 'scheduled').resultSize()
+  Scan.query()
+    .where('state', '=', 'scheduled')
+    .resultSize()
 
 export default {
   schedule,
@@ -187,4 +204,5 @@ export default {
   view,
   destroy,
   isBulkActive,
+  ruleAlertEvent
 }
