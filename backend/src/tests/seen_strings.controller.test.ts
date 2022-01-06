@@ -1,3 +1,4 @@
+import { PathItem, ajv } from 'aejo'
 import request from 'supertest'
 import { SeenString, knex } from '../models'
 import { cache } from '../services/seen_string'
@@ -5,16 +6,17 @@ import { redisClient } from '../repos/redis'
 import SeenStringFactory from './factories/seen_strings.factory'
 import { makeSession, guestSession, resetDB } from './utils'
 
-const adminSession = () =>
-  makeSession({
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
-    exp: 0,
-    lanid: 'z000n00',
-    email: 'example@example.com',
-    isAuth: true,
-  }).app
+const adminSessionAttr = {
+  firstName: 'Admin',
+  lastName: 'User',
+  role: 'admin',
+  exp: 0,
+  lanid: 'foouser',
+  email: 'example@example.com',
+  isAuth: true
+}
+
+const adminSession = () => makeSession(adminSessionAttr).app
 
 const transportSession = () =>
   makeSession({
@@ -24,20 +26,28 @@ const transportSession = () =>
     lanid: 'transport',
     email: 'transport@example.com',
     isAuth: true,
-    exp: 1,
+    exp: 1
   }).app
 
 const cache_key = 'seen_strings:fqdn:example.com'
 const cacheQuery = {
   key: 'example.com',
-  type: 'fqdn',
+  type: 'fqdn'
 }
 
 describe('SeenStrings Controller', () => {
   let seed: SeenString
-  beforeEach(async () => {
+  let api: PathItem
+  beforeAll(async () => {
     await resetDB()
-    seed = await SeenStringFactory.build().$query().insert().returning('*')
+    api = makeSession(adminSessionAttr).paths
+  })
+  beforeEach(async () => {
+    await knex.raw('TRUNCATE TABLE seen_strings CASCADE')
+    seed = await SeenStringFactory.build()
+      .$query()
+      .insert()
+      .returning('*')
   })
   afterAll(async () => knex.destroy)
   describe('GET /api/seen_strings', () => {
@@ -109,6 +119,27 @@ describe('SeenStrings Controller', () => {
       expect(res.status).toBe(422)
     })
   })
+  describe('GET /api/seen_strings/distinct', () => {
+    it('should get distinct seen_string column values', async () => {
+      const res = await request(adminSession())
+        .get('/api/seen_strings/distinct')
+        .query({ column: 'type' })
+      expect(res.status).toBe(200)
+      expect(res.body[0]).toEqual({ type: seed.type })
+      const validate = ajv.compile(
+        api['/api/alerts/distinct'].get.responses['200'].content[
+          'application/json'
+        ].schema
+      )
+      expect(validate(res.body)).toBe(true)
+    })
+    it('should return validation error on invalid column name', async () => {
+      const res = await request(adminSession())
+        .get('/api/seen_strings/distinct')
+        .query({ column: 'bad' })
+      expect(res.status).toBe(422)
+    })
+  })
   describe('POST /api/seen_strings/_cache', () => {
     beforeEach(async () => {
       cache.clear()
@@ -120,8 +151,8 @@ describe('SeenStrings Controller', () => {
         .send({
           seen_string: {
             key: 'example.com',
-            type: 'domain',
-          },
+            type: 'domain'
+          }
         })
         .set('Accept', 'application/json')
       expect(res.status).toBe(200)
@@ -133,8 +164,8 @@ describe('SeenStrings Controller', () => {
         .send({
           seen_string: {
             key: 'example.com',
-            value: 'domain',
-          },
+            value: 'domain'
+          }
         })
         .set('Accept', 'application/json')
       expect(res.status).toBe(422)
@@ -144,8 +175,8 @@ describe('SeenStrings Controller', () => {
       const payload = {
         seen_string: {
           key: 'example2.com',
-          type: 'domain',
-        },
+          type: 'domain'
+        }
       }
       await request(adminSession())
         .post('/api/seen_strings/_cache')

@@ -3,6 +3,8 @@ export interface ObjectListResult<M> {
   total: number
 }
 
+export type ObjectDistinctResult<M> = Array<Record<keyof M, string>>
+
 export interface ListRequest<M> {
   fields?: Array<keyof M>
   page?: number
