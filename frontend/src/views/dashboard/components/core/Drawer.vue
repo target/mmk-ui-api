@@ -66,8 +66,8 @@ export default Vue.extend({
   props: {
     expandOnHover: {
       type: Boolean,
-      default: false,
-    },
+      default: false
+    }
   },
 
   data: () => ({
@@ -94,25 +94,25 @@ export default Vue.extend({
         icon: 'mdi-key',
         title: 'Secrets',
         to: '/secrets',
-        role: 'admin',
+        role: 'admin'
       },
       {
         icon: 'mdi-crosshairs',
         title: 'Scans',
         to: '/scans',
-        role: 'admin',
-      },
-      {
-        icon: 'mdi-clipboard-outline',
-        title: 'Test Rules',
-        to: '/test',
-        role: 'admin',
+        role: 'admin'
       },
       {
         icon: 'mdi-code-string',
         title: 'Sources',
         to: '/sources',
         role: 'admin',
+      },
+      {
+        icon: 'mdi-eye',
+        title: 'Seen Strings',
+        to: '/seen_strings',
+        role: 'user',
       },
       {
         icon: 'mdi-mushroom',
@@ -131,8 +131,8 @@ export default Vue.extend({
         title: 'Users',
         to: '/users',
         role: 'admin',
-      },
-    ],
+      }
+    ]
   }),
   computed: {
     ...mapState(['barColor', 'barImage']),
@@ -142,17 +142,17 @@ export default Vue.extend({
       },
       set(val) {
         this.$store.commit('setDrawer', val)
-      },
+      }
     },
     profile() {
       return {
         avatar: true,
-        title: 'MerryMaker',
+        title: 'MerryMaker'
       }
     },
     user() {
       return this.$store.getters.user
-    },
+    }
   },
 })
 </script>

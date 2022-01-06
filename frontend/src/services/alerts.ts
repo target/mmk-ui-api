@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import axios from 'axios'
-import { ObjectListResult, ListRequest } from './index'
+import { ObjectListResult, ListRequest, ObjectDistinctResult } from './index'
 
 type EagerLoad = 'site'
 
@@ -21,9 +21,6 @@ interface AlertListRequest extends ListRequest<AlertAttributes> {
   eager?: Array<EagerLoad>
 }
 
-// TODO move to global scope
-export type ObjectDistinctResult<M> = Array<Record<keyof M, string>>
-
 const list = async (params?: AlertListRequest) =>
   axios.get<ObjectListResult<AlertAttributes>>('/api/alerts', { params })
 
@@ -35,12 +32,12 @@ const destroy = async (params: { id: string }) =>
 
 const distinct = async (params: { column: keyof AlertAttributes }) =>
   axios.get<ObjectDistinctResult<AlertAttributes>>('/api/alerts/distinct', {
-    params,
+    params
   })
 
 export default {
   list,
   view,
   destroy,
-  distinct,
+  distinct
 }
