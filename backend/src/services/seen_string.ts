@@ -20,6 +20,9 @@ const update = async (
   attrs: Partial<SeenStringAttributes>
 ): Promise<SeenString> => SeenString.query().patchAndFetchById(id, attrs)
 
+const distinct = async (column: string): Promise<SeenString[]> =>
+  SeenString.query().distinct(column)
+
 const findOne = async (
   query: Partial<SeenStringAttributes>
 ): Promise<SeenString> => SeenString.query().findOne(query)
@@ -33,6 +36,7 @@ const destroy = async (id: string): Promise<number> =>
 
 export default {
   view,
+  distinct,
   cached_view,
   cached_write_view,
   update,
