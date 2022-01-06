@@ -7,17 +7,16 @@ import SeenStringFactory from './factories/seen_strings.factory'
 import { makeSession, guestSession, resetDB } from './utils'
 
 const adminSessionAttr = {
-      firstName: 'Admin',
-      lastName: 'User',
-      role: 'admin',
-      exp: 0,
-      lanid: 'foouser',
-      email: 'example@example.com',
-      isAuth: true
-    }
+  firstName: 'Admin',
+  lastName: 'User',
+  role: 'admin',
+  exp: 0,
+  lanid: 'foouser',
+  email: 'example@example.com',
+  isAuth: true
+}
 
-const adminSession = () =>
-  makeSession(adminSessionAttr).app
+const adminSession = () => makeSession(adminSessionAttr).app
 
 const transportSession = () =>
   makeSession({
@@ -122,7 +121,8 @@ describe('SeenStrings Controller', () => {
   })
   describe('GET /api/seen_strings/distinct', () => {
     it('should get distinct seen_string column values', async () => {
-      const res = await request(adminSession()).get('/api/seen_strings/distinct')
+      const res = await request(adminSession())
+        .get('/api/seen_strings/distinct')
         .query({ column: 'type' })
       expect(res.status).toBe(200)
       expect(res.body[0]).toEqual({ type: seed.type })
@@ -134,7 +134,8 @@ describe('SeenStrings Controller', () => {
       expect(validate(res.body)).toBe(true)
     })
     it('should return validation error on invalid column name', async () => {
-      const res = await request(adminSession()).get('/api/seen_strings/distinct')
+      const res = await request(adminSession())
+        .get('/api/seen_strings/distinct')
         .query({ column: 'bad' })
       expect(res.status).toBe(422)
     })
