@@ -43,7 +43,7 @@ information helps other cybersecurity teams stand up their own customized defens
 
 ## Related Projects
 
-- [mmk-types](https://github.com/target/mmk-js-scope) Enumerates javascript requests and hooks native function calls
+- [mmk-js-scope](https://github.com/target/mmk-js-scope) Enumerates javascript requests and hooks native function calls
   with Headless Chrome for use by Merry Maker
 - [mmk-types](https://github.com/target/mmk-types) Shared typings between services - only needed for developers
 
