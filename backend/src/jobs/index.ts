@@ -32,7 +32,7 @@ Queues.scannerEventQueue.process(ScanLogService.work)
       JSON.stringify({
         schedule: sQueue,
         event: sECount,
-        scanner: sQueue,
+        scanner: sQueue
       })
     )
     logger.info(
@@ -51,20 +51,20 @@ Queues.scannerPurge.add(
   {
     // repeat purge job once every day at 01:00
     repeat: { cron: '0 1 * * *' },
-    removeOnComplete: true,
+    removeOnComplete: true
   }
 )
 
 // Update job states
-Queues.scannerQueue.on('global:active', async (jobId) => {
+Queues.scannerQueue.on('global:active', async jobId => {
   const job = await Queues.scannerQueue.getJob(jobId)
-  await ScanService.updateState(job, 'active')
+  await ScanService.updateState(job.data.scan_id, 'active')
 })
 
-Queues.scannerQueue.on('global:completed', async (jobId) => {
+Queues.scannerQueue.on('global:completed', async jobId => {
   try {
     const job = await Queues.scannerQueue.getJob(jobId)
-    await ScanService.updateState(job, 'completed')
+    await ScanService.updateState(job.data.scan_id, 'completed')
     const jstate = await job.getState()
     const isActive = await job.isActive()
     const isComplete = await job.isCompleted()
@@ -83,9 +83,9 @@ Queues.scannerQueue.on('global:completed', async (jobId) => {
   }
 })
 
-Queues.scannerQueue.on('global:failed', async (jobId) => {
+Queues.scannerQueue.on('global:failed', async jobId => {
   const job = await Queues.scannerQueue.getJob(jobId)
-  await ScanService.updateState(job, 'failed', job.failedReason)
+  await ScanService.updateState(job.data.scan_id, 'failed', job.failedReason)
   if (job.data.test) {
     return
   }
@@ -95,12 +95,12 @@ Queues.scannerQueue.on('global:failed', async (jobId) => {
       entry: 'error',
       scan_id: job.data.scan_id,
       event: {
-        message: `${job.data.name}/${job.name} - ${job.failedReason}`,
-      },
+        message: `${job.data.name}/${job.name} - ${job.failedReason}`
+      }
     },
     {
       removeOnComplete: true,
-      attempts: 3,
+      attempts: 3
     }
   )
 })
@@ -131,7 +131,7 @@ Queues.scannerScheduler.process(async (_job, done) => {
   }
 })
 
-Queues.scannerScheduler.on('completed', (job) => {
+Queues.scannerScheduler.on('completed', job => {
   logger.debug('completed', job.data)
 })
 
