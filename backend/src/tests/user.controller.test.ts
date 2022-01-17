@@ -2,7 +2,6 @@ import { PathItem, ajv } from 'aejo'
 import { knex, User } from '../models'
 import request from 'supertest'
 import { makeSession, resetDB, guestSession } from './utils'
-import { uuidFormat } from '../api/crud/schemas'
 import UserFactory from './factories/user.factory'
 
 const userSession = () =>
@@ -81,7 +80,7 @@ describe('User Controller', () => {
       const res = await request(adminSession().app).get(`/api/users/${seed.id}`)
       expect(res.body.id).toBe(seed.id)
       const validate = ajv.compile(
-        api[`/api/users/:id(${uuidFormat})`].get.responses['200'].content[
+        api['/api/users/:id'].get.responses['200'].content[
           'application/json'
         ].schema
       )

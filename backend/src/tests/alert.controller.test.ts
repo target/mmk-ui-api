@@ -7,7 +7,6 @@ import SiteFactory from './factories/sites.factory'
 import SourceFactory from './factories/sources.factory'
 import { Alert, knex } from '../models'
 import request from 'supertest'
-import { uuidFormat } from '../api/crud/schemas'
 
 const chance = new Chance()
 
@@ -107,7 +106,7 @@ describe('Alert Controller', () => {
       expect(res.status).toBe(200)
       expect(res.body.id).toBe(seed.id)
       const validate = ajv.compile(
-        api[`/api/alerts/:id(${uuidFormat})`].get.responses['200'].content[
+        api['/api/alerts/:id'].get.responses['200'].content[
           'application/json'
         ].schema
       )
@@ -148,7 +147,7 @@ describe('Alert Controller', () => {
       )
       expect(res.status).toBe(200)
       const validate = ajv.compile(
-        api[`/api/alerts/:id(${uuidFormat})`].delete.responses['200'].content[
+        api['/api/alerts/:id'].delete.responses['200'].content[
           'application/json'
         ].schema
       )

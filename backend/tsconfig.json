@@ -22,5 +22,5 @@
   },
   "files":["src/global.d.ts"],
   "include":["src/**/*", "config/**/*", "global.d.ts"],
-  "exclue": ["src/**/*.test.ts"]
+  "exclude": ["src/tests"]
 }
