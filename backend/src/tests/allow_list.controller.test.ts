@@ -4,7 +4,6 @@ import { AllowList, knex } from '../models'
 import { cache } from '../services/allow_list'
 import AllowListFactory from './factories/allow_list.factory'
 import { makeSession, guestSession, resetDB } from './utils'
-import { uuidFormat } from '../api/crud/schemas'
 import { redisClient } from '../repos/redis'
 
 const userSession = () =>
@@ -109,7 +108,7 @@ describe('AllowList Controller', () => {
 
       // validate response OAS object
       const validate = ajv.compile(
-        api[`/api/allow_list/:id(${uuidFormat})`].get.responses['200'].content[
+        api['/api/allow_list/:id'].get.responses['200'].content[
           'application/json'
         ].schema
       )
@@ -188,7 +187,7 @@ describe('AllowList Controller', () => {
         })
         .set('Accept', 'application/json')
       const validate = ajv.compile(
-        api[`/api/allow_list/:id(${uuidFormat})`].put.responses['422'].content[
+        api['/api/allow_list/:id'].put.responses['422'].content[
           'application/json'
         ].schema
       )

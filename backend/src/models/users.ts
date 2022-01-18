@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import Objection from 'objection'
+import Objection, {JSONSchema} from 'objection'
 
 import { v4 as uuidv4 } from 'uuid'
 import { ParamSchema } from 'aejo'
@@ -73,7 +73,7 @@ export default class User extends BaseModel<UserAttributes> {
       role: Schema.role,
       password_hash: Schema.password_hash,
       password: { type: 'virtual' },
-    },
+    } as JSONSchema['properties'],
   }
 
   async $beforeInsert(this: UserAttributes): Promise<void> {

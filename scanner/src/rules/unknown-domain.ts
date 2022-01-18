@@ -43,7 +43,7 @@ export class UnknownDomainRule extends Rule {
       return this.resolveEvent(res)
     }
 
-    if (payloadURL.domain.length === 0) {
+    if (payloadURL.domain === null) {
       res.message = `missing / empty domain for payload (${payload.url})`
       return this.resolveEvent(res)
     }
