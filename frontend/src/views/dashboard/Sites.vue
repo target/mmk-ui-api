@@ -61,11 +61,12 @@
               </template>
               <span>Delete</span>
             </v-tooltip>
-            <confirm ref="confirm"></confirm>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
+
+    <confirm ref="confirm"></confirm>
   </v-container>
 </template>
 
