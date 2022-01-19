@@ -19,6 +19,7 @@ export default AsyncPost({
           key,
         })
         if (dbHit) {
+          await SeenStringService.update(dbHit.id, { last_cached: new Date() })
           hit.store = 'database'
           hit.has = true
         } else {

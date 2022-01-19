@@ -91,9 +91,10 @@ import SourceAPIService, { SourceAttributes } from '../../services/sources'
 import Confirm, { ConfirmDialog } from '../../components/utils/Confirm.vue'
 
 import TableMixin, { TableMixinBindings } from '@/mixins/table'
+import NotifyMixin from '@/mixins/notify'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
-  mixins: [TableMixin],
+  mixins: [TableMixin, NotifyMixin],
   data() {
     return {
       showTest: false,
@@ -162,11 +163,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
       if (res) {
         try {
           await SourceAPIService.destroy({ id })
-          this.records.forEach((record, i) => {
-            if (record.id === id) {
-              this.records.splice(i, 1)
-            }
-          })
+          this.info({ title: 'Source', body: 'Source Deleted' })
         } catch (e) {
           console.error(e)
         }

@@ -118,7 +118,25 @@ describe('SeenStrings Controller', () => {
         .query({ foo: 'bar' })
       expect(res.status).toBe(422)
     })
+    it('should update "last_cache"', async () => {
+      await redisClient.del('seen_strings:domain:example22.com')
+      const testSeenString = await SeenStringFactory.build({
+        type: 'domain',
+        key: 'example22.com'
+      })
+        .$query()
+        .insert()
+        .returning('*')
+      const origCache = testSeenString.last_cached.valueOf()
+      await request(adminSession())
+        .get('/api/seen_strings/_cache')
+        .query({ key: 'example22.com', type: 'domain' })
+        .set('Accept', 'application/json')
+      const actual = await testSeenString.$query()
+      expect(actual.last_cached.valueOf()).toBeGreaterThan(origCache)
+    })
   })
+
   describe('GET /api/seen_strings/distinct', () => {
     it('should get distinct seen_string column values', async () => {
       const res = await request(adminSession())
@@ -157,6 +175,28 @@ describe('SeenStrings Controller', () => {
         .set('Accept', 'application/json')
       expect(res.status).toBe(200)
       expect(res.body.store).toBe('none')
+    })
+    it('should update "last_cache"', async () => {
+      await redisClient.del('seen_strings:domain:example22.com')
+      const testSeenString = await SeenStringFactory.build({
+        type: 'domain',
+        key: 'example22.com'
+      })
+        .$query()
+        .insert()
+        .returning('*')
+      const origCache = testSeenString.last_cached.valueOf()
+      await request(adminSession())
+        .post('/api/seen_strings/_cache')
+        .send({
+          seen_string: {
+            key: 'example22.com',
+            type: 'domain'
+          }
+        })
+        .set('Accept', 'application/json')
+      const actual = await testSeenString.$query()
+      expect(actual.last_cached.valueOf()).toBeGreaterThan(origCache)
     })
     it('should return validation error', async () => {
       const res = await request(adminSession())

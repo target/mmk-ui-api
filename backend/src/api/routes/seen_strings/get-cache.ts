@@ -20,6 +20,7 @@ export default AsyncGet({
         if (dbHit) {
           hit.store = 'database'
           hit.has = true
+          await SeenStringService.update(dbHit.id, { last_cached: new Date() })
         }
       }
       res.status(200).send(hit)

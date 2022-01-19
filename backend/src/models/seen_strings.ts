@@ -49,6 +49,7 @@ export default class SeenString extends BaseModel<SeenStringAttributes> {
 
   $beforeInsert(): void {
     this.created_at = new Date()
+    this.last_cached = new Date()
     this.id = uuidv4()
   }
 
