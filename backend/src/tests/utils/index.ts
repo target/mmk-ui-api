@@ -13,12 +13,12 @@ const memSession = expressSession({
   resave: false,
   unset: 'destroy',
   cookie: {
-    maxAge: config.session.maxAge,
-  },
+    maxAge: config.session.maxAge
+  }
 })
 
 export function makeSession(
-  session: UserSession
+  session: UserSession = {}
 ): { app: Express; paths: PathItem } {
   return server({
     app: express(),
@@ -26,24 +26,24 @@ export function makeSession(
     middlewareSession: (req: Request, _res: Response, next: NextFunction) => {
       req.session.data = session
       next()
-    },
+    }
   })
 }
 
 export const guestSession = (): { app: Express; paths: PathItem } => {
   return server({
     app: express(),
-    middleware: memSession,
+    middleware: memSession
   })
 }
 
 export async function resetDB(): Promise<void> {
   await knex.migrate.rollback({
     directory: './src/migrations',
-    disableTransactions: true,
+    disableTransactions: true
   })
   await knex.migrate.latest({
     directory: './src/migrations',
-    disableTransactions: true,
+    disableTransactions: true
   })
 }
