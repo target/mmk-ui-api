@@ -15,7 +15,7 @@ export const ListQueryParams: Parameter[] = [
   QueryParam({
     name: 'pageSize',
     description: 'max number per page',
-    schema: Integer({ minimum: 1 }),
+    schema: Integer({ minimum: -1 }),
   }),
   QueryParam({
     name: 'page',
@@ -170,7 +170,7 @@ export function listHandler<M extends Model>(
       .select(fields)
       .skipUndefined()
       .modify(res.locals.whereBuilder)
-      .page(page - 1, pageSize)
+      .page(page - 1, pageSize <= 0 ? undefined : pageSize)
       .orderBy(orderColumn, orderDirection)
     res.status(200).send(results)
     next()

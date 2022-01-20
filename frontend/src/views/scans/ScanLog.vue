@@ -11,7 +11,7 @@
           :sort-by.sync="sortBy"
           :sort-desc.sync="sortDesc"
           :loading="loading"
-          :items-per-page="itemsPerPage"
+          :items-per-page.sync="itemsPerPage"
           :footer-props="{ itemsPerPageOptions: [10, 25, 50, 100, -1] }"
           class="elevation-1"
           @page-count="pageCount = $event"
