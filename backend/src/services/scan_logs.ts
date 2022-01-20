@@ -100,7 +100,7 @@ const distinct = async (
 const countByScanID = (
   id: string,
   entry: string,
-  whereBuilder?: Modifier<QueryBuilder<ScanLog, ScanLog>>
+  whereBuilder?: Modifier<QueryBuilder<ScanLog, ScanLog[]>>
 ): Promise<number> =>
   ScanLog.query()
     .where('scan_id', id)
