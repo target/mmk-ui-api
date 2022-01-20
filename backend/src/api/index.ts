@@ -14,10 +14,13 @@ import scanLogs from './routes/scan_logs'
 import alerts from './routes/alerts'
 import queues from './routes/queues'
 import users from './routes/users'
+import healthCheck from './routes/health/check'
 
 import oas from './oas'
 
 ajv.opts.coerceTypes = true
+
+ajv.addKeyword('example')
 
 export default (express: Express): { router: Router; pathItem: PathItem } => {
   const app = Router()
@@ -71,6 +74,10 @@ export default (express: Express): { router: Router; pathItem: PathItem } => {
     Controller({
       prefix: '/api/sources',
       route: sources,
+    }),
+    Controller({
+      prefix: '/api/health',
+      route: healthCheck
     })
   )
 
