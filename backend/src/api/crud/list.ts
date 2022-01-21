@@ -15,7 +15,7 @@ export const ListQueryParams: Parameter[] = [
   QueryParam({
     name: 'pageSize',
     description: 'max number per page',
-    schema: Integer({ minimum: 1 }),
+    schema: Integer({ minimum: -1 }),
   }),
   QueryParam({
     name: 'page',
@@ -135,7 +135,7 @@ function getOrder(
   defaultOrder = 'created_at'
 ) {
   let orderColumn = defaultOrder
-  let orderDirection: OrderByDirection
+  let orderDirection: OrderByDirection = 'asc'
   if (req.orderColumn && selectable.includes(req.orderColumn)) {
     orderColumn = req.orderColumn
   }
@@ -165,13 +165,22 @@ export function listHandler<M extends Model>(
         selectable.includes(s)
       )
     }
-    const results = await model
+    const listQuery = model
       .query()
       .select(fields)
-      .skipUndefined()
-      .modify(res.locals.whereBuilder)
-      .page(page - 1, pageSize)
-      .orderBy(orderColumn, orderDirection)
+
+    if (res.locals.whereBuilder) {
+      listQuery.modify(res.locals.whereBuilder)
+    }
+
+    if (page) {
+      listQuery.page(page - 1, pageSize <= 0 ? undefined : pageSize)
+    }
+
+    if (orderColumn) {
+      listQuery.orderBy(orderColumn, orderDirection)
+    }
+    const results = await listQuery
     res.status(200).send(results)
     next()
   }

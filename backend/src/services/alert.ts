@@ -33,7 +33,7 @@ if (KafkaAlertSink.enabled) {
 }
 
 const view = async (id: string): Promise<Alert> =>
-  Alert.query().findById(id).skipUndefined().throwIfNotFound()
+  Alert.query().findById(id).throwIfNotFound()
 
 const distinct = async (column: string): Promise<Alert[]> =>
   Alert.query().distinct(column)

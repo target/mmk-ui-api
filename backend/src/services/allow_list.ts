@@ -12,7 +12,7 @@ export const cache = new LRUCache<number>({
 const cached_view = cachedView(AllowList.tableName, cache)
 
 const view = async (id: string): Promise<AllowList> =>
-  AllowList.query().findById(id).skipUndefined().throwIfNotFound()
+  AllowList.query().findById(id).throwIfNotFound()
 
 const update = async (
   id: string,
