@@ -26,7 +26,7 @@ const create = async (attrs: Partial<SecretAttributes>): Promise<Secret> =>
   Secret.query().insert(attrs)
 
 const view = async (id: string): Promise<Secret> =>
-  Secret.query().findById(id).skipUndefined().throwIfNotFound()
+  Secret.query().findById(id).throwIfNotFound()
 
 const destroy = async (id: string): Promise<number> =>
   Secret.query().deleteById(id)

@@ -2,7 +2,7 @@ FROM node:14.18.1-alpine
 MAINTAINER Merrymaker Team "merrymaker@target.com"
 
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-      yara
+      yara-dev
 
 RUN apk add wget ca-certificates
 RUN update-ca-certificates --fresh
