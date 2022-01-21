@@ -19,7 +19,7 @@ const getRunnable = async (): Promise<Site[]> => {
 }
 
 const view = async (id: string): Promise<Site> =>
-  Site.query().findById(id).skipUndefined().throwIfNotFound()
+  Site.query().findById(id).throwIfNotFound()
 
 const create = async (attrs: Partial<SiteAttributes>): Promise<Site> =>
   Site.query().insert(attrs)

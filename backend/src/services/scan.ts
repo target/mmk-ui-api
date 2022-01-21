@@ -27,7 +27,6 @@ const isBulkActive = async (ids: string[]): Promise<boolean> => {
 const view = async (id: string): Promise<Scan> =>
   Scan.query()
     .findById(id)
-    .skipUndefined()
     .throwIfNotFound()
 
 const destroy = async (id: string): Promise<number> =>
@@ -169,7 +168,7 @@ const purge = async (maxDays: number): Promise<number> =>
  * QueryBuilder for fetching scanLog events
  * where { alert: true } exists
  */
-const ruleAlertEvent = (builder: QueryBuilder<ScanLog, ScanLog>) =>
+const ruleAlertEvent = (builder: QueryBuilder<ScanLog, ScanLog[]>) =>
   builder.whereRaw('event::jsonb @> ?', [{ alert: true }])
 
 /**

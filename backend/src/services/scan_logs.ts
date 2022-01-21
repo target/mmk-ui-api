@@ -79,7 +79,6 @@ async function handleFailed(job: Job<MerryMaker.EventResult>) {
 const view = async (id: string): Promise<ScanLog> =>
   ScanLog.query()
     .findById(id)
-    .skipUndefined()
     .throwIfNotFound()
 
 const distinct = async (
@@ -106,7 +105,6 @@ const countByScanID = (
     .where('scan_id', id)
     .where('entry', entry)
     .modify(whereBuilder)
-    .skipUndefined()
     .resultSize()
 
 /**

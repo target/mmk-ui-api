@@ -19,7 +19,7 @@ export type IocBulkCreate = {
 const cached_view = cachedView(Ioc.tableName, cache)
 
 const view = async (id: string): Promise<Ioc> =>
-  Ioc.query().findById(id).skipUndefined().throwIfNotFound()
+  Ioc.query().findById(id).throwIfNotFound()
 
 const findOne = async (query: Partial<IocAttributes>): Promise<Ioc> =>
   Ioc.query().findOne(query)

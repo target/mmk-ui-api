@@ -4,7 +4,7 @@ const findOne = async (query: Partial<UserAttributes>): Promise<User> =>
   User.query().findOne(query)
 
 const view = async (id: string): Promise<User> =>
-  User.query().findById(id).skipUndefined().throwIfNotFound()
+  User.query().findById(id).throwIfNotFound()
 
 const update = async (
   id: string,

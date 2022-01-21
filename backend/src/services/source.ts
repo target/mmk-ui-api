@@ -102,7 +102,7 @@ export function resolve(source: string, secrets: Secret[]): string {
 }
 
 const view = async (id: string): Promise<Source> =>
-  Source.query().findById(id).skipUndefined().throwIfNotFound()
+  Source.query().findById(id).throwIfNotFound()
 
 const destroy = async (id: string): Promise<number> =>
   Source.query().deleteById(id)

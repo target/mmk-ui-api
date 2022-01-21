@@ -13,7 +13,7 @@ const cached_view = cachedView(SeenString.tableName, cache)
 const cached_write_view = updateCache(SeenString.tableName, writeLRU(cache))
 
 const view = async (id: string): Promise<SeenString> =>
-  SeenString.query().findById(id).skipUndefined().throwIfNotFound()
+  SeenString.query().findById(id).throwIfNotFound()
 
 const update = async (
   id: string,

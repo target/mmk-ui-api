@@ -82,7 +82,7 @@
     "inspect": "nodemon --inspect src/app.ts",
     "migrate": "knex --migrations-directory ./src/migrations migrate:latest",
     "migrate:undo": "knex --migrations-directory ./src/migrations migrate:rollback",
-    "test": "NODE_ENV=test yarn migrate && NODE_ENV=test jest src/tests --detectOpenHandles --forceExit",
+    "test": "NODE_ENV=test yarn migrate && NODE_ENV=test jest --detectOpenHandles --forceExit",
     "lint": "yarn lint:js",
     "lint:eslint": "eslint --ignore-path .gitignore --ext .ts",
     "lint:js": "yarn lint:eslint src/",
