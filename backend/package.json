@@ -72,8 +72,7 @@
     "pino": "^6.11.3",
     "role-acl": "^4.5.4",
     "swagger-ui-express": "^4.1.6",
-    "uuid": "^8.2.0",
-    "yara": "https://github.com/S03D4-164/node-yara.git#dev"
+    "uuid": "^8.2.0"
   },
   "scripts": {
     "build": "tsc",
