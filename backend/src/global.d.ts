@@ -8,5 +8,3 @@ interface UserSession {
   isAuth?: boolean
   exp?: number
 }
-
-declare module 'yara'
