@@ -14,7 +14,6 @@
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-typescript": "^7.10.4",
     "@merrymaker/types": "^1.0.6",
-    "@types/bcrypt": "^3.0.1",
     "@types/bull": "^3.15.0",
     "@types/chance": "^1.1.0",
     "@types/connect-redis": "^0.0.16",
@@ -45,7 +44,7 @@
   "dependencies": {
     "aejo": "^0.1.17",
     "ajv": "^8.0.5",
-    "bcrypt": "^5.0.1",
+    "@node-rs/bcrypt": "^1.5.5",
     "bull": "^3.29.0",
     "connect-redis": "^5.0.0",
     "cookie-parser": "^1.4.5",
