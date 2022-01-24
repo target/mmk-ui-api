@@ -1,12 +1,17 @@
 import request from 'supertest'
+import Chance from 'chance'
 import { knex, Source } from '../models'
 import { Scan, Site } from '../models'
 
 import SiteFactory from './factories/sites.factory'
 import ScanFactory from './factories/scans.factory'
 import SourceFactory from './factories/sources.factory'
+import ScanLogFactory from './factories/scan_log.factory'
 
 import { makeSession, resetDB } from './utils'
+import {WebRequestEvent} from '@merrymaker/types'
+
+const chance = Chance()
 
 const userSession = () =>
   makeSession({
@@ -104,4 +109,24 @@ describe('Scan Controller', () => {
       expect(res.status).toBe(200)
     })
   })
+  describe('GET /api/scans/:id/summary', () => {
+    it('should return a summary', async () => {
+      for (let i = 0; i < 10; i += 1) {
+        await ScanLogFactory.build({
+          entry: 'request',
+          event: { url: chance.url() } as WebRequestEvent,
+          scan_id: seedA.id,
+          created_at: new Date()
+        })
+          .$query()
+          .insert()
+      }
+      const res = await request(userSession()).get(
+        `/api/scans/${seedA.id}/summary`
+      )
+      expect(res.status).toBe(200)
+      expect(res.body.totalReq).toBe(10)
+    })
+  })
+
 })

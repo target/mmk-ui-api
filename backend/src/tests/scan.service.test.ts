@@ -2,8 +2,10 @@ import ScanService from '../services/scan'
 import SiteFactory from './factories/sites.factory'
 import ScanFactory from './factories/scans.factory'
 import SourceFactory from './factories/sources.factory'
+import ScanLogFactory from './factories/scan_log.factory'
 import { resetDB } from './utils'
 import { ScanAttributes } from '../models/scans'
+import {WebRequestEvent} from '@merrymaker/types'
 
 const helper = async (scanAttrs: Partial<ScanAttributes> = {}) => {
   const sourceModel = await SourceFactory.build().$query().insert()
@@ -132,6 +134,121 @@ describe('Scan Service', () => {
         err = e
       }
       expect(err).not.toBeUndefined
+    })
+  })
+  describe('groupDomainRequests', () => {
+    it('returns an array of grouped domains', async () => {
+      const viewScan = await helper()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.google.com/foo.js' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.yahoo.com/moo.html' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      const actual = await ScanService.groupLogs(viewScan.id, {
+        entry: 'request',
+        composites: [ScanService.domainComposite]
+      })
+      expect(actual).toEqual({
+        domain: {
+          'www.google.com': 1,
+          'www.yahoo.com': 1
+        }
+      })
+    })
+    it('handles invalid URLs', async () => {
+      const viewScan = await helper()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'data:image/gif;base64,R0lC' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.yahoo.com/moo.html' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      const actual = await ScanService.groupLogs(viewScan.id, {
+        entry: 'request',
+        composites: [ScanService.domainComposite]
+      })
+      expect(actual).toEqual({
+        domain: {
+          'www.yahoo.com': 1
+        }
+      })
+    })
+    it('should increment duplicate', async () => {
+      const viewScan = await helper()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.yahoo.com/moo.html' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.yahoo.com/bar.html' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      const actual = await ScanService.groupLogs(viewScan.id, {
+        entry: 'request',
+        composites: [ScanService.domainComposite]
+      })
+      expect(actual).toEqual({
+        domain: {
+          'www.yahoo.com': 2
+        }
+      })
+    })
+  })
+  describe('urlComposite', () => {
+    it('should return href', async () => {
+      const viewScan = await helper()
+      const sLog = await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'http://www.yahoo.com/moo.html' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      const actual = ScanService.urlComposite.group(sLog)
+      expect(actual).toEqual((sLog.event as WebRequestEvent).url)
+    })
+    it('should return undefined on invalid', async () => {
+      const viewScan = await helper()
+      const sLog = await ScanLogFactory.build({
+        entry: 'request',
+        event: { url: 'data:image/gif;base64,R0lC' } as WebRequestEvent,
+        scan_id: viewScan.id,
+        created_at: new Date('1955-11-12T06:38:00.000Z')
+      })
+        .$query()
+        .insert()
+      const actual = ScanService.urlComposite.group(sLog)
+      expect(actual).toEqual(undefined)
     })
   })
 })

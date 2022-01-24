@@ -5,6 +5,8 @@ import { ScanLogLevels } from '../models/scan_logs'
 import { QueryBuilder, raw } from 'objection'
 import MerryMaker from '@merrymaker/types'
 
+import scanLogService from './scan_logs'
+
 type ScheduledScan = { scan: Scan; job: Job }
 type ScanScheduleOptions = {
   site?: Site
@@ -192,14 +194,167 @@ const totalScheduled = async (): Promise<number> =>
     .where('state', '=', 'scheduled')
     .resultSize()
 
+// Tracks a composite grouping based on key
+type CompositeGroup = {
+  // key in object to group by
+  key: string
+  // performs grouping logic
+  group: (scanLog: ScanLog) => string | undefined
+}
+
+/**
+ * domainComposite
+ *
+ * CompositeGroup definition
+ * for grouping scanLog events by `domain`.
+ *
+ * Use URL to parse and extract the `hostname`
+ *
+ * Returns undefined if no hostname is found
+ **/
+const domainComposite: CompositeGroup = {
+  key: 'domain',
+  group: scanLog => {
+    if ('url' in scanLog.event) {
+      const { hostname } = new URL(scanLog.event.url)
+      if (hostname) return hostname
+    }
+    return undefined
+  }
+}
+
+/**
+ * urlComposite
+ *
+ * CompositeGroup definition
+ * for grouping scanLog events by unique `url`
+ *
+ * Use URL to parse and extract.
+ *
+ * - Handles data encoding (base64 URIs) by returning undefined
+ **/
+const urlComposite: CompositeGroup = {
+  key: 'url',
+  group: scanLog => {
+    if ('url' in scanLog.event) {
+      const { href, hostname } = new URL(scanLog.event.url)
+      if (hostname) return href
+    }
+    return undefined
+  }
+}
+
+// Returns sum of a CompositeGroup
+const sumComposite = (comp: Record<string, number>) =>
+  Object.entries(comp).reduce((acc, [, b]) => acc + b, 0)
+
+/**
+ * Order a CompositeGroup based on total ASC
+ *
+ * Returns an Object.entries array (ensure ordering in ECMAScript)
+ * from the original CompositeGroup
+ **/
+const orderComposite = (obj: Record<string, number>) =>
+  Object.entries(obj)
+    .sort(([, a], [, b]) => a - b)
+    .reverse()
+
+/**
+ * groupLogs
+ *
+ * Fetches ScanLogs for a scan with a matching `entry`
+ *
+ * Accepts an array of CompositeGroups to produce one or more
+ * groups based on the CompositeGroup key
+ **/
+const groupLogs = async (
+  id: string,
+  opt: {
+    entry: string
+    composites: CompositeGroup[]
+  }
+) => {
+  const res = await scanLogService.getByScanID(id, builder =>
+    builder.where('entry', opt.entry)
+  )
+  const { composites } = opt
+  return res.reduce((acc, l) => {
+    // iterate through all CompositeGroups
+    composites.forEach(comps => {
+      const evtK = comps.group(l)
+      const { key } = comps
+      if (!evtK) return acc
+      // init an empty object for this group
+      if (acc[key] === undefined) acc[key] = {}
+      // increment or set to 1 if new
+      if (acc[key][evtK]) {
+        acc[key][evtK] += 1
+      } else {
+        acc[key][evtK] = 1
+      }
+    })
+    return acc
+  }, {} as Record<string, Record<string, number>>)
+}
+
+/**
+ * summary
+ *
+ * Scan summar for scanLogs
+ *
+ * Uses functional composition to build an object
+ * with CompositeGroups and totals from different types
+ * of events
+ **/
+const summary = async (id: string) => {
+  const requests = await groupLogs(id, {
+    entry: 'request',
+    composites: [domainComposite]
+  })
+  let totalReq = 0
+  const orderedDomains = { domain: [] }
+  if (requests.domain !== undefined) {
+    totalReq = sumComposite(requests.domain)
+    orderedDomains.domain = orderComposite(requests.domain)
+  }
+  const totalFunc = await scanLogService.countByScanID(id, 'function-call')
+  const totalErrors = await scanLogService.countByScanID(id, 'page-error')
+  const [cookieArr] = await scanLogService.getByScanID(id, builder =>
+    builder.where('entry', 'cookie')
+  )
+  let totalCookies = 0
+  if (cookieArr !== undefined && 'cookies' in cookieArr.event) {
+    totalCookies = cookieArr.event.cookies.length
+  }
+  const totalAlerts = await scanLogService.countByScanID(
+    id,
+    'rule-alert',
+    ruleAlertEvent
+  )
+
+  return {
+    // ordered
+    requests: orderedDomains,
+    totalReq,
+    totalAlerts,
+    totalErrors,
+    totalFunc,
+    totalCookies
+  }
+}
+
 export default {
   schedule,
+  summary,
+  domainComposite,
   updateState,
   purge,
   purgeTests,
   bulkDelete,
+  groupLogs,
   totalScheduled,
   isActive,
+  urlComposite,
   view,
   destroy,
   isBulkActive,
