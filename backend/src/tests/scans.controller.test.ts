@@ -9,7 +9,7 @@ import SourceFactory from './factories/sources.factory'
 import ScanLogFactory from './factories/scan_log.factory'
 
 import { makeSession, resetDB } from './utils'
-import {WebRequestEvent} from '@merrymaker/types'
+import { WebRequestEvent } from '@merrymaker/types'
 
 const chance = Chance()
 
@@ -21,7 +21,7 @@ const userSession = () =>
     lanid: 'z000n00',
     email: 'foo@example.com',
     isAuth: true,
-    exp: 0,
+    exp: 0
   }).app
 
 const adminSession = () =>
@@ -32,7 +32,7 @@ const adminSession = () =>
     role: 'admin',
     lanid: 'z000n00',
     email: 'foo@example.com',
-    isAuth: true,
+    isAuth: true
   }).app
 
 describe('Scan Controller', () => {
@@ -43,7 +43,9 @@ describe('Scan Controller', () => {
   beforeEach(async () => {
     await resetDB()
     // Site needs a source
-    sourceSeed = await SourceFactory.build().$query().insert()
+    sourceSeed = await SourceFactory.build()
+      .$query()
+      .insert()
     // Scan needs a valid Site
     siteSeedA = await SiteFactory.build({ source_id: sourceSeed.id })
       .$query()
@@ -53,7 +55,7 @@ describe('Scan Controller', () => {
       .insert()
     seedA = await ScanFactory.build({
       site_id: siteSeedA.id,
-      source_id: sourceSeed.id,
+      source_id: sourceSeed.id
     })
       .$query()
       .insert()
@@ -91,7 +93,7 @@ describe('Scan Controller', () => {
       const activeScan = await ScanFactory.build({
         site_id: siteSeedA.id,
         source_id: sourceSeed.id,
-        state: 'active',
+        state: 'active'
       })
         .$query()
         .insert()
@@ -128,5 +130,4 @@ describe('Scan Controller', () => {
       expect(res.body.totalReq).toBe(10)
     })
   })
-
 })

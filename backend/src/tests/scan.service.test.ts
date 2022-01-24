@@ -5,17 +5,19 @@ import SourceFactory from './factories/sources.factory'
 import ScanLogFactory from './factories/scan_log.factory'
 import { resetDB } from './utils'
 import { ScanAttributes } from '../models/scans'
-import {WebRequestEvent} from '@merrymaker/types'
+import { WebRequestEvent } from '@merrymaker/types'
 
 const helper = async (scanAttrs: Partial<ScanAttributes> = {}) => {
-  const sourceModel = await SourceFactory.build().$query().insert()
+  const sourceModel = await SourceFactory.build()
+    .$query()
+    .insert()
   const siteModel = await SiteFactory.build({ source_id: sourceModel.id })
     .$query()
     .insert()
   return ScanFactory.build({
     source_id: sourceModel.id,
     site_id: siteModel.id,
-    ...scanAttrs,
+    ...scanAttrs
   })
     .$query()
     .insert()
@@ -28,20 +30,22 @@ describe('Scan Service', () => {
   it('deletes scans older than 5 days', async () => {
     const now = new Date()
     const fiveDaysAgo = new Date(new Date().setDate(now.getDate() - 5))
-    const sourceModel = await SourceFactory.build().$query().insert()
+    const sourceModel = await SourceFactory.build()
+      .$query()
+      .insert()
     const siteModel = await SiteFactory.build({ source_id: sourceModel.id })
       .$query()
       .insert()
     await ScanFactory.build({
       created_at: fiveDaysAgo,
       source_id: sourceModel.id,
-      site_id: siteModel.id,
+      site_id: siteModel.id
     })
       .$query()
       .insert()
     await ScanFactory.build({
       source_id: sourceModel.id,
-      site_id: siteModel.id,
+      site_id: siteModel.id
     })
       .$query()
       .insert()
@@ -51,7 +55,9 @@ describe('Scan Service', () => {
   it('deletes test scans 6 hours or older', async () => {
     const now = new Date()
     const sixHoursAgo = new Date(new Date().setHours(now.getHours() - 6))
-    const sourceModel = await SourceFactory.build().$query().insert()
+    const sourceModel = await SourceFactory.build()
+      .$query()
+      .insert()
     const siteModel = await SiteFactory.build({ source_id: sourceModel.id })
       .$query()
       .insert()
@@ -59,13 +65,13 @@ describe('Scan Service', () => {
       created_at: sixHoursAgo,
       source_id: sourceModel.id,
       site_id: siteModel.id,
-      test: true,
+      test: true
     })
       .$query()
       .insert()
     await ScanFactory.build({
       source_id: sourceModel.id,
-      site_id: siteModel.id,
+      site_id: siteModel.id
     })
       .$query()
       .insert()
@@ -90,7 +96,7 @@ describe('Scan Service', () => {
       const activeScanB = await helper({ state: 'done' })
       const res = await ScanService.isBulkActive([
         activeScanA.id,
-        activeScanB.id,
+        activeScanB.id
       ])
       expect(res).toBe(true)
     })
@@ -99,7 +105,7 @@ describe('Scan Service', () => {
       const activeScanB = await helper({ state: 'done' })
       const res = await ScanService.isBulkActive([
         activeScanA.id,
-        activeScanB.id,
+        activeScanB.id
       ])
       expect(res).toBe(false)
     })
