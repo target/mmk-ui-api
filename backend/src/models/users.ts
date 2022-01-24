@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+import bcrypt from '@node-rs/bcrypt'
 import Objection from 'objection'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -91,7 +91,7 @@ export default class User extends BaseModel<UserAttributes> {
   }
 
   async checkPassword(password: string): Promise<boolean> {
-    return bcrypt.compare(password, this.password_hash)
+    return bcrypt.verify(password, this.password_hash)
   }
 
   $formatDatabaseJson(json: UserAttributes): Objection.Pojo {
