@@ -7,6 +7,7 @@ import listRoute from './list'
 import viewRoute from './view'
 import deleteRoute from './delete'
 import bulkDeleteRoute from './bulk-delete'
+import summaryRoute from './summary'
 
 const AdminScope = AuthPathOp(Scope(Authorized, 'admin'))
 
@@ -15,5 +16,6 @@ export default (router: Router): { paths: PathItem[]; router: Router } =>
     router,
     Path('/', AuthScope(listRoute)),
     Path(`/:id(${uuidFormat})`, AuthScope(viewRoute), AdminScope(deleteRoute)),
-    Path('/bulk_delete', AdminScope(bulkDeleteRoute))
+    Path('/bulk_delete', AdminScope(bulkDeleteRoute)),
+    Path(`/:id(${uuidFormat})/summary`, summaryRoute)
   )

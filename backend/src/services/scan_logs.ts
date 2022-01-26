@@ -76,6 +76,14 @@ async function handleFailed(job: Job<MerryMaker.EventResult>) {
   )
 }
 
+const getByScanID = async (
+  id: string,
+  whereBuilder?: Modifier<QueryBuilder<ScanLog, ScanLog[]>>
+): Promise<ScanLog[]> =>
+  ScanLog.query()
+    .where('scan_id', id)
+    .modify(whereBuilder)
+
 const view = async (id: string): Promise<ScanLog> =>
   ScanLog.query()
     .findById(id)
@@ -167,5 +175,6 @@ export default {
   view,
   distinct,
   countByScanID,
+  getByScanID,
   siteScanCache
 }

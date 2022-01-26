@@ -25,6 +25,15 @@ export interface ScanListRequest extends ListRequest<ScanAttributes> {
   no_test?: boolean
 }
 
+export interface ScanSummary {
+  requests: Record<string, Array<[string, number]>>
+  totalReq: number
+  totalAlerts: number
+  totalErrors: number
+  totalFunc: number
+  totalCookies: number
+}
+
 const list = async (params?: ScanListRequest) =>
   axios.get<ObjectListResult<ScanAttributes>>('/api/scans', { params })
 
@@ -32,6 +41,9 @@ const view = async (params: { id: string; eager?: EagerLoad[] }) =>
   axios.get<ScanAttributes>(`/api/scans/${params.id}`, {
     params: { eager: params.eager },
   })
+
+const summary = (params: { id: string }) =>
+  axios.get<ScanSummary>(`/api/scans/${params.id}/summary`)
 
 const destroy = async (params: { id: string }) =>
   axios.delete(`/api/scans/${params.id}`)
@@ -44,4 +56,5 @@ export default {
   view,
   destroy,
   bulkDelete,
+  summary,
 }

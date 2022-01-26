@@ -2,7 +2,25 @@
   <v-container id="scan-log" fluid tag="section" v-if="init">
     <v-row>
       <v-col cols="12">
+        <v-toolbar flat id="scan-log-toolbar">
+          <v-toolbar-title
+            >{{ scan.site ? scan.site.name : 'No Site' }} /
+            {{ scan.source ? scan.source.name : 'No Source' }}</v-toolbar-title
+          >
+        </v-toolbar>
+        <v-expansion-panels>
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              Summary
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <scan-summary :scanID="scanID" />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <v-divider class="mb-2"></v-divider>
         <v-data-table
+          class="pa-md-2"
           :headers="headers"
           :items="records"
           :options.sync="options"
@@ -12,19 +30,11 @@
           :sort-desc.sync="sortDesc"
           :loading="loading"
           :items-per-page.sync="itemsPerPage"
-          :footer-props="{ itemsPerPageOptions: [10, 25, 50, 100, -1] }"
-          class="elevation-1"
+          :footer-props="{itemsPerPageOptions:[10,25,50,100,-1] }"
           @page-count="pageCount = $event"
         >
           <template v-slot:top>
-            <v-toolbar flat id="scan-log-toolbar">
-              <v-toolbar-title
-                >{{ scan.site ? scan.site.name : 'No Site' }} /
-                {{
-                  scan.source ? scan.source.name : 'No Source'
-                }}</v-toolbar-title
-              >
-              <v-spacer></v-spacer>
+            <v-toolbar flat>
               <v-text-field
                 color="secondary"
                 hide-details
@@ -88,6 +98,7 @@ import VueJsonPretty from 'vue-json-pretty'
 import 'vue-json-pretty/lib/styles.css'
 import ScanLogAPIService, { ScanLogAttributes } from '@/services/scan_logs'
 import ScanAPIService, { ScanAttributes } from '@/services/scans'
+import ScanSummary from '@/components/scans/ScanSummary.vue'
 import '../../assets/sass/scan-logs.scss'
 
 import TableMixin, { TableMixinBindings } from '@/mixins/table'
@@ -104,7 +115,7 @@ const escapeEntit: Record<string, string> = {
   '<': '&lt;',
   '>': '&gt;',
   "'": '&#39;',
-  '"': '&quot;',
+  '"': '&quot;'
 }
 
 const logTypeIcons: Record<LogEntryTypes, string> = {
@@ -112,7 +123,7 @@ const logTypeIcons: Record<LogEntryTypes, string> = {
   screenshot: 'monitor',
   complete: 'check',
   error: 'alert',
-  failed: 'alert',
+  failed: 'alert'
 }
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
@@ -133,26 +144,26 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           align: 'start',
           sortable: true,
           value: 'created_at',
-          width: '200px',
+          width: '200px'
         },
         {
           text: 'Entry',
           width: '120px',
-          value: 'entry',
+          value: 'entry'
         },
         {
           text: 'Event',
           width: 500,
           sortable: false,
-          value: 'event',
+          value: 'event'
         },
         {
           text: 'Level',
           width: '120px',
-          value: 'level',
-        },
+          value: 'level'
+        }
       ]),
-      scan: {} as ScanAttributes,
+      scan: {} as ScanAttributes
     }
   },
   watch: {
@@ -162,13 +173,13 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.getLogs()
         })
       },
-      deep: true,
+      deep: true
     },
     entryFilter() {
       this.$nextTick(() => {
         this.getLogs()
       })
-    },
+    }
   },
   methods: {
     escapeHTML(data: unknown): unknown {
@@ -187,17 +198,17 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
     },
     getDistinct(): void {
       ScanLogAPIService.distinct({ column: 'entry', id: this.scanID })
-        .then((res) => {
-          this.entryTypes = res.data.map((e) => e.entry)
+        .then(res => {
+          this.entryTypes = res.data.map(e => e.entry)
         })
         .catch(console.error)
     },
     getScan(): void {
       ScanAPIService.view({
         id: this.scanID,
-        eager: ['sources', 'sites'],
+        eager: ['sources', 'sites']
       })
-        .then((res) => {
+        .then(res => {
           this.init = true
           this.scan = res.data
         })
@@ -211,20 +222,21 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
         entry: this.entryFilter,
         pageSize: this.itemsPerPage,
         search: this.search,
-        ...this.resolveOrder(),
+        ...this.resolveOrder()
       })
-        .then((res) => {
+        .then(res => {
           this.records = res.data.results
           this.total = res.data.total
+          window.scrollTo(0, 0)
         })
-        .catch((err) => {
+        .catch(err => {
           console.error(err)
         })
         .finally(() => (this.loading = false))
     },
     dataImage: (data: string) => `data:image/jpeg;base64, ${data}`,
     entryIcon: (entry: LogEntryTypes) =>
-      logTypeIcons[entry] ? logTypeIcons[entry] : 'alert-box',
+      logTypeIcons[entry] ? logTypeIcons[entry] : 'alert-box'
   },
   created() {
     this.scanID = this.$route.params.id
@@ -233,7 +245,8 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   },
   components: {
     VueJsonPretty,
-  },
+    ScanSummary
+  }
 })
 </script>
 
