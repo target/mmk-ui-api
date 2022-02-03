@@ -1,5 +1,5 @@
 /* HTTP alert type */
-import fetch from 'node-fetch'
+import fetch from 'node-fetch-cjs'
 import fs from 'fs'
 import https from 'https'
 import queryString from 'querystring'

@@ -42,9 +42,9 @@
     "typescript": "^4.4.4"
   },
   "dependencies": {
+    "@node-rs/bcrypt": "^1.5.5",
     "aejo": "^0.1.17",
     "ajv": "^8.0.5",
-    "@node-rs/bcrypt": "^1.5.5",
     "bull": "^3.29.0",
     "connect-redis": "^5.0.0",
     "cookie-parser": "^1.4.5",
@@ -64,6 +64,7 @@
     "monocle-ts": "^2.3.3",
     "newtype-ts": "^0.3.4",
     "node-config-ts": "^3.0.4",
+    "node-fetch-cjs": "^3.2.0",
     "objection": "^3.0.0",
     "openapi-types": "^7.0.1",
     "parse-domain": "^3.0.2",
