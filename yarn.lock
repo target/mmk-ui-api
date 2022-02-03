@@ -8973,7 +8973,12 @@ node-config-ts@^3.0.4:
     prettier "^1.19.1"
     ramda "^0.27.0"
 
-node-fetch@^2.6.0, node-fetch@^2.6.1:
+node-fetch-cjs@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/node-fetch-cjs/-/node-fetch-cjs-3.2.0.tgz#f9bfec3b46e445c6f44ea2d3f1a849dcdb44d34f"
+  integrity sha512-fVKp6S5X56rWObbzVu3luCo626aZV6lM7jYfnplYXNaBNS/pJpn8PkAIKzCiRR3bIyvVxsL8O5SmL2WPMrB5QA==
+
+node-fetch@^2.6.0:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
