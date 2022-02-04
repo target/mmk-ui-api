@@ -14,26 +14,26 @@ export const Schema: { [prop: string]: ParamSchema } = {
   id: {
     description: 'ID of Seen String',
     type: 'string',
-    format: 'uuid',
+    format: 'uuid'
   },
   type: {
     description: 'Key type',
-    type: 'string',
+    type: 'string'
   },
   key: {
     description: 'Key value',
-    type: 'string',
+    type: 'string'
   },
   created_at: {
     description: 'Created Dated',
     type: 'string',
-    format: 'date-time',
+    format: 'date-time'
   },
   last_cached: {
     description: 'Date last seen in cache',
     type: 'string',
-    format: 'date-time',
-  },
+    format: 'date-time'
+  }
 }
 
 export default class SeenString extends BaseModel<SeenStringAttributes> {
@@ -49,7 +49,8 @@ export default class SeenString extends BaseModel<SeenStringAttributes> {
 
   $beforeInsert(): void {
     this.created_at = new Date()
-    this.last_cached = new Date()
+    this.last_cached =
+      this.last_cached !== undefined ? this.last_cached : new Date()
     this.id = uuidv4()
   }
 

@@ -1,4 +1,5 @@
 import { cachedView, updateCache, writeLRU } from '../api/crud/cache'
+import { raw } from 'objection'
 import LRUCache from 'lru-native2'
 import { SeenString, SeenStringAttributes } from '../models'
 
@@ -31,6 +32,19 @@ const create = async (
   attrs: Partial<SeenStringAttributes>
 ): Promise<SeenString> => SeenString.query().insert(attrs)
 
+/**
+ * purgeDBCache
+ *
+ * Deletes SeenStrings where `last_cached` < now-`daysAgo`
+ * or is NULL
+ */
+const purgeDBCache = async (daysAgo: number): Promise<number> =>
+  SeenString.query()
+    .delete()
+    .where(raw("last_cached <= NOW() - INTERVAL '?? days'", [daysAgo]))
+    .orWhereNull('last_cached')
+
+
 const destroy = async (id: string): Promise<number> =>
   SeenString.query().deleteById(id)
 
@@ -39,6 +53,7 @@ export default {
   distinct,
   cached_view,
   cached_write_view,
+  purgeDBCache,
   update,
   findOne,
   create,

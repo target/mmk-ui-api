@@ -5,6 +5,7 @@ import SiteService from '../services/site'
 import ScanService from '../services/scan'
 import AlertService from '../services/alert'
 import ScanLogService from '../services/scan_logs'
+import SeenStringService from '../services/seen_string'
 
 import Queues from './queues'
 
@@ -17,12 +18,13 @@ const redisClient = createClient()
 Queues.scannerEventQueue.process(ScanLogService.work)
 ;(async () => {
   await Queues.scannerScheduler.isReady()
-  await Queues.scannerPurge.isReady()
+  await Queues.localQueue.isReady()
   await Queues.qtSecretRefresh.isReady()
   await Queues.scannerEventQueue.isReady()
   if (config.env === 'test' || config.env === 'development') {
     Queues.scannerQueue.empty()
   }
+  Queues.localQueue.empty()
   setInterval(async () => {
     const sQueue = await Queues.scannerQueue.count()
     const ssCount = await Queues.scannerScheduler.count()
@@ -46,11 +48,30 @@ Queues.scannerScheduler.add(
   { repeat: { every: 30000 }, removeOnComplete: true }
 )
 
-Queues.scannerPurge.add(
+Queues.localQueue.add(
+  'scanner-daily-purge',
   { run: 1 },
   {
     // repeat purge job once every day at 01:00
     repeat: { cron: '0 1 * * *' },
+    removeOnComplete: true
+  }
+)
+
+Queues.localQueue.add(
+  'seenStrings-daily-purge',
+  { run: 1 },
+  {
+    // repeat purge job once everyday at 02:00
+    repeat: { cron: '0 2 * * *' },
+    removeOnComplete: true
+  }
+)
+
+Queues.localQueue.add(
+  'scanner-hourly-purge',
+  {
+    repeat: { cron: '0 * * * *' },
     removeOnComplete: true
   }
 )
@@ -106,10 +127,29 @@ Queues.scannerQueue.on('global:failed', async jobId => {
 })
 
 // purge scans 14 days or older, and test scans 6 hours and older
-Queues.scannerPurge.process(async () => {
+Queues.localQueue.process('scanner-daily-purge', async () => {
   await ScanService.purge(14)
   await ScanService.purgeTests(6)
 })
+
+// six months
+const MAX_SEEN_STRING_DAYS = 30 * 6
+
+Queues.localQueue.process('seenStrings-daily-purge', async () => {
+  logger.info(`Running daily seenString purge (${MAX_SEEN_STRING_DAYS} days)`)
+  const total = await SeenStringService.purgeDBCache(MAX_SEEN_STRING_DAYS)
+  if (Number.isInteger(total)) {
+    logger.info(
+      `Removed ${total.toLocaleString()} SeenString records due to cache expiration`
+    )
+  } else {
+    logger.info('Did not find any seenStrings to expire')
+  }
+})
+
+Queues.localQueue.process('scanner-hourly-purge', () =>
+  ScanService.findAndExpire(60)
+)
 
 /** Add scans ready to run to the queue */
 Queues.scannerScheduler.process(async (_job, done) => {
@@ -143,3 +183,6 @@ Queues.alertQueue.process(async (job, done) => {
     done(e)
   }
 })
+
+// Remove old scans on startup
+ScanService.findAndExpire(60)
