@@ -28,7 +28,7 @@ const scannerEventQueue = new Queue('scan-log-queue', {
   createClient,
 })
 
-const scannerPurge = new Queue('scanner-purge', {
+const localQueue = new Queue('local', {
   createClient,
 })
 
@@ -41,10 +41,10 @@ const alertQueue = new Queue<MerryMaker.EventResult>('alert-queue', {
 })
 
 export default {
+  localQueue,
   scannerScheduler,
   scannerQueue,
   scannerEventQueue,
-  scannerPurge,
   qtSecretRefresh,
   alertQueue,
 }

@@ -194,6 +194,45 @@ const totalScheduled = async (): Promise<number> =>
     .where('state', '=', 'scheduled')
     .resultSize()
 
+/**
+ * expire
+ *
+ * Appends an expired log entry and update the scan to expired
+ * Updates the scan to "expired"
+ */
+const expire = async (scan: Scan, message: string): Promise<void> => {
+  await ScanLog.query().insert({
+    created_at: new Date(),
+    entry: 'failed',
+    level: 'error',
+    scan_id: scan.id,
+    event: { message }
+  })
+  await scan.$query().patch({ state: 'expired' })
+}
+
+/**
+ * findAndExpire
+ *
+ * Find expired scans, iterate through each scan and update their status to "expired"
+ */
+const findAndExpire = async (maxMinutes: number): Promise<number> => {
+  const thousMin = maxMinutes.toLocaleString()
+  logger.info(`Expiring scans active for >= ${thousMin} minutes`)
+  const expired = await Scan.query()
+    .whereIn('state', ['running', 'scheduled'])
+    .andWhere(raw("created_at <= NOW() - INTERVAL '?? minutes'", [maxMinutes]))
+  if (Array.isArray(expired) && expired.length > 0) {
+    logger.info(`Found ${expired.length.toLocaleString()} expired jobs`)
+    await Promise.all(
+      expired.map(s => expire(s, `Expired (> ${thousMin} minutes)`))
+    )
+    return expired.length
+  }
+  logger.info('No expired scans found')
+  return 0
+}
+
 // Tracks a composite grouping based on key
 type CompositeGroup = {
   // key in object to group by
@@ -356,6 +395,8 @@ export default {
   isActive,
   urlComposite,
   view,
+  expire,
+  findAndExpire,
   destroy,
   isBulkActive,
   ruleAlertEvent

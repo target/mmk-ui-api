@@ -29,7 +29,7 @@ describe('Scan Service', () => {
   })
   it('deletes scans older than 5 days', async () => {
     const now = new Date()
-    const fiveDaysAgo = new Date(new Date().setDate(now.getDate() - 5))
+    const sixDaysAgo = new Date(new Date().setDate(now.getDate() - 6))
     const sourceModel = await SourceFactory.build()
       .$query()
       .insert()
@@ -37,7 +37,7 @@ describe('Scan Service', () => {
       .$query()
       .insert()
     await ScanFactory.build({
-      created_at: fiveDaysAgo,
+      created_at: sixDaysAgo,
       source_id: sourceModel.id,
       site_id: siteModel.id
     })
@@ -54,7 +54,7 @@ describe('Scan Service', () => {
   })
   it('deletes test scans 6 hours or older', async () => {
     const now = new Date()
-    const sixHoursAgo = new Date(new Date().setHours(now.getHours() - 6))
+    const sixHoursAgo = new Date(new Date().setHours(now.getHours() - 6.1))
     const sourceModel = await SourceFactory.build()
       .$query()
       .insert()
@@ -140,6 +140,18 @@ describe('Scan Service', () => {
         err = e
       }
       expect(err).not.toBeUndefined
+    })
+  })
+  describe('findAndExpire', () => {
+    it('finds and expires a scan', async () => {
+      const today = new Date()
+      today.setHours(today.getHours() - 1.1)
+      await helper({ state: 'running', created_at: new Date() })
+      const longRunning = await helper({ state: 'running', created_at: today })
+      const res = await ScanService.findAndExpire(60)
+      expect(res).toBe(1)
+      const expiredRunning = await longRunning.$query()
+      expect(expiredRunning.state).toBe('expired')
     })
   })
   describe('groupDomainRequests', () => {
