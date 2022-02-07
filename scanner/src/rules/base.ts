@@ -1,9 +1,38 @@
 import MerryMakerTypes from '@merrymaker/types'
 import { config } from 'node-config-ts'
 
-import fetch from 'node-fetch'
+import fetch from 'node-fetch-cjs'
+import { isOfType } from '../lib/utils'
 
 const allowListURL = `${config.transport.http}/api/allow_list`
+
+export const totalResponseSchema = {
+  type: 'object',
+  properties: {
+    total: { type: 'number' }
+  },
+  required: ['total']
+}
+
+export const storeTotalResponseSchema = {
+  type: 'object',
+  properties: {
+    store: { type: 'number' }
+  },
+  required: ['store']
+}
+
+export const storeNameResponseSchema = {
+  type: 'object',
+  properties: {
+    store: { type: 'string', enum: ['local', 'redis', 'database', 'none'] }
+  },
+  required: ['store']
+}
+
+export type StoreTypeResponse = {
+  store: 'local' | 'redis' | 'database' | 'none'
+}
 
 export abstract class Rule {
   alertResults: MerryMakerTypes.RuleAlert[]
@@ -27,14 +56,20 @@ export abstract class Rule {
     const allow = await fetch(
       `${allowListURL}/?key=${key}&type=${type}&field=key`
     )
-    return allow.json()
+    const res = await allow.json()
+    if (isOfType<{ total: number }>(res, totalResponseSchema)) {
+      return res
+    }
   }
 
   async fetchRemoteIOC(hostname: string): Promise<{ total: number }> {
     const remoteIOC = await fetch(
       `${config.transport.http}/api/iocs/?type=fqdn&value=${hostname}`
     )
-    return remoteIOC.json()
+    const res = await remoteIOC.json()
+    if (isOfType<{ total: number }>(res, totalResponseSchema)) {
+      return res
+    }
   }
 
   async addRemoteAllowList(
@@ -44,33 +79,37 @@ export abstract class Rule {
     const addReq = await fetch(allowListURL, {
       method: 'post',
       body: JSON.stringify({
-        // eslint-disable-next-line @typescript-eslint/camelcase
         allow_list: {
           key,
-          type,
-        },
+          type
+        }
       }),
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' }
     })
-    return addReq.json()
+    const res = await addReq.json()
+    if (isOfType<{ store: number }>(res, storeTotalResponseSchema)) {
+      return res
+    }
   }
 
-  async bumpRemoteCache(key: string, type: string): Promise<{ store: string }> {
+  async bumpRemoteCache(key: string, type: string): Promise<StoreTypeResponse> {
     // bump remote cache
     const seenReq = await fetch(
       `${config.transport.http}/api/seen_strings/_cache`,
       {
         method: 'post',
         body: JSON.stringify({
-          // eslint-disable-next-line @typescript-eslint/camelcase
           seen_string: {
             key,
-            type,
-          },
+            type
+          }
         }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' }
       }
     )
-    return seenReq.json()
+    const res = await seenReq.json()
+    if (isOfType<StoreTypeResponse>(res, storeNameResponseSchema)) {
+      return res
+    }
   }
 }

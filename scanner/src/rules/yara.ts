@@ -6,9 +6,10 @@ import { config } from 'node-config-ts'
 import { js } from 'js-beautify'
 import YaraSync from '../lib/yara-sync'
 import * as MerryMaker from '@merrymaker/types'
-import fetch, { RequestInit } from 'node-fetch'
-import { Rule } from './base'
+import fetch, { RequestInit } from 'node-fetch-cjs'
+import { Rule, storeNameResponseSchema, StoreTypeResponse } from './base'
 import logger from '../loaders/logger'
+import { isOfType } from '../lib/utils'
 
 const oneHour = 1000 * 60 * 60
 
@@ -98,7 +99,7 @@ export class YaraRule extends Rule {
     return this.resolveEvent(res)
   }
 
-  async fetchRemoteSeenStrings(hash: string): Promise<{ store: string }> {
+  async fetchRemoteSeenStrings(hash: string): Promise<StoreTypeResponse> {
     const params = new URLSearchParams({
       key: hash,
       field: 'key',
@@ -110,7 +111,10 @@ export class YaraRule extends Rule {
         method: 'get',
       }
     )
-    return seenHash.json()
+    const res = await seenHash.json()
+    if (isOfType<StoreTypeResponse>(res, storeNameResponseSchema)) {
+      return res
+    }
   }
 
   async fetchFile(payload: MerryMaker.WebScriptEvent): Promise<string> {
