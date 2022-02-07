@@ -2,6 +2,12 @@
 
 Merry Maker is a fully scalable tool to detect the presence of digital skimmers.
 
+<div align="center">
+
+[Documentation][wiki]&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Pull Requests][pr]&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Issues][issues]
+
+</div>
+
 ## Background
 
 Merry Maker is a solution designed to detect the presence of digital skimmers, built by two Target security
