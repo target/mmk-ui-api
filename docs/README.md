@@ -250,7 +250,7 @@ rule taco_bravo
 Obviously this is a simple rule. A great source of rules for Digital Skimming YARA rules is [Jérôme Segura's repo](https://github.com/malwareinfosec/webskimmers/tree/main/YARA_rules). Currently, Merry Maker has just one YARA file for the skimmer rules. New rules can simply be appended to the end of it.
 
 ### Example Payload Rule
-Merry Maker also supports writing YARA rules to be run against network traffic. The two that are included will need to be customized to be useful. These rules look for a fake credit card to be present in the browser's traffic.
+Merry Maker also supports writing YARA rules to be run against network traffic. The [two that are included](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/ioc.payloads.yara) will need to be customized to be useful. These rules look for a fake credit card to be present in the browser's traffic. The first one looks for it in plaintext, the second one looks for it in base64.
 
 ```
 rule ioc_payload_checkout_clear_cc {
@@ -277,6 +277,8 @@ rule ioc_payload_checkout_b64_cc {
     all of them
 }
 ```
+
+Now, if the Source actually has this credit card being submitted to an endpoint you control, you will just want to add that domain to the [Allow List](#allow-list) as an `ioc-payload-domain`, otherwise this alert would fire every time the Source was run.
 
 ### Example Javascript Rule
 Documentation in progress... 
