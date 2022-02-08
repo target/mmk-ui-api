@@ -138,7 +138,7 @@ const handleAlert = async (
     const res = await Scan.query().findById(logEvent.scan_id)
     site_id = res.site_id
   }
-  if (site_id || typeof site_id !== 'string') {
+  if (!site_id || typeof site_id !== 'string') {
     return
   }
   // read-through cache
