@@ -3,6 +3,7 @@ import { createClient } from '../repos/redis'
 import logger from '../loaders/logger'
 import SiteService from '../services/site'
 import ScanService from '../services/scan'
+import SourceService from '../services/source'
 import AlertService from '../services/alert'
 import ScanLogService from '../services/scan_logs'
 import SeenStringService from '../services/seen_string'
@@ -17,6 +18,10 @@ const redisClient = createClient()
 
 Queues.scannerEventQueue.process(ScanLogService.work)
 ;(async () => {
+
+  logger.info('Syncing source cache')
+  const totalSync = await SourceService.syncCache()
+  logger.info(`Synced ${totalSync} sources with cache`)
   await Queues.scannerScheduler.isReady()
   await Queues.localQueue.isReady()
   await Queues.qtSecretRefresh.isReady()

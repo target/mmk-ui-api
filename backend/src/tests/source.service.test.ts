@@ -12,16 +12,18 @@ describe('Source Service', () => {
       const source = await SourceService.create({
         name: 'foobar',
         value: 'moocar',
-        secret_ids: [],
+        secret_ids: []
       })
       expect(source.name).toBe('foobar')
     })
     it('creates a new source with secrets', async () => {
-      const secret = await SecretFactory.build().$query().insert()
+      const secret = await SecretFactory.build()
+        .$query()
+        .insert()
       const source = await SourceService.create({
         name: 'foobar',
         value: 'moocar',
-        secret_ids: [secret.id],
+        secret_ids: [secret.id]
       })
       expect(source.name).toBe('foobar')
       const related = SourceSecret.query().where({ source_id: source.id })
@@ -33,7 +35,7 @@ describe('Source Service', () => {
         await SourceService.create({
           name: 'foobar1',
           value: 'moocar',
-          secret_ids: ['12345'],
+          secret_ids: ['12345']
         })
       } catch (e) {
         err = e
@@ -44,11 +46,13 @@ describe('Source Service', () => {
       expect(record.length).toBe(0)
     })
     it('populate cache with resolved secrets', async () => {
-      const secret = await SecretFactory.build().$query().insert()
+      const secret = await SecretFactory.build()
+        .$query()
+        .insert()
       const source = await SourceService.create({
         name: 'foobar',
         value: `call("__${secret.name}__")`,
-        secret_ids: [secret.id],
+        secret_ids: [secret.id]
       })
       const cached = await SourceService.getCache(source.id)
       expect(cached).toBe(`call("${secret.value}")`)
@@ -60,7 +64,7 @@ describe('Source Service', () => {
       secrets.push(
         SecretFactory.build({
           name: 'secretName',
-          value: 'foo123',
+          value: 'foo123'
         })
       )
       const actual = SourceService.resolve('call("__secretName__")', secrets)
@@ -81,6 +85,29 @@ describe('Source Service', () => {
           call("${secrets[0].value}")
           call("${secrets[1].value}")
       `)
+    })
+  })
+  describe('syncCache', () => {
+    it('syncs all sources', async () => {
+      const sourceA = await SourceService.create({
+        name: 'foobar',
+        value: 'moocarA',
+        secret_ids: []
+      })
+      const sourceB = await SourceService.create({
+        name: 'foobar2',
+        value: 'moocarB',
+        secret_ids: []
+      })
+      await SourceService.clearCache(sourceA.id)
+      await SourceService.clearCache(sourceB.id)
+      const syncCount = await SourceService.syncCache()
+      expect(syncCount).toBe(2)
+      const res = await Promise.all([
+        SourceService.getCache(sourceA.id),
+        SourceService.getCache(sourceB.id)
+      ])
+      expect(res).toEqual(['moocarA', 'moocarB'])
     })
   })
 })
