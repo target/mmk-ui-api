@@ -22,9 +22,16 @@
             <v-toolbar flat>
               <v-toolbar-title>Alerts</v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-text-field color="secondary" hide-details label="Search">
+              <v-text-field color="secondary" hide-details label="Search" 
+                v-model="search" @keyup.enter="runSearch">
                 <template v-slot:append-outer>
-                  <v-btn class="mt-n2" elevation="1" fab small>
+                  <v-btn
+                    class="mt-n2"
+                    elevation="1"
+                    fab
+                    small
+                    @click="runSearch"
+                  >
                     <v-icon>mdi-magnify</v-icon>
                   </v-btn>
                 </template>
@@ -48,8 +55,9 @@
               <router-link
                 :to="{ name: 'ScanLog', params: { id: item.scan_id } }"
                 style="text-decoration: none; color: inherit"
+                title="View Scan"
               >
-                {{ item.site.name }}
+                {{ item.site.name }} <v-icon>mdi-magnify-expand</v-icon>
               </router-link>
             </span>
             <span v-else>
@@ -87,6 +95,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
       options: {},
       ruleTypes: [] as string[],
       ruleFilter: [] as string[],
+      search: '',
       expanded: [],
       headers: Object.freeze([
         {
@@ -139,6 +148,8 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
         eager: ['site'],
         page: this.page,
         pageSize: this.itemsPerPage,
+        rule: this.ruleFilter,
+        search: this.search,
         ...this.resolveOrder(),
       })
       res.data.results.forEach((res) => {
@@ -156,6 +167,10 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.ruleTypes = res.data.map((e) => e.rule)
         })
         .catch(this.errorHandler)
+    },
+    runSearch(): void {
+      this.page = 1
+      this.list()
     },
   },
   created() {
