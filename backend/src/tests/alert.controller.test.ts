@@ -58,6 +58,7 @@ describe('Alert Controller', () => {
     seed = await AlertFactory.build({
       site_id: seedSite.id,
       scan_id: seedScan.id,
+      message: 'IOC example.com',
     })
       .$query()
       .insert()
@@ -96,6 +97,21 @@ describe('Alert Controller', () => {
       const res = await request(adminSession().app)
         .get('/api/alerts')
         .query({ 'rule[]': 'yara' })
+      expect(res.body.total).toBe(0)
+    })
+    it('should return only matching search results', async () => {
+      const res = await request(userSession().app)
+        .get('/api/alerts')
+        .query({ search: 'example.com' })
+      expect(res.status).toBe(200)
+      expect(res.body.total).toBe(1)
+      expect(res.body.results[0].id).toBe(seed.id)
+    })
+    it('should not return any results', async () => {
+      const res = await request(userSession().app)
+        .get('/api/alerts')
+        .query({ search: 'example.org' })
+      expect(res.status).toBe(200)
       expect(res.body.total).toBe(0)
     })
     it('should eager load site name', async () => {
