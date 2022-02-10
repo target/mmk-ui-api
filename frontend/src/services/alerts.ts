@@ -18,6 +18,8 @@ export interface AlertAttributes {
 interface AlertListRequest extends ListRequest<AlertAttributes> {
   site_id?: string
   scan_id?: string
+  rule?: string[]
+  search?: string
   eager?: Array<EagerLoad>
 }
 

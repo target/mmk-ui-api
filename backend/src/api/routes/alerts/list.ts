@@ -65,6 +65,24 @@ export default AsyncGet({
         },
       },
     }),
+    QueryParam({
+      name: 'rule',
+      description: 'filter results based on rule type',
+      schema: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: Schema.rule.enum,
+        },
+      },
+    }),
+    QueryParam({
+      name: 'search',
+      description: 'full-text search on the Alert event',
+      schema: {
+        type: 'string',
+      },
+    }),
   ],
   responses: {
     '200': {
@@ -96,7 +114,7 @@ export default AsyncGet({
   middleware: [
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       res.locals.whereBuilder = (builder: QueryBuilder<Alert>) => {
-        const { scan_id, site_id, eager } = req.query as Record<
+        const { rule, scan_id, site_id, eager } = req.query as Record<
           string,
           string | string[] | undefined
         >
@@ -106,6 +124,15 @@ export default AsyncGet({
         if (site_id) {
           builder.where('site_id', site_id)
         }
+        if (rule) {
+          builder.whereIn('rule', rule)
+        }
+        if (req.query.search && typeof req.query.search === 'string' && req.query.search.length > 0) {
+          builder.whereRaw("to_tsvector('English', message) @@ ?::tsquery", [
+            `${req.query.search.toLowerCase()}:*`,
+          ])
+        }
+
         if (eager && Array.isArray(eager)) {
           eagerLoad(eager, builder)
         }

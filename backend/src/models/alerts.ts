@@ -26,6 +26,14 @@ export const Schema: { [prop: string]: ParamSchema } = {
   rule: {
     description: 'Associated Rule',
     type: 'string',
+    enum: [
+      'ioc.payload',
+      'ioc.domain',
+      'unknown.domain',
+      'google.analytics',
+      'yara',
+      'domain.via.websocket',
+    ],
   },
   message: {
     description: 'Alert Message',
