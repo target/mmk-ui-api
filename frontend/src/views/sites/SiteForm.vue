@@ -26,7 +26,7 @@
                 <v-col col="5" md="2">
                   <v-select
                     v-model="run_every_minutes"
-                    :items="[15, 30, 45, 60]"
+                    :items="[5, 15, 30, 45, 60]"
                     label="Run every n-minutes"
                     required
                   ></v-select>
