@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import MerryMaker from '@merrymaker/types'
 
+import { stripJSONUnicode } from '../lib/utils'
 import BaseModel from './base'
 import { ParamSchema } from 'aejo'
 
@@ -87,7 +88,9 @@ export default class ScanLog extends BaseModel<ScanLogAttributes> {
 
   $beforeInsert(): void {
     this.id = uuidv4()
-    this.event = JSON.parse(JSON.stringify(this.event, null).replace(/\0/g, ''))
+    if (this.event) {
+      this.event = stripJSONUnicode(this.event)
+    }
     if (this.created_at === null) {
       this.created_at = new Date()
     }
