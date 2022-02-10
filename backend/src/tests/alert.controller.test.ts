@@ -85,6 +85,19 @@ describe('Alert Controller', () => {
         .query({ scan_id: chance.guid({ version: 4 }) })
       expect(res.body.total).toBe(0)
     })
+    it('should filter by "rule"', async () => {
+      const res = await request(adminSession().app)
+        .get('/api/alerts')
+        .query({ 'rule[]': 'unknown.domain' })
+      expect(res.body.total).toBe(1)
+      expect(res.body.results[0].rule).toBe(seed.rule)
+    })
+    it('should filter by "rule" and return none', async () => {
+      const res = await request(adminSession().app)
+        .get('/api/alerts')
+        .query({ 'rule[]': 'yara' })
+      expect(res.body.total).toBe(0)
+    })
     it('should eager load site name', async () => {
       const res = await request(adminSession().app)
         .get('/api/alerts')
