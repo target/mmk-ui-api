@@ -7,7 +7,7 @@ import ScanFactory from './factories/scans.factory'
 import SourceFactory from './factories/sources.factory'
 import ScanLogFactory from './factories/scan_log.factory'
 import { resetDB } from './utils'
-import { ScanAttributes } from '../models/scans'
+import Scan, { ScanAttributes } from '../models/scans'
 import { RuleAlert, RuleAlertEvent, WebRequestEvent } from '@merrymaker/types'
 
 const chance = Chance.Chance()
@@ -154,6 +154,72 @@ describe('Scan Log Service', () => {
         err = e
       }
       expect(err).not.toBe(null)
+    })
+  })
+  describe('handleAlert', () => {
+    let testScan: Scan
+    beforeEach(async () => {
+      testScan = await helper()
+    })
+    it('should return on alert is false', async () => {
+      const eventResult: RuleAlertEvent = {
+        entry: 'rule-alert',
+        rule: 'test.rule',
+        level: 'info',
+        event: {
+          name: 'test-rule',
+          level: 'test',
+          context: { foo: 'bar' },
+          alert: false
+        },
+        scan_id: testScan.id,
+        created_at: new Date()
+      }
+      const result = await ScanLogService.handleAlert(eventResult)
+      expect(result.result).toBe('event.alert is false')
+    })
+
+    it('should throw exception if site_id is invalid', async () => {
+      const eventResult: RuleAlertEvent = {
+        entry: 'rule-alert',
+        rule: 'test.rule',
+        level: 'info',
+        event: {
+          name: 'test-rule',
+          level: 'test',
+          context: { foo: 'bar' },
+          alert: true
+        },
+        scan_id: chance.guid(),
+        created_at: new Date()
+      }
+      let err: Error
+      try {
+        await ScanLogService.handleAlert(eventResult)
+      } catch (e) {
+        err = e
+      }
+      expect(err.message).toBe('invalid scan_id')
+    })
+    it('should schedule a Job and insert an Alert', async () => {
+      const eventResult: RuleAlertEvent = {
+        entry: 'rule-alert',
+        rule: 'test.rule',
+        level: 'info',
+        event: {
+          name: 'test-rule',
+          level: 'test',
+          message: 'testing this rule',
+          context: { foo: 'bar' },
+          alert: true
+        },
+        scan_id: testScan.id,
+        created_at: new Date()
+      }
+      const result = await ScanLogService.handleAlert(eventResult)
+      expect(result.result).toBe('alerted')
+      expect(result.alertEvent).not.toBeUndefined()
+      expect(result.job).not.toBeUndefined()
     })
   })
 })
