@@ -127,7 +127,7 @@ export default AsyncGet({
         if (rule) {
           builder.whereIn('rule', rule)
         }
-        if (req.query.search &&typeof req.query.search === 'string' && req.query.search.length > 0) {
+        if (req.query.search && typeof req.query.search === 'string' && req.query.search.length > 0) {
           builder.whereRaw("to_tsvector('English', message) @@ ?::tsquery", [
             `${req.query.search.toLowerCase()}:*`,
           ])
