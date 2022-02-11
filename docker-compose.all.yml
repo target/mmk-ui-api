@@ -72,7 +72,6 @@ services:
   jobs:
     build:
       dockerfile: backend/Dockerfile
-    command: yarn jobs
     depends_on:
       - redis
       - postgres
