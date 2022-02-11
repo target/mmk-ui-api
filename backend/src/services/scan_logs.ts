@@ -126,9 +126,9 @@ const countByScanID = (
  */
 const handleAlert = async (
   logEvent: MerryMaker.RuleAlertEvent
-): Promise<void> => {
+): Promise<{ result: string; alertEvent?: Alert; job?: Job}> => {
   if (!logEvent.event.alert) {
-    return
+    return { result: 'event.alert is false' }
   }
   // lookup site ID from siteScan Cache (avoid DB lookups)
   let site_id = siteScanCache.get(logEvent.scan_id)
@@ -136,30 +136,31 @@ const handleAlert = async (
   // cache-miss, lookup scan in the DB
   if (!site_id) {
     const res = await Scan.query().findById(logEvent.scan_id)
+    if (!res) {
+      throw new Error('invalid scan_id')
+    }
     site_id = res.site_id
   }
-  if (!site_id || typeof site_id !== 'string') {
-    return
+  if (typeof site_id !== 'string') {
+    throw new Error('null or invalid site_id')
   }
   // read-through cache
   siteScanCache.set(logEvent.scan_id, site_id)
-  if (logEvent.event.alert) {
-    await Queues.alertQueue.add(
-      {
-        level: 'info',
-        entry: 'rule-alert',
-        scan_id: logEvent.scan_id,
-        event: logEvent.event
-      },
-      {
-        removeOnComplete: true
-        // need to split out goAlert and kakfa sending
-        //attempts: 3,
-      }
-    )
-  }
+  const job = await Queues.alertQueue.add(
+    {
+      level: 'info',
+      entry: 'rule-alert',
+      scan_id: logEvent.scan_id,
+      event: logEvent.event
+    },
+    {
+      removeOnComplete: true
+      // need to split out goAlert and kakfa sending
+      //attempts: 3,
+    }
+  )
   // Need to alert AlertService
-  await Alert.query().insert({
+  const alertEvent = await Alert.query().insert({
     rule: logEvent.rule,
     message: logEvent.event.message,
     context: logEvent.event.context,
@@ -167,6 +168,7 @@ const handleAlert = async (
     site_id,
     created_at: new Date()
   })
+  return { result: 'alerted', alertEvent, job }
 }
 
 export default {
@@ -176,5 +178,6 @@ export default {
   distinct,
   countByScanID,
   getByScanID,
+  handleAlert,
   siteScanCache
 }
