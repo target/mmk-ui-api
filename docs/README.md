@@ -64,7 +64,8 @@ Before creating the first site, one must create a source. See [here for an examp
 Sites are the parent object for a lot of the data stored in the system. Sites are simple structures. They have Scans and Alerts, as well as four attributes that can be modified directly:
   * Name
   * Schedule
-    * Run every 15, 30, 45, or 60 minutes
+    * Run every 5, 15, 30, 45, or 60 minutes
+    * 15 is recommended, as some longer scans may exceed 5 minutes
   * [Source](#sources) 
   * Active
     * Whether or not they are live 
