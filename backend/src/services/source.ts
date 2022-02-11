@@ -80,6 +80,17 @@ export async function cache(id: string): Promise<void> {
 }
 
 /**
+ * syncCache
+ *
+ * Syncs all Souces in cache
+ */
+export async function syncCache(): Promise<number> {
+  const sources = await Source.query()
+  await Promise.all(sources.map(source => cache(source.id)))
+  return sources.length
+}
+
+/**
  * clearCache
  *
  * Deletes source value from cache
@@ -114,5 +125,6 @@ export default {
   resolve,
   cache,
   getCache,
+  syncCache,
   clearCache,
 }
