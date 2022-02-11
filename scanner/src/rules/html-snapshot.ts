@@ -1,7 +1,7 @@
 import path from 'path'
 
 import YaraSync from '../lib/yara-sync'
-import * as MerryMaker from '@cfc/merry-maker-types'
+import * as MerryMaker from '@merrymaker/types'
 import { Rule } from './base'
 
 import LRUCache from 'lru-native2'

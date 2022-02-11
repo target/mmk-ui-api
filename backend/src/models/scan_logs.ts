@@ -38,6 +38,7 @@ export const Schema: { [prop: string]: ParamSchema } = {
       'error',
       'complete',
       'rule-alert',
+      'html-snapshot',
     ],
   },
   event: {
