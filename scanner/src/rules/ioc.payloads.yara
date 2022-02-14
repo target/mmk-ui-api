@@ -21,3 +21,17 @@ rule ioc_payload_checkout_b64_cc {
   condition:
     all of them
 }
+
+
+rule fetch_abnormal_content {
+  meta:
+    description = "Detects a fetch to abnormal content: fonts, images, and css"
+    author = "Eric Brandel"
+  strings:
+    $resource = "resourceType\":\"fetch\""
+    $contentFont = "content-type\":\"font"
+    $contentImage = "content-type\":\"image"
+    $contentCSS = "content-type\":\"text/css"
+  condition:
+    $resource and any of ($content*) 
+}
