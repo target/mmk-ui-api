@@ -14,6 +14,11 @@ const testCases = [
     'https://example.com?cc=NDAxMjAwMDA3Nzc3Nzc3Nw',
     1,
   ],
+  [
+    'fetch_abnormal_content',
+    '"resourceType":"fetch" "content-type":"image',
+    1,
+  ],
 ]
 
 describe('IOC Payload Rules', () => {

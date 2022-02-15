@@ -97,10 +97,8 @@ export class IOCPayloadRule extends Rule {
 
     const postData = payload.postData === undefined ? '' : payload.postData
 
-    // combine url, headers, and post data
-    const combined = `${payload.url} ${JSON.stringify(
-      payload.headers
-    )} ${postData}`
+    // combine url, headers, and post data and more things
+    const combined = `postData:${postData} ${JSON.stringify(payload)}`
     const combinedHash = crypto
       .createHash('sha256')
       .update(combined)
