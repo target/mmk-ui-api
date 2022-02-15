@@ -297,8 +297,6 @@ rule ioc_payload_checkout_b64_cc {
 }
 ```
 
-Another example of 
-
 Now, if the Source actually has this credit card being submitted to an endpoint you control, you will just want to add that domain to the [Allow List](#allow-list) as an `ioc-payload-domain`, otherwise this alert would fire every time the Source was run.
 
 ### Example Javascript Rule
