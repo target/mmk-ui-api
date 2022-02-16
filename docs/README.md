@@ -22,6 +22,10 @@ Fundamentally, Merry Maker operationalizes three key processes:
     * [Basic Source](#basic-source)
     * [Advanced Source](#advanced-source)
   * [Source Functions](#source-functions)
+    * [log](#log)
+    * [htmlSnapshot](#htmlSnapshot)
+    * [screenshot](#screenshot)
+    * [Other Useful Functions](#other-useful-functions)
 * [Rules](#rules)
   * [Example Skimmer Rule](#example-skimmer-rule)
   * [Example Payload Rule](#example-payload-rule)
@@ -170,6 +174,12 @@ page.on('request', (request) => {
   }
 });
 
+await page.goto('https://www.example.com/login', { waitUntil: 'domcontentloaded' })
+
+// after the page is loaded, take a snapshot of the DOM to look for malicious code
+await htmlSnapshot(page)
+
+
 ```
 
 ### Source Functions
@@ -180,6 +190,14 @@ It is also possible to write custom functions for these Sources and two are incl
 log('Use this like a console.log, but it sends data back to the Merry Maker UI')
 log('Useful for testing new Sources')
 ```
+
+#### htmlSnapshot
+```js
+// htmlSnapshot captures the current state of the page's DOM. It is then run through 
+// the rules in skimmer.yara.
+await htmlSnapshot(page)
+```
+
 #### screenshot
 ```js
 // screenshot takes a screenshot of the current state of the page
