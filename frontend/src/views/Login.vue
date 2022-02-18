@@ -172,7 +172,7 @@ interface UserLoginAttrs extends NotifyAttributes {
 }
 
 export default (Vue as VueConstructor<Vue & UserLoginAttrs>).extend({
-  name: 'Login',
+  name: 'LoginView',
   mixins: [NotifyMixin],
   data() {
     return {

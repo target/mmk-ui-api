@@ -75,7 +75,7 @@ import TableMixin, { TableMixinBindings } from '@/mixins/table'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   mixins: [TableMixin],
-  name: 'IOCs',
+  name: 'IOCsView',
   data() {
     return {
       options: {},

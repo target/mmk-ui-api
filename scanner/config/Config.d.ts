@@ -3,34 +3,34 @@
 declare module "node-config-ts" {
   interface IConfig {
     port: undefined
-    env: string
+    env: undefined
     redis: Redis
     session: Session
     oauth: Oauth
     transport: Transport
   }
   interface Transport {
-    http: string
+    http: undefined
   }
   interface Oauth {
-    authURL: string
-    tokenURL: string
-    clientID: string
-    secret: string
-    redirectURL: string
-    scope: string
+    authURL: undefined
+    tokenURL: undefined
+    clientID: undefined
+    secret: undefined
+    redirectURL: undefined
+    scope: undefined
   }
   interface Session {
     secret: string
     maxAge: number
   }
   interface Redis {
-    uri: string
-    useSentinel: boolean
-    nodes: string[]
-    master: string
-    sentinelPort: number
-    sentinelPassword: string
+    uri: undefined
+    useSentinel: undefined
+    nodes: undefined
+    master: undefined
+    sentinelPort: undefined
+    sentinelPassword: undefined
   }
   export const config: Config
   export type Config = IConfig

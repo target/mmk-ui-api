@@ -22,7 +22,7 @@
             <v-toolbar flat>
               <v-toolbar-title>Alerts</v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-text-field color="secondary" hide-details label="Search" 
+              <v-text-field color="secondary" hide-details label="Search"
                 v-model="search" @keyup.enter="runSearch">
                 <template v-slot:append-outer>
                   <v-btn
@@ -89,6 +89,7 @@ import 'vue-json-pretty/lib/styles.css'
 import TableMixin, { TableMixinBindings } from '@/mixins/table'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
+  name: 'AlertsView',
   mixins: [TableMixin],
   data() {
     return {
