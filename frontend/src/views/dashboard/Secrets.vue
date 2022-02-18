@@ -84,7 +84,7 @@ import NotifyMixin from '@/mixins/notify'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   mixins: [TableMixin, NotifyMixin],
-  name: 'Secrets',
+  name: 'SecretsView',
   data() {
     return {
       loading: true,

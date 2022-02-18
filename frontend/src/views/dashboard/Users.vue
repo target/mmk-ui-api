@@ -84,6 +84,7 @@ const listFields: (keyof Partial<UserAttributes>)[] = [
 ]
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
+  name: 'UsersView',
   mixins: [TableMixin, NotifyMixin],
   data() {
     return {

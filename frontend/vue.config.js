@@ -12,9 +12,7 @@ module.exports = {
     'vuetify'
   ],
   devServer: {
-    clientLogLevel: 'warning',
     hot: true,
-    overlay: true,
     proxy: {
       '/api': {
         target: `http://${API_HOST}:${MMK_PORT}`
@@ -22,7 +20,6 @@ module.exports = {
     },
     host: HOST,
     port: PORT,
-    progress: false
   },
   chainWebpack: config => {
     config

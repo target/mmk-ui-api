@@ -107,7 +107,7 @@ import Confirm, { ConfirmDialog } from '../../components/utils/Confirm.vue'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   mixins: [TableMixin, NotifyMixin],
-  name: 'SeenStrings',
+  name: 'SeenStringsView',
   data() {
     return {
       options: {},

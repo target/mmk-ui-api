@@ -81,6 +81,7 @@ import TableMixin, { TableMixinBindings } from '@/mixins/table'
 import NotifyMixin from '@/mixins/notify'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
+  name: 'SitesView',
   mixins: [TableMixin, NotifyMixin],
   data() {
     return {

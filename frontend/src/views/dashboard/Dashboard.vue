@@ -129,7 +129,7 @@ interface DashboardAttributes {
 }
 
 export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
-  name: 'Dashboard',
+  name: 'DashboardView',
   data() {
     return {
       alertsLoading: false,

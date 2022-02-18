@@ -108,7 +108,7 @@ import Vue from 'vue'
 import '../../assets/sass/scan-logs.scss'
 
 export default Vue.extend({
-  name: 'site',
+  name: 'SiteView',
   data() {
     return {
       tab: null,

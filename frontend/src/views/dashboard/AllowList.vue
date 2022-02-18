@@ -81,7 +81,7 @@ import NotifyMixin from '@/mixins/notify'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   mixins: [TableMixin, NotifyMixin],
-  name: 'AllowList',
+  name: 'AllowListView',
   data() {
     return {
       options: {},

@@ -36,6 +36,7 @@ export interface ConfirmDialog {
 }
 
 const ConfirmComponent = Vue.extend({
+  name: 'ConfirmUtil',
   data() {
     return {
       dialog: false,
