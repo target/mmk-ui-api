@@ -11,7 +11,7 @@ Fundamentally, Merry Maker operationalizes three key processes:
 
 ## Table of Contents
 * [FAQ](#frequently-asked-questions)
-* [Quickstart](#quickystart)
+* [Quickstart](#quickstart)
 * [Design](#design)
   * [Sources](#sources)
   * [Sites](#sites)
@@ -23,7 +23,7 @@ Fundamentally, Merry Maker operationalizes three key processes:
     * [Advanced Source](#advanced-source)
   * [Source Functions](#source-functions)
     * [log](#log)
-    * [htmlSnapshot](#htmlSnapshot)
+    * [htmlsnapshot](#htmlSnapshot)
     * [screenshot](#screenshot)
     * [Other Useful Functions](#other-useful-functions)
 * [Rules](#rules)
@@ -62,7 +62,7 @@ In general, it is a good practice to edit the code in a separate application and
 
 The UI for editing Sources also has the option to test them. The output of the test, including screenshots and logging, will be output below the editor.
 
-Before creating the first site, one must create a source. See [here for an example Source](#example-source) to help you get started.
+Before creating the first site, one must create a source. See [here for an example Source](#example-sources) to help you get started.
 
 ### Sites
 Sites are the parent object for a lot of the data stored in the system. Sites are simple structures. They have Scans and Alerts, as well as four attributes that can be modified directly:
@@ -266,7 +266,9 @@ rule taco_bravo
 }
 ```
 
-Obviously this is a simple rule. A great source of rules for Digital Skimming YARA rules is [Jérôme Segura's repo](https://github.com/malwareinfosec/webskimmers/tree/main/YARA_rules). Currently, Merry Maker has just one YARA file for the skimmer rules. New rules can simply be appended to the end of it.
+Obviously this is a simple rule. A great source of rules for Digital Skimming YARA rules is [Jérôme Segura's repo](https://github.com/malwareinfosec/webskimmers/tree/main/YARA_rules). Currently, Merry Maker has just one YARA file for skimmer rules. New rules can simply be appended to the end of it. Other publicly available rules that may be useful:
+- [SUSP_obfuscated_JS_obfuscatorio](https://github.com/imp0rtp3/yara-rules/blob/main/2021-08-25%20JS%20obfuscator/yara.yar)
+- [generic_javascript_obfuscation](https://github.com/codewatchorg/Burp-Yara-Rules/blob/master/javascript_exploit_and_obfuscation.yar#L1)
 
 ### Example Payload Rule
 Merry Maker also supports writing YARA rules to be run against network traffic. The [two that are included](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/ioc.payloads.yara) will need to be customized to be useful. These rules look for a fake credit card to be present in the browser's traffic. The first one looks for it in plaintext, the second one looks for it in base64.
@@ -316,6 +318,7 @@ Documentation in progress...
 Documentation in progress... 
 
 ### IOC
+Maltrail's [Known Digital Skimming Domains](https://github.com/stamparm/maltrail/blob/master/trails/static/malicious/magentocore.txt)
 Documentation in progress... 
 
 ### Seem Strings
