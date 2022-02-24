@@ -70,13 +70,13 @@ Sites are the parent object for a lot of the data stored in the system. Sites ar
   * Schedule
     * Run every 5, 15, 30, 45, or 60 minutes
     * 15 is recommended, as some longer scans may exceed 5 minutes
-  * [Source](#sources) 
+  * [Source](#sources)
   * Active
-    * Whether or not they are live 
+    * Whether or not they are live
 
 They also have Alerts and Scans and they have one active Source. Each Site has a Source specified and that Source cannot be deleted as long as it is attached to a Site.
 
-A Site and a Domain name are not analagous. A single domain, say example.com, can have multiple Sites. Think of it more as parts of your site that you want to scan independtly of each other. For example, you could have a Site named **Example.com Checkout** to monitor your Checkout process, another one named **Example.com Login** to monitor your login page, and a third named **Example.com User Signup** to monitor your user registration.
+A Site and a Domain name are not analogous. A single domain, say example.com, can have multiple Sites. Think of it more as parts of your site that you want to scan independently of each other. For example, you could have a Site named **Example.com Checkout** to monitor your Checkout process, another one named **Example.com Login** to monitor your login page, and a third named **Example.com User Signup** to monitor your user registration.
 
 ### Scans
 Scans are the output of the Sources being run. A Scan can have thousands of data points, all of which can have rules run against them. Data collected includes:
@@ -98,10 +98,10 @@ Common Alert types:
     * A request has matched a known IOC, typically a known digital skimming domain.
   * Unknown Domain
     * A request has been made to a new domain that the system has not seen before.
-  * Yara Skimmer something
-    * A Yara rule has matched against one of the Javascript files loaded
-  * Yara Payload
-    * A Yara rule as matched against some network traffic 
+  * YARA Skimmer something
+    * A YARA rule has matched against one of the Javascript files loaded
+  * YARA Payload
+    * A YARA rule as matched against some network traffic
 
 By default these Alerts will be added to Merry Maker's database and can be reviewed inside the system. There is also built in support for [GoAlert](#goalert), which is a Target open source project that provides "on-call scheduling, automated escalations, and notifications", and [Kafka](#kafka).
 
@@ -110,7 +110,7 @@ Merry Maker utilizes [Puppeteer](https://github.com/puppeteer/puppeteer) to cont
 
 
 ### Example Sources
-As mentioned, the core component of Merry Maker are the Sources it runs. These are written in Javascript and are fairly flexible in what can be done. 
+As mentioned, the core component of Merry Maker are the Sources it runs. These are written in Javascript and are fairly flexible in what can be done.
 
 #### Basic Source
 This example will have the system go to a hypothetical login page, enter the username and password, and then hit the login button. The `log` and `screenshot` functions are [custom builtin Merry Maker functions](#source-functions), described below.
@@ -122,9 +122,9 @@ await page.goto('https://www.example.com/login', { waitUntil: 'domcontentloaded'
 
 
 log('Entering Password')
-await page.focus('#username') // This assume the username field has an ID of "username". 
+await page.focus('#username') // This assume the username field has an ID of "username".
 
-// await page.focus('.username') // CSS class selctors are also supported. 
+// await page.focus('.username') // CSS class selctors are also supported.
 // await page.focus('[name="username"]') // This would select a form field with the name of "username"
 
 // This will tell Puppeteer to simulate typing this into the field, with a 250ms delay between each character
@@ -157,7 +157,7 @@ await page.setViewport({ width: 1440, height: 800 })
 await page.setCookie(...[{ name: 'special-cookie', value: 'special', domain: '.example.com' }])
 
 // On each request, check to see if the URL includes 'foo-bar' or 'taco-bravo'.
-// If it does, cancel the request. This can be handy for when you don't want to 
+// If it does, cancel the request. This can be handy for when you don't want to
 // submit your final order, but you still want to click on the Submit Order button
 await page.setRequestInterception(true)
 page.on('request', (request) => {
@@ -193,7 +193,7 @@ log('Useful for testing new Sources')
 
 #### htmlSnapshot
 ```js
-// htmlSnapshot captures the current state of the page's DOM. It is then run through 
+// htmlSnapshot captures the current state of the page's DOM. It is then run through
 // the rules in skimmer.yara.
 await htmlSnapshot(page)
 ```
@@ -207,7 +207,7 @@ await screenshot(page)
 ```
 
 #### Other Useful Functions
-These functions make it so Puppeteer can click on Links and Buttons solely based on the text contained in them. The [original source is from this Gist](https://gist.github.com/tokland/d3bae3b6d3c1576d8700405829bbdb52), although the function names have been modified slightly. `clickByText` is for clicking on Buttons, `clickLinkByText` is for clicking on Links. 
+These functions make it so Puppeteer can click on Links and Buttons solely based on the text contained in them. The [original source is from this Gist](https://gist.github.com/tokland/d3bae3b6d3c1576d8700405829bbdb52), although the function names have been modified slightly. `clickByText` is for clicking on Buttons, `clickLinkByText` is for clicking on Links.
 
 ```js
 // required for the clickByText and clickLinkByText functions
@@ -220,7 +220,7 @@ const escapeXpathString = str => {
 const clickByText = async (page, text) => {
   const escapedText = escapeXpathString(text);
   const linkHandlers = await page.$x(`//button[contains(text(), ${escapedText})]`);
-  
+
   if (linkHandlers.length > 0) {
     await linkHandlers[0].click();
   } else {
@@ -232,7 +232,7 @@ const clickByText = async (page, text) => {
 const clickLinkByText = async (page, text) => {
   const escapedText = escapeXpathString(text);
   const linkHandlers = await page.$x(`//a[contains(text(), ${escapedText})]`);
-  
+
   if (linkHandlers.length > 0) {
     await linkHandlers[0].click();
   } else {
@@ -247,7 +247,7 @@ Documentation in progress...
 ## Rules
 
 ### Example Skimmer Rule
-Merry Maker ships with a number skimmer rules, intended to run against Javascript files. The existing rules [can be viewed here](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/skimmer.yara). 
+Merry Maker ships with a number skimmer rules, intended to run against Javascript files. The existing rules [can be viewed here](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/skimmer.yara).
 
 The rules are [written in YARA](https://virustotal.github.io/yara/). YARA is incredibly flexible, and well suited for pattern matching. In general, if you wanted to look for Javascript containing the word "taco" and "bravo", the rule would look like this:
 
@@ -268,7 +268,7 @@ rule taco_bravo
 
 Obviously this is a simple rule. A great source of rules for Digital Skimming YARA rules is [Jérôme Segura's repo](https://github.com/malwareinfosec/webskimmers/tree/main/YARA_rules). Currently, Merry Maker has just one YARA file for skimmer rules. New rules can simply be appended to the end of it. Other publicly available rules that may be useful:
 - [SUSP_obfuscated_JS_obfuscatorio](https://github.com/imp0rtp3/yara-rules/blob/main/2021-08-25%20JS%20obfuscator/yara.yar)
-- [generic_javascript_obfuscation](https://github.com/codewatchorg/Burp-Yara-Rules/blob/master/javascript_exploit_and_obfuscation.yar#L1)
+- [generic_javascript_obfuscation](https://github.com/codewatchorg/Burp-YARA-Rules/blob/master/javascript_exploit_and_obfuscation.yar#L1)
 
 ### Example Payload Rule
 Merry Maker also supports writing YARA rules to be run against network traffic. The [two that are included](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/ioc.payloads.yara) will need to be customized to be useful. These rules look for a fake credit card and other information to be present in the browser's traffic. The first one looks for it in plaintext, the second one looks for it in base64.
@@ -308,12 +308,12 @@ rule ioc_payload_checkout_b64_cc {
 Now, if the Source actually has this credit card being submitted to an endpoint you control, you will just want to add that domain to the [Allow List](#allow-list) as an `ioc-payload-domain`, otherwise this alert would fire every time the Source was run.
 
 ### Example Javascript Rule
-Documentation in progress... 
+Documentation in progress...
 
 ## Configuration
 
 ### Kafka
-Documentation in progress... 
+Documentation in progress...
 
 ### GoAlert
 [GoAlert Github Repo](https://github.com/target/goalert)
@@ -321,17 +321,17 @@ Documentation in progress...
 
 
 ## Advanced
-Documentation in progress... 
+Documentation in progress...
 
 ### IOC
 Maltrail's [Known Digital Skimming Domains](https://github.com/stamparm/maltrail/blob/master/trails/static/malicious/magentocore.txt)
-Documentation in progress... 
+Documentation in progress...
 
 ### Seem Strings
-Documentation in progress... 
+Documentation in progress...
 
 ### Allow List
-Documentation in progress... 
+Documentation in progress...
 
 ### Secrets
-Documentation in progress... 
+Documentation in progress...
