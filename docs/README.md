@@ -271,7 +271,7 @@ Obviously this is a simple rule. A great source of rules for Digital Skimming YA
 - [generic_javascript_obfuscation](https://github.com/codewatchorg/Burp-Yara-Rules/blob/master/javascript_exploit_and_obfuscation.yar#L1)
 
 ### Example Payload Rule
-Merry Maker also supports writing YARA rules to be run against network traffic. The [two that are included](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/ioc.payloads.yara) will need to be customized to be useful. These rules look for a fake credit card to be present in the browser's traffic. The first one looks for it in plaintext, the second one looks for it in base64.
+Merry Maker also supports writing YARA rules to be run against network traffic. The [two that are included](https://github.com/target/mmk-ui-api/blob/main/scanner/src/rules/ioc.payloads.yara) will need to be customized to be useful. These rules look for a fake credit card and other information to be present in the browser's traffic. The first one looks for it in plaintext, the second one looks for it in base64.
 
 ```
 rule ioc_payload_checkout_clear_cc {
@@ -281,9 +281,12 @@ rule ioc_payload_checkout_clear_cc {
     reference = ""
     date = "2019-10-14"
   strings:
-    $s1 = "4012000077777777"
+    $cc_num = "4111123412341234"
+    $email = "foo.bar@example.com" nocase
+    $firstname = "Kevin" nocase
+    $lastname = "Flynn" nocase
   condition:
-    all of them
+    any of them
 }
 
 rule ioc_payload_checkout_b64_cc {
@@ -293,9 +296,12 @@ rule ioc_payload_checkout_b64_cc {
     reference = ""
     date = "2019-10-14"
   strings:
-    $s1 = "NDAxMjAwMDA3Nzc3Nzc3Nw"
+    $cc_num = "4111123412341234" base64
+    $email = "foo.bar@example.com" base64
+    $firstname = "Kevin" base64
+    $lastname = "Flynn" base64
   condition:
-    all of them
+    any of them
 }
 ```
 
