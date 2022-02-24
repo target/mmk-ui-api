@@ -209,3 +209,27 @@ rule digital_skimmer_obfuscatorio_obf {
   condition:
     $re1 and #re2 > 4
 }
+
+rule digital_skimmer_sniffa_loader {
+  meta:
+    description = "The skimmer loader for mr.Sniffa"
+  strings:
+    $onload = "window.onload=function(){userID"
+    $url = "//static.xx.fbcdn.net.com"
+    $settime = /setTimeout\([A-Za-z]{4}\(\),1500\)/
+  condition:
+    all of them
+}
+
+rule digital_skimmer_whitespace
+{
+  meta:
+    description = "Looks for an abundance of whitespace in a file"
+    author = "Eric Brandel"
+    reference = "mr.Sniffa"
+    date = "2022-01-18"
+  strings:
+    $ttt = /\s\s\s\s\s\s\s\s\s\s\s\s/
+  condition:
+    #ttt > 100
+}
