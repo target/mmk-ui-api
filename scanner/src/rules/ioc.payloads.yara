@@ -5,9 +5,12 @@ rule ioc_payload_checkout_clear_cc {
     reference = ""
     date = "2019-10-14"
   strings:
-    $s1 = "4012000077777777"
+    $cc_num = "4111123412341234"
+    $email = "foo.bar@example.com" nocase
+    $firstname = "Kevin" nocase
+    $lastname = "Flynn" nocase
   condition:
-    all of them
+    any of them
 }
 
 rule ioc_payload_checkout_b64_cc {
@@ -17,11 +20,13 @@ rule ioc_payload_checkout_b64_cc {
     reference = ""
     date = "2019-10-14"
   strings:
-    $s1 = "NDAxMjAwMDA3Nzc3Nzc3Nw"
+    $cc_num = "4111123412341234" base64
+    $email = "foo.bar@example.com" base64
+    $firstname = "Kevin" base64
+    $lastname = "Flynn" base64
   condition:
-    all of them
+    any of them
 }
-
 
 rule fetch_abnormal_content {
   meta:
@@ -35,3 +40,30 @@ rule fetch_abnormal_content {
   condition:
     $resource and any of ($content*) 
 }
+
+rule fetch_exfil_image {
+  meta:
+    description = "Detects a fetch that is used for exfil via image post"
+    author = "Eric Brandel"
+  strings:
+    $resource = "resourceType\":\"fetch\""
+    $method = "method\":\"POST\""
+    $contentImageRequest = "content-type\":\"multipart/form-data; boundary"
+    $contentImage = "content-type\":\"image/x-icon"
+  condition:
+    $resource and $method and all of ($content*) 
+}
+
+rule xhr_abnormal_endpoint {
+  meta:
+    description = "Detects an XHR POST request to abnromal endpoints: css and ico"
+    author = "Eric Brandel"
+  strings:
+    $resource = "resourceType\":\"xhr\""
+    $contentType = "content-type\":\"text/html"
+    $status = "\"status\":200"
+    $urlRegex = /\"url\":\"http(s)?:\/\/([0-9a-z\.\/])*\.(css|ico)/
+  condition:
+    all of them 
+}
+
