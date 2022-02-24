@@ -6,12 +6,12 @@ const yara = new YaraSync()
 const testCases = [
   [
     'ioc_payload_checkout_clear_cc',
-    'https://example.com?cc=4012000077777777',
+    'https://example.com?cc=4111123412341234',
     1,
   ],
   [
     'ioc_payload_checkout_b64_cc',
-    'https://example.com?cc=NDAxMjAwMDA3Nzc3Nzc3Nw',
+    'https://example.com?cc=NDExMTEyMzQxMjM0MTIzNA',
     1,
   ],
   [

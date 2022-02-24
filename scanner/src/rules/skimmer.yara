@@ -221,15 +221,15 @@ rule digital_skimmer_sniffa_loader {
     all of them
 }
 
-rule digital_skimmer_whitespace
-{
-  meta:
-    description = "Looks for an abundance of whitespace in a file"
-    author = "Eric Brandel"
-    reference = "mr.Sniffa"
-    date = "2022-01-18"
-  strings:
-    $ttt = /\s\s\s\s\s\s\s\s\s\s\s\s/
-  condition:
-    #ttt > 100
-}
+// rule digital_skimmer_whitespace
+// {
+//   meta:
+//     description = "Looks for an abundance of whitespace in a file"
+//     author = "Eric Brandel"
+//     reference = "mr.Sniffa"
+//     date = "2022-01-18"
+//   strings:
+//     $ttt = /\s\s\s\s\s\s\s\s\s\s\s\s/
+//   condition:
+//     #ttt > 100
+// }
