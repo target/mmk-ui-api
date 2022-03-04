@@ -7,6 +7,43 @@ import logger from '../loaders/logger'
 
 type MappedSinks = { [k in MerryMaker.ScanEventType]?: AlertSinkBase[] }
 
+// knex supports `with`, but this is easier to maintain
+const GENERATE_SERIES_SQL = `
+with hours as (
+  select generate_series(
+    date_trunc('hour', to_timestamp(:starttime:)),
+    date_trunc('hour', to_timestamp(:endtime:)),
+    ':interval: hour':\\:interval
+  ) as hour
+)
+
+select
+  hours.hour,
+  count(alerts)::integer
+from hours
+left join alerts on date_trunc('hour', alerts.created_at) = hours.hour
+group by 1
+order by hours.hour desc
+`
+
+/**
+ * dateHist
+ *
+ * queries and returns a datehistogram of alerts
+ * from `starttime` to `endtime` with an interval of `interval` hours
+ */
+const dateHist = async (opt: {
+  starttime: Date
+  endtime: Date
+  interval: number
+}): Promise<{ rows: Array<{ hour: string; count: number }> }> =>
+  Alert.knex().raw(GENERATE_SERIES_SQL, {
+    starttime: opt.starttime.valueOf() / 1000,
+    endtime: opt.endtime.valueOf() / 1000,
+    interval: opt.interval
+  })
+
+
 // Helper for mapping Alert sinks against ScanEventTypes
 const alertSinks = {
   sinks: [] as MappedSinks,
@@ -76,6 +113,7 @@ export async function process(evt: MerryMaker.EventResult): Promise<void> {
 }
 
 export default {
+  dateHist,
   distinct,
   process,
   destroy,
