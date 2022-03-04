@@ -269,6 +269,7 @@ export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
 
 <style>
 #alert-chart {
+  width: 100%;
   position: absolute;
   top: 0;
 }
