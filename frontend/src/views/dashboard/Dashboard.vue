@@ -8,7 +8,12 @@
             height="110px"
             src="@/assets/cyber-header.webp"
           >
-            <v-card-title> Alerts </v-card-title>
+            <div id="alert-chart"></div>
+            <v-card-title
+              style="position: relative; z-index: 1000; width: 90px"
+            >
+              Alerts
+            </v-card-title>
           </v-img>
 
           <v-card-text>
@@ -112,6 +117,7 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
+import vegaEmbed, { Result, vega, VisualizationSpec } from 'vega-embed'
 import AlertAPIService, { AlertAttributes } from '@/services/alerts'
 import ScanAPIServce, { ScanAttributes } from '@/services/scans'
 import QueueService, { Queues } from '@/services/queues'
@@ -119,6 +125,7 @@ import QueueService, { Queues } from '@/services/queues'
 import NotifyMixin from '@/mixins/notify'
 
 let pollingInterval: number
+let chartPollingInterval: number
 
 interface DashboardAttributes {
   alertsLoading: boolean
@@ -128,6 +135,36 @@ interface DashboardAttributes {
   queues: Queues
   scans: ScanAttributes[]
   alerts: AlertAttributes[]
+}
+
+const alertChart: VisualizationSpec = {
+  config: {
+    background: 'transparent',
+    view: {
+      stroke: 'transparent'
+    },
+    axis: { disable: true }
+  },
+  description: 'Alert counts',
+  width: 'container',
+  height: 110,
+  padding: 0,
+  data: {
+    name: 'alerts',
+    url: 'api/alerts/agg',
+    format: { type: 'json', property: 'rows' }
+  },
+  mark: { type: 'line', tooltip: true },
+  encoding: {
+    x: { field: 'hour', type: 'temporal', title: 'Date' },
+    y: {
+      field: 'count',
+      type: 'quantitative',
+      scale: { padding: 5 },
+      title: 'Alerts'
+    },
+    color: { value: 'white' }
+  }
 }
 
 export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
@@ -163,6 +200,9 @@ export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
         this.alertsLoading = false
       })
     },
+    async getAlertAgg() {
+      return AlertAPIService.agg()
+    },
     getQueues() {
       this.queuesLoading = true
       QueueService.view()
@@ -193,13 +233,43 @@ export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
       this.getScans()
       this.getQueues()
     },
+    async updateChart(res: Result) {
+      const d = new Date()
+      // 7 days ago
+      d.setDate(d.getDate() - 7)
+      const minDate = d.valueOf()
+      const { data } = await this.getAlertAgg()
+      res.view
+        .change(
+          'alerts',
+          vega
+            .changeset()
+            .remove(
+              (t: { hour: string; count: number }) =>
+                new Date(t.hour).valueOf() < minDate
+            )
+            .insert(data.rows)
+        )
+        .run()
+    }
   },
   beforeDestroy() {
     clearInterval(pollingInterval)
+    clearInterval(chartPollingInterval)
   },
   created() {
     this.getAll()
     pollingInterval = setInterval(this.getAll, 5000)
+    vegaEmbed('#alert-chart', alertChart, { actions: false }).then(res => {
+      chartPollingInterval = setInterval(() => this.updateChart(res), 5000)
+    })
   },
 })
 </script>
+
+<style>
+#alert-chart {
+  position: absolute;
+  top: 0;
+}
+</style>
