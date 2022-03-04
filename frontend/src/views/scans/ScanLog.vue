@@ -103,6 +103,8 @@ import '../../assets/sass/scan-logs.scss'
 
 import TableMixin, { TableMixinBindings } from '@/mixins/table'
 
+import NotifyMixin from '../../mixins/notify'
+
 type LogEntryTypes =
   | 'log-message'
   | 'screenshot'
@@ -128,7 +130,7 @@ const logTypeIcons: Record<LogEntryTypes, string> = {
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
   name: 'ScanLog',
-  mixins: [TableMixin],
+  mixins: [TableMixin, NotifyMixin],
   data() {
     return {
       records: [] as ScanLogAttributes[],
@@ -201,7 +203,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
         .then(res => {
           this.entryTypes = res.data.map(e => e.entry)
         })
-        .catch(console.error)
+        .catch(this.errorHandler)
     },
     getScan(): void {
       ScanAPIService.view({
@@ -212,7 +214,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.init = true
           this.scan = res.data
         })
-        .catch(console.error)
+        .catch(this.errorHandler)
     },
     getLogs(): void {
       ScanLogAPIService.list({
@@ -229,9 +231,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.total = res.data.total
           window.scrollTo(0, 0)
         })
-        .catch(err => {
-          console.error(err)
-        })
+        .catch(this.errorHandler)
         .finally(() => (this.loading = false))
     },
     dataImage: (data: string) => `data:image/jpeg;base64, ${data}`,

@@ -27,6 +27,7 @@ export const Schema: { [prop: string]: ParamSchema } = {
     enum: [
       'page-error',
       'console-message',
+      'active',
       'worker-created',
       'cookie',
       'request',
