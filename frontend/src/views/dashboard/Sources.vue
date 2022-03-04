@@ -105,23 +105,23 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           text: 'Name',
           align: 'start',
           sortable: true,
-          value: 'name',
+          value: 'name'
         },
         {
           text: 'Scans',
-          value: 'scans.length',
+          value: 'scans.length'
         },
         {
           text: 'Created',
-          value: 'created_at',
+          value: 'created_at'
         },
         {
           text: 'Actions',
           value: 'actions',
-          sortable: false,
-        },
+          sortable: false
+        }
       ]),
-      records: [] as SourceAttributes[],
+      records: [] as SourceAttributes[]
     }
   },
   watch: {
@@ -131,11 +131,11 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.list()
         })
       },
-      deep: true,
+      deep: true
     },
     showTest() {
       this.list()
-    },
+    }
   },
   methods: {
     async list() {
@@ -145,7 +145,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
         pageSize: this.itemsPerPage,
         eager: ['scans'],
         no_test: !this.showTest,
-        ...this.resolveOrder(),
+        ...this.resolveOrder()
       })
       this.loading = false
       this.records = res.data.results
@@ -159,20 +159,20 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
       const dialog = (this.$refs.confirm as unknown) as ConfirmDialog
       const res = await dialog.open('Delete', 'Are you sure?', {
         color: 'red',
-        width: 350,
+        width: 350
       })
       if (res) {
-        try {
-          await SourceAPIService.destroy({ id })
-          this.info({ title: 'Source', body: 'Source Deleted' })
-        } catch (e) {
-          console.error(e)
-        }
+        await SourceAPIService.destroy({ id })
+          .then(() => {
+            this.info({ title: 'Source', body: 'Source Deleted' })
+            this.list()
+          })
+          .catch(this.errorHandler)
       }
-    },
+    }
   },
   components: {
-    Confirm,
-  },
+    Confirm
+  }
 })
 </script>

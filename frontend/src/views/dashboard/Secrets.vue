@@ -42,7 +42,7 @@
                   @click="
                     $router.push({
                       path: '/secrets/edit',
-                      query: { id: item.id },
+                      query: { id: item.id }
                     })
                   "
                 >
@@ -94,28 +94,28 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           text: 'Name',
           align: 'start',
           sortable: true,
-          value: 'name',
+          value: 'name'
         },
         {
           text: 'Type',
           sortable: true,
-          value: 'type',
+          value: 'type'
         },
         {
           text: 'Created',
-          value: 'created_at',
+          value: 'created_at'
         },
         {
           text: 'Updated',
-          value: 'updated_at',
+          value: 'updated_at'
         },
         {
           text: 'Actions',
           value: 'actions',
-          sortable: false,
-        },
+          sortable: false
+        }
       ]),
-      records: [] as SecretAttributes[],
+      records: [] as SecretAttributes[]
     }
   },
   watch: {
@@ -125,8 +125,8 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.list()
         })
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
   methods: {
     async list() {
@@ -135,7 +135,7 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
         page: this.page,
         eager: ['sources'],
         pageSize: this.itemsPerPage,
-        ...this.resolveOrder(),
+        ...this.resolveOrder()
       })
       this.loading = false
       this.records = res.data.results
@@ -146,21 +146,20 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
       const dialog = (this.$refs.confirm as unknown) as ConfirmDialog
       const res = await dialog.open('Delete', 'Are you sure?', {
         color: 'red',
-        width: 350,
+        width: 350
       })
       if (res) {
-        try {
-          await SecretAPIService.destroy({ id })
-          this.info({ title: 'Secrets', body: 'Secret Deleted' })
-          await this.list()
-        } catch (e) {
-          console.error(e)
-        }
+        await SecretAPIService.destroy({ id })
+          .then(() => {
+            this.info({ title: 'Secrets', body: 'Secret Deleted' })
+            this.list()
+          })
+          .then(this.errorHandler)
       }
-    },
+    }
   },
   components: {
-    Confirm,
-  },
+    Confirm
+  }
 })
 </script>

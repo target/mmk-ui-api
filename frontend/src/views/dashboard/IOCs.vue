@@ -72,9 +72,10 @@ import IocAPIService, { IocAttributes } from '../../services/iocs'
 import Confirm, { ConfirmDialog } from '../../components/utils/Confirm.vue'
 
 import TableMixin, { TableMixinBindings } from '@/mixins/table'
+import NotifyMixin from '@/mixins/notify'
 
 export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
-  mixins: [TableMixin],
+  mixins: [TableMixin, NotifyMixin],
   name: 'IOCsView',
   data() {
     return {
@@ -84,28 +85,28 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           text: 'Value',
           align: 'start',
           sortable: true,
-          value: 'value',
+          value: 'value'
         },
         {
           text: 'Type',
           sortable: true,
-          value: 'type',
+          value: 'type'
         },
         {
           text: 'Enabled',
-          value: 'enabled',
+          value: 'enabled'
         },
         {
           text: 'Created',
-          value: 'created_at',
+          value: 'created_at'
         },
         {
           text: 'Actions',
           value: 'actions',
-          sortable: false,
-        },
+          sortable: false
+        }
       ]),
-      records: [] as IocAttributes[],
+      records: [] as IocAttributes[]
     }
   },
   watch: {
@@ -115,15 +116,15 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
           this.list()
         })
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
   methods: {
     async list() {
       const res = await IocAPIService.list({
         page: this.page,
         pageSize: this.itemsPerPage,
-        ...this.resolveOrder(),
+        ...this.resolveOrder()
       })
       this.loading = false
       this.records = res.data.results
@@ -134,24 +135,20 @@ export default (Vue as VueConstructor<Vue & TableMixinBindings>).extend({
       const dialog = (this.$refs.confirm as unknown) as ConfirmDialog
       const res = await dialog.open('Delete', 'Are you sure?', {
         color: 'red',
-        width: 350,
+        width: 350
       })
       if (res) {
-        try {
-          await IocAPIService.destroy({ id })
-          this.records.forEach((record, i) => {
-            if (record.id === id) {
-              this.records.splice(i, 1)
-            }
+        await IocAPIService.destroy({ id })
+          .then(() => {
+            this.info({ title: 'IOCs', body: 'IOC Deletd' })
+            this.list()
           })
-        } catch (e) {
-          console.error(e)
-        }
+          .catch(this.errorHandler)
       }
-    },
+    }
   },
   components: {
-    Confirm,
-  },
+    Confirm
+  }
 })
 </script>
