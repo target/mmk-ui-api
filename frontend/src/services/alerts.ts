@@ -23,6 +23,16 @@ interface AlertListRequest extends ListRequest<AlertAttributes> {
   eager?: Array<EagerLoad>
 }
 
+type AlertAggRequest = {
+  interval_hours?: number
+  start_time?: Date
+  end_time?: Date
+}
+
+type AlertAggResult = {
+  rows: Array<{ hours: string; count: number }> | Array<never>
+}
+
 const list = async (params?: AlertListRequest) =>
   axios.get<ObjectListResult<AlertAttributes>>('/api/alerts', { params })
 
@@ -37,7 +47,12 @@ const distinct = async (params: { column: keyof AlertAttributes }) =>
     params
   })
 
+const agg = async (params?: AlertAggRequest) =>
+  axios.get<AlertAggResult>('/api/alerts/agg', { params })
+
+
 export default {
+  agg,
   list,
   view,
   destroy,
