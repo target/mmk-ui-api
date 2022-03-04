@@ -116,6 +116,8 @@ import AlertAPIService, { AlertAttributes } from '@/services/alerts'
 import ScanAPIServce, { ScanAttributes } from '@/services/scans'
 import QueueService, { Queues } from '@/services/queues'
 
+import NotifyMixin from '@/mixins/notify'
+
 let pollingInterval: number
 
 interface DashboardAttributes {
@@ -130,6 +132,7 @@ interface DashboardAttributes {
 
 export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
   name: 'DashboardView',
+  mixins: [NotifyMixin],
   data() {
     return {
       alertsLoading: false,
@@ -167,7 +170,7 @@ export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
           this.queues = res.data
           this.queuesLoading = false
         })
-        .catch(console.error)
+        .catch(this.errorHandler)
     },
     getScans() {
       this.scansLoading = true
@@ -183,7 +186,7 @@ export default (Vue as VueConstructor<Vue & DashboardAttributes>).extend({
         .then((res) => {
           this.scans = res.data.results
         })
-        .catch(console.error)
+        .catch(this.errorHandler)
     },
     getAll() {
       this.getAlerts()
