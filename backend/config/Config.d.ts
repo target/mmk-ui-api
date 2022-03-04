@@ -31,7 +31,7 @@ declare module "node-config-ts" {
   interface GoAlert {
     enabled: boolean
     url: string
-    token: undefined
+    token: string
   }
   interface QuantumTunnel {
     enabled: string
@@ -48,8 +48,8 @@ declare module "node-config-ts" {
     transport: string
   }
   interface Transport {
-    cert: undefined
-    key: undefined
+    cert: string
+    key: string
     port: number
     mTLS: boolean
     enabled: boolean
