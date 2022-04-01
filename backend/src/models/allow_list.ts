@@ -1,4 +1,3 @@
-import { JSONSchema } from 'objection'
 import BaseModel from './base'
 import { v4 as uuidv4 } from 'uuid'
 import { ParamSchema } from 'aejo'
