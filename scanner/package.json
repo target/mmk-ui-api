@@ -19,7 +19,7 @@
     "js-beautify": "^1.13.0",
     "lru-native2": "^1.2.2",
     "node-config-ts": "^3.0.4",
-    "node-fetch": "2",
+    "node-fetch": "^2.6.7",
     "nodemon": "^2.0.4",
     "pino": "^6.11.3",
     "tldts": "^5.6.54",
