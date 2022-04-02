@@ -1,18 +1,19 @@
-import { JSONSchema } from 'objection'
 import BaseModel from './base'
 import { v4 as uuidv4 } from 'uuid'
 import { ParamSchema } from 'aejo'
 
-export type AllowListType =
-  | 'fqdn'
-  | 'ip'
-  | 'literal'
-  | 'ioc-payload-domain'
-  | 'google-analytics'
+export const AllowListType = [
+  'fqdn',
+  'ip',
+  'literal',
+  'ioc-payload-domain',
+  'google-analytics',
+  'referrer'
+]
 
 export interface AllowListAttributes {
   id?: string
-  type: AllowListType
+  type: typeof AllowListType[number]
   key: string
   created_at?: Date
   updated_at?: Date
@@ -22,28 +23,28 @@ export const Schema: { [prop: string]: ParamSchema } = {
   id: {
     description: 'ID of Allow List',
     type: 'string',
-    format: 'uuid',
+    format: 'uuid'
   },
   type: {
     description: 'Key type',
     type: 'string',
-    enum: ['fqdn', 'ip', 'literal', 'ioc-payload-domain', 'google-analytics'],
+    enum: AllowListType
   },
   key: {
     description: 'Matching key pattern',
     type: 'string',
-    format: 'regex',
+    format: 'regex'
   },
   created_at: {
     description: 'Created Date',
     type: 'string',
-    format: 'date-time',
+    format: 'date-time'
   },
   updated_at: {
     description: 'Updated Date',
     type: 'string',
-    format: 'date-time',
-  },
+    format: 'date-time'
+  }
 }
 
 export default class AllowList extends BaseModel<AllowListAttributes> {
@@ -80,27 +81,5 @@ export default class AllowList extends BaseModel<AllowListAttributes> {
 
   static build(o: Partial<AllowListAttributes>): AllowList {
     return AllowList.fromJson(o)
-  }
-
-  static get jsonSchema(): JSONSchema {
-    return {
-      type: 'object',
-      required: ['type', 'key'],
-      properties: {
-        type: {
-          type: 'string',
-          enum: [
-            'fqdn',
-            'ip',
-            'literal',
-            'ioc-payload-domain',
-            'google-analytics',
-          ],
-        },
-        key: {
-          type: 'string',
-        },
-      },
-    }
   }
 }

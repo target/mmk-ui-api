@@ -1,5 +1,5 @@
 import MerryMakerTypes from '@merrymaker/types'
-import { config } from 'node-config-ts'
+import { config } from 'node-config'
 
 import fetch from 'node-fetch-cjs'
 import { isOfType } from '../lib/utils'
