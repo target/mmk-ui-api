@@ -11,14 +11,14 @@ const domainAllowListCache = new LRUCache({
   maxElements: 1000,
   maxAge: oneHour,
   size: 50,
-  maxLoadFactor: 2.0,
+  maxLoadFactor: 2.0
 })
 
 const seenDomainCache = new LRUCache({
   maxElements: 10000,
   maxAge: oneHour,
   size: 1000,
-  maxLoadFactor: 2.0,
+  maxLoadFactor: 2.0
 })
 
 export class UnknownDomainRule extends Rule {
@@ -31,7 +31,7 @@ export class UnknownDomainRule extends Rule {
       name: this.options.name,
       alert: false,
       level: this.options.level,
-      context: { url: payload.url },
+      context: { url: payload.url }
     }
 
     // Handle invalid URLs
@@ -39,7 +39,7 @@ export class UnknownDomainRule extends Rule {
     try {
       payloadURL = parse(payload.url)
     } catch (e) {
-      res.message = `failed to parse URL ${e.message}`
+
       return this.resolveEvent(res)
     }
 
@@ -62,6 +62,27 @@ export class UnknownDomainRule extends Rule {
       domainAllowListCache.set(payloadURL.domain, 1)
       return this.resolveEvent(res)
     }
+
+    // Check if referer allows pass through
+    if (payload.headers.referer) {
+      const refererURL = parse(payload.headers.referer)
+      const lruKey = `${payloadURL.domain}|${refererURL.domain}`
+      // check local cache before checking remote allow-list
+      if (domainAllowListCache.get(lruKey)) {
+        res.message = `allow-listed / referer (cache) ${lruKey}`
+        return this.resolveEvent(res)
+      }
+      const allowedReferrer = await this.fetchRemoteAllowList(
+        refererURL.domain,
+        'referrer'
+      )
+      if (allowedReferrer.total > 0) {
+        res.message = `allow-listed / referer (${refererURL.domain}) (DB)`
+        domainAllowListCache.set(lruKey, 1)
+        return this.resolveEvent(res)
+      }
+    }
+
     // Check full hostname in seen domain cache
     if (seenDomainCache.get(payloadURL.hostname) === 1) {
       res.message = `seen hostname (cache) ${payloadURL.hostname}`
@@ -88,5 +109,5 @@ export default new UnknownDomainRule({
   level: 'prod',
   alert: false,
   context: {},
-  description: 'detects domains that have not been seen',
+  description: 'detects domains that have not been seen'
 })

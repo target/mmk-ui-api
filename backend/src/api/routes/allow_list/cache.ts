@@ -16,7 +16,7 @@ export default AsyncGet({
       // if not in cache, check the DB
       if (!hit.has) {
         const dbHit = await AllowListService.findOne({
-          type: type as AllowListType,
+          type: typeof AllowListType,
           key,
         })
         if (dbHit) {
