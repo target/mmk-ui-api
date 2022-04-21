@@ -31,8 +31,9 @@ const iocDomainCache = new LRUCache({
 export class WebsocketRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
   async process(
-    payload: MerryMaker.WebFunctionCallEvent
+    scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    const payload = scanEvent.payload as MerryMaker.WebFunctionCallEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
       name: this.options.name,

@@ -37,8 +37,9 @@ const seenFilesCache = new LRUCache({
 export class YaraRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
   async process(
-    payload: MerryMaker.WebScriptEvent
+    scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    const payload = scanEvent.payload as MerryMaker.WebScriptEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
       name: this.options.name,

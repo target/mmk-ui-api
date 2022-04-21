@@ -31,8 +31,10 @@ const domainAllowListCache = new LRUCache({
 export class IOCDomainRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
   async process(
-    payload: MerryMaker.WebRequestEvent
+    scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    this.event = scanEvent
+    const payload = scanEvent.payload as MerryMaker.WebRequestEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
       name: this.options.name,

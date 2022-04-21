@@ -34,6 +34,7 @@ jsScopeEventQueue.process(async (job: Job) => {
       {
         scan_id: job.data.scanID,
         entry: job.data.type,
+        test: job.data.test,
         level: 'info',
         event: job.data.payload,
       },

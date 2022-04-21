@@ -1,8 +1,10 @@
-import MerryMakerTypes from '@merrymaker/types'
-import { config } from 'node-config'
+import fetch from 'node-fetch'
+import MerryMakerTypes, { ScanEvent } from '@merrymaker/types'
+import LRUCache from 'lru-native2'
+import { config } from 'node-config-ts'
 
-import fetch from 'node-fetch-cjs'
 import { isOfType } from '../lib/utils'
+import logger from '../loaders/logger'
 
 const allowListURL = `${config.transport.http}/api/allow_list`
 
@@ -35,11 +37,10 @@ export type StoreTypeResponse = {
 }
 
 export abstract class Rule {
+  event: ScanEvent
   alertResults: MerryMakerTypes.RuleAlert[]
   constructor(protected readonly options: MerryMakerTypes.RuleAlert) {}
-  abstract process(
-    evt: MerryMakerTypes.ScanEventPayload
-  ): Promise<MerryMakerTypes.RuleAlert[]>
+  abstract process(scanEvent: ScanEvent): Promise<MerryMakerTypes.RuleAlert[]>
   get ruleDetails(): MerryMakerTypes.RuleAlert {
     return this.options
   }
@@ -111,5 +112,105 @@ export abstract class Rule {
     if (isOfType<StoreTypeResponse>(res, storeNameResponseSchema)) {
       return res
     }
+  }
+
+  /**
+   * fetchSeenStrings
+   *
+   * read-only call to check if seen_string exists in remote cache
+   */
+  async fetchSeenStrings(
+    key: string,
+    type: string
+  ): Promise<StoreTypeResponse> {
+    const url = new URL(`${config.transport.http}/api/seen_strings/_cache`)
+    url.search = new URLSearchParams({
+      key,
+      type
+    }).toString()
+    // fetch cache
+    const seenReq = await fetch(url, {
+      method: 'get',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    const res = await seenReq.json()
+    if (isOfType<StoreTypeResponse>(res, storeNameResponseSchema)) {
+      return res
+    }
+  }
+
+  /**
+   * isAllowed
+   *
+   * check to see if key/value is found in remote allow list
+   *
+   * updates `cache` if found
+   */
+  async isAllowed(options: {
+    value: string
+    key: string
+    cache: LRUCache<number>
+  }): Promise<boolean> {
+    if (options.cache.get(options.value)) {
+      logger.info({
+        module: 'rules/base',
+        method: 'isAllowed',
+        result: `${options.key}/${options.value} found in cache`
+      })
+      return true
+    }
+    const allowed = await this.fetchRemoteAllowList(options.value, options.key)
+    if (allowed.total > 0) {
+      logger.info({
+        module: 'rules/base',
+        method: 'isAllowed',
+        result: `${options.key}/${options.value} found in remote allow-list`
+      })
+      let cacheKey = options.value
+      if (this.event.test) {
+        cacheKey = `${cacheKey}|${this.event.scanID}`
+      }
+      options.cache.set(cacheKey, 1)
+      return true
+    }
+    return false
+  }
+
+  /**
+   * wasSeen
+   *
+   * checks if key/value pair has already been seen in local and remote caches
+   *
+   * scopes test scans by scanID in local cache
+   *
+   * wrapper around `fetchSeenStrings` and `bumpRemoteCache`
+   */
+  async wasSeen(options: {
+    value: string
+    key: string
+    cache: LRUCache<number>
+  }): Promise<StoreTypeResponse> {
+    let seenString = options.value
+    if (this.event.test) {
+      seenString = `${seenString}|${this.event.scanID}`
+    }
+    if (options.cache.get(options.value) === 1) {
+      logger.info({
+        module: 'rules/base',
+        method: 'wasSeen',
+        result: `${options.key}/${seenString} found in cache`
+      })
+      return { store: 'local' }
+    }
+    let seenData: StoreTypeResponse
+    if (this.event.test) {
+      // do not update remote cache for tests
+      seenData = await this.fetchSeenStrings(options.value, options.key)
+    } else {
+      // Check remote cache and update (read-through)
+      seenData = await this.bumpRemoteCache(options.value, options.key)
+    }
+    options.cache.set(seenString, 1)
+    return seenData
   }
 }
