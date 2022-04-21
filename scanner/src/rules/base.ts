@@ -151,22 +151,22 @@ export abstract class Rule {
     key: string
     cache: LRUCache<number>
   }): Promise<boolean> {
-    if (options.cache.get(options.value)) {
+    let cacheKey = options.value
+    if (options.cache.get(cacheKey)) {
       logger.info({
         module: 'rules/base',
         method: 'isAllowed',
-        result: `${options.key}/${options.value} found in cache`
+        result: `${options.key}/${cacheKey} found in cache`
       })
       return true
     }
-    const allowed = await this.fetchRemoteAllowList(options.value, options.key)
+    const allowed = await this.fetchRemoteAllowList(cacheKey, options.key)
     if (allowed.total > 0) {
       logger.info({
         module: 'rules/base',
         method: 'isAllowed',
-        result: `${options.key}/${options.value} found in remote allow-list`
+        result: `${options.key}/${cacheKey} found in remote allow-list`
       })
-      let cacheKey = options.value
       if (this.event.test) {
         cacheKey = `${cacheKey}|${this.event.scanID}`
       }
@@ -204,6 +204,14 @@ export abstract class Rule {
     }
     let seenData: StoreTypeResponse
     if (this.event.test) {
+      if (options.cache.get(seenString) === 1) {
+        logger.info({
+          module: 'rules/base',
+          method: 'wasSeen/test',
+          result: `${options.key}/${seenString} found in test cache`
+        })
+        return { store: 'local' }
+      }
       // do not update remote cache for tests
       seenData = await this.fetchSeenStrings(options.value, options.key)
     } else {

@@ -267,5 +267,20 @@ describe('Unknown Domain Rule', () => {
     it('should scope seen_strings cache', () => {
       expect(seenDomainCache.get(`www.testsite.test|${scanID}`)).toEqual(1)
     })
+
+    it('should not alert on seen domain during test', async () => {
+      nock(config.transport.http)
+        .get('/api/allow_list/?key=testsite.test&type=fqdn&field=key')
+        .reply(200, { total: 0 })
+      const res2 = await unknownDomainRule.process({
+        scanID,
+        test: true,
+        type: 'request',
+        payload: {
+          url: 'https://www.testsite.test'
+        } as WebRequestEvent
+      })
+      expect(res2[0].alert).toEqual(false)
+    })
   })
 })
