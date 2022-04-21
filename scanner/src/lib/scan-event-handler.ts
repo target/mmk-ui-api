@@ -65,7 +65,7 @@ export default class ScanEventHandler {
   }
   async process(rj: RuleJobData): Promise<RuleAlert[]> {
     if (this.byName.has(rj.rule)) {
-      return this.byName.get(rj.rule).process(rj.event.payload)
+      return this.byName.get(rj.rule).process(rj.event)
     } else {
       return Promise.reject(`no matching rule for ${rj.rule}`)
     }

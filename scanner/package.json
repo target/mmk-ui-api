@@ -26,15 +26,17 @@
     "yara": "https://github.com/S03D4-164/node-yara.git#dev"
   },
   "devDependencies": {
-    "@merrymaker/types": "^1.0.6",
+    "@merrymaker/types": "^1.0.10",
     "@types/bull": "^3.15.0",
     "@types/jest": "^26.0.19",
+    "@types/nock": "^11.1.0",
     "@types/node": "^14.0.27",
     "@types/node-fetch": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
     "eslint": "^8.1.0",
     "jest": "^26.2.2",
+    "nock": "^13.2.4",
     "ts-jest": "^26.4.4",
     "ts-node": "^8.10.2",
     "typescript": "^4.4.4"

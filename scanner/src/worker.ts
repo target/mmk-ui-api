@@ -2,7 +2,7 @@ import {
   EventResult,
   RuleAlert,
   RuleAlertEvent,
-  GeneralErrorEvent,
+  GeneralErrorEvent
 } from '@merrymaker/types'
 import Bull, { Job } from 'bull'
 import BullWorker from './lib/bull-worker'
@@ -13,11 +13,11 @@ import { RuleJobData } from './lib/scan-event-handler'
 import logger from './loaders/logger'
 
 const jsScopeEventQueue = new Bull<EventResult>('browser-event-queue', {
-  createClient: resolveClient,
+  createClient: resolveClient
 })
 
 const scanLogEventQueue = new Bull<EventResult>('scan-log-queue', {
-  createClient: resolveClient,
+  createClient: resolveClient
 })
 const ruleQueue = new Bull('rule-queue', { createClient: resolveClient })
 ;(async () => {
@@ -34,19 +34,20 @@ jsScopeEventQueue.process(async (job: Job) => {
       {
         scan_id: job.data.scanID,
         entry: job.data.type,
+        test: job.data.test,
         level: 'info',
-        event: job.data.payload,
+        event: job.data.payload
       },
       {
         removeOnComplete: true,
-        removeOnFail: 25,
+        removeOnFail: 25
       }
     )
     await scanHandler.scheduleRules(job.data, ruleQueue)
   }
 })
 
-ruleQueue.on('error', (e) => {
+ruleQueue.on('error', e => {
   logger.error({ queue: 'rule', error: e.message })
 })
 
@@ -67,20 +68,35 @@ const ruleQueueManager = new BullWorker(
       const events = await scanHandler.process(job.data)
       if (events) {
         await scanLogEventQueue.addBulk(
-          events.map((evt: RuleAlert) => {
-            return {
-              data: {
-                entry: 'rule-alert',
-                level: 'info',
-                rule: evt.name,
-                scan_id: job.data.event.scanID,
-                event: evt,
-              } as RuleAlertEvent,
-              opts: {
-                removeOnComplete: true,
-              },
-            }
-          })
+          events
+            .filter((evt: RuleAlert) => {
+              if (evt.alert === false) {
+                logger.info({
+                  queue: 'rule',
+                  scan_id: job.data.event.scanID,
+                  rule: evt.name,
+                  event: evt,
+                  message: 'dropping false alert'
+                })
+                return false
+              }
+              return true
+            })
+            .map((evt: RuleAlert) => {
+              return {
+                data: {
+                  entry: 'rule-alert',
+                  level: 'info',
+                  rule: evt.name,
+                  scan_id: job.data.event.scanID,
+                  test: job.data.event.test,
+                  event: evt
+                } as RuleAlertEvent,
+                opts: {
+                  removeOnComplete: true
+                }
+              }
+            })
         )
       } else {
         logger.info({ queue: 'rule', status: 'no rule alerts' })
@@ -93,8 +109,8 @@ const ruleQueueManager = new BullWorker(
           level: 'error',
           scan_id: job.data.event.scanID,
           event: {
-            message: e.message,
-          },
+            message: e.message
+          }
         } as GeneralErrorEvent,
         { removeOnComplete: true }
       )
@@ -102,10 +118,10 @@ const ruleQueueManager = new BullWorker(
   }
 )
 
-ruleQueueManager.on('info', (msg) => {
+ruleQueueManager.on('info', msg => {
   logger.info(`rules queue manager info - ${msg}`, msg)
 })
-ruleQueueManager.on('error', (err) => {
+ruleQueueManager.on('error', err => {
   logger.error(`rules queue manager error (${err.message})`)
 })
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

@@ -35,8 +35,9 @@ const snapshotHashCache = new LRUCache({
 export class HtmlSnapshotRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
   async process(
-    payload: MerryMaker.HtmlSnapshot
+    scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    const payload = scanEvent.payload as MerryMaker.HtmlSnapshot
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
       name: this.options.name,
