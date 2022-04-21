@@ -11,6 +11,7 @@ export interface AlertV1 {
   rule: string
   level: AlertEvent['type']
   description: string
+  body: object
   cause?: string
   url?: string
   scanName?: string
@@ -24,6 +25,7 @@ const toAlertV1 = (evt: AlertEvent): AlertV1 => ({
   rule: evt.name,
   level: evt.type,
   description: evt.message,
+  body: evt.body,
   scanUrl: `${config.server.uri}/scans/${evt.scan_id}`,
 })
 
@@ -56,7 +58,7 @@ export const init = (
   const kafka = new Kafka({
     brokers: [`${kafkaConfig.host}:${kafkaConfig.port}`],
     clientId: kafkaConfig.clientID,
-    ssl: kafkaSSLOptions,
+    ssl: kafkaSSLOptions
   })
 
   const kafkaProducer = kafka.producer()
@@ -65,13 +67,12 @@ export const init = (
     await kafkaProducer.connect()
     const messages = [
       {
-        key: 'msg',
         value: JSON.stringify(toAlertV1(evt)),
       },
     ]
     await kafkaProducer.send({
       topic: kafkaConfig.topic,
-      messages,
+      messages
     })
     await kafkaProducer.disconnect()
     logger.info({

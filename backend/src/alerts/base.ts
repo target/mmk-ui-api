@@ -7,6 +7,7 @@ export interface AlertEvent {
   scan_id: string
   message: string
   details: string
+  body?: object
 }
 
 export interface AlertSinkBase {

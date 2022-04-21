@@ -100,6 +100,8 @@ export class UnknownDomainRule extends Rule {
       res.message = `${payloadURL.hostname} unknown`
     }
 
+    res.context.domain = payloadURL.hostname
+
     return this.resolveEvent(res)
   }
 }
