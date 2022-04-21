@@ -1309,13 +1309,6 @@
   dependencies:
     "@types/puppeteer" "^5.4.4"
 
-"@merrymaker/types@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@merrymaker/types/-/types-1.0.6.tgz#8c2410decac82099b65c94b9692b6b747f7ae77a"
-  integrity sha512-AlSLrAUh6rSnp1ckhgUrt4m9DaSfphI4zDVLjNZ+uCIePhj4+eR0qn03tOgVMe3JqhpvpEGVG9F6LjVcBw2Uuw==
-  dependencies:
-    "@types/puppeteer" "^3.0.1"
-
 "@node-ipc/js-queue@2.0.3":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@node-ipc/js-queue/-/js-queue-2.0.3.tgz#ac7fe33d766fa53e233ef8fedaf3443a01c5a4cd"
@@ -1848,13 +1841,6 @@
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/@types/prismjs/-/prismjs-1.26.0.tgz#a1c3809b0ad61c62cac6d4e0c56d610c910b7654"
   integrity sha512-ZTaqn/qSqUuAq1YwvOFQfVW1AR/oQJlLSZVustdjwI+GZ8kr0MSHBj0tsXPW1EqHubx50gtBEjbPGsdZwQwCjQ==
-
-"@types/puppeteer@^3.0.1":
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/@types/puppeteer/-/puppeteer-3.0.7.tgz#43e5baa3a2d515d895d5a01b50b2b523ff76b966"
-  integrity sha512-fwmQHrM+CbJd/ZUD4IBXmEKMF3nPMLQL+CaTSfzjo/ayElg8AIzFLcJZ81nCFR47RxLJRdAuSydtlky7N1cwkw==
-  dependencies:
-    "@types/node" "*"
 
 "@types/puppeteer@^5.4.4":
   version "5.4.5"

@@ -192,7 +192,7 @@ export default Vue.extend({
         scan_id: this.testScanID,
         from: this.lastLogDate,
         pageSize: 128,
-        entry: ['log-message', 'screenshot', 'complete', 'error'],
+        entry: ['log-message', 'screenshot', 'complete', 'error', 'rule-alert'],
         orderColumn: 'created_at',
         orderDirection: 'asc',
       })
