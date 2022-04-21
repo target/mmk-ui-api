@@ -101,6 +101,7 @@ function toAlertEvent(evt: MerryMaker.EventResult): AlertEvent {
     scan_id: evt.scan_id,
     message,
     details,
+    body: evt.event,
   }
 }
 

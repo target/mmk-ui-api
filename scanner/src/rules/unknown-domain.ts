@@ -7,14 +7,14 @@ import { IResult } from 'tldts-core'
 
 const oneHour = 1000 * 60 * 60
 
-const domainAllowListCache = new LRUCache({
+export const domainAllowListCache = new LRUCache<number>({
   maxElements: 1000,
   maxAge: oneHour,
   size: 50,
   maxLoadFactor: 2.0
 })
 
-const seenDomainCache = new LRUCache({
+export const seenDomainCache = new LRUCache<number>({
   maxElements: 10000,
   maxAge: oneHour,
   size: 1000,
@@ -23,84 +23,111 @@ const seenDomainCache = new LRUCache({
 
 export class UnknownDomainRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
+  payload: MerryMaker.WebRequestEvent
+  payloadURL: IResult
   async process(
-    payload: MerryMaker.WebRequestEvent
+    scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    this.event = scanEvent
+
+    this.payload = scanEvent.payload as MerryMaker.WebRequestEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
       name: this.options.name,
       alert: false,
       level: this.options.level,
-      context: { url: payload.url }
+      context: { url: this.payload.url }
     }
 
     // Handle invalid URLs
-    let payloadURL: IResult
     try {
-      payloadURL = parse(payload.url)
+      this.payloadURL = parse(this.payload.url)
     } catch (e) {
-
+      res.message = `failed to parse URL ${e.message}`
       return this.resolveEvent(res)
     }
 
-    if (payloadURL.domain === null) {
-      res.message = `missing / empty domain for payload (${payload.url})`
+    if (this.payloadURL.domain === null) {
+      res.message = `missing / empty domain for payload (${this.payload.url})`
       return this.resolveEvent(res)
     }
 
     // Check allow_list cache
-    if (domainAllowListCache.get(payloadURL.domain)) {
-      res.message = `allow-listed (cache) ${payloadURL.domain}`
-      return this.resolveEvent(res)
-    }
+    const allowedDomain = await this.isAllowed({
+      value: this.payloadURL.domain,
+      key: 'fqdn',
+      cache: domainAllowListCache
+    })
 
-    const whiteList = await this.fetchRemoteAllowList(payloadURL.domain, 'fqdn')
-
-    // Checkout backend transport
-    if (whiteList.total > 0) {
-      res.message = `allow-listed (DB) ${payloadURL.domain}`
-      domainAllowListCache.set(payloadURL.domain, 1)
+    if (allowedDomain) {
+      res.message = `domain allow-listed ${this.payloadURL.domain}`
       return this.resolveEvent(res)
     }
 
     // Check if referer allows pass through
-    if (payload.headers.referer) {
-      const refererURL = parse(payload.headers.referer)
-      const lruKey = `${payloadURL.domain}|${refererURL.domain}`
-      // check local cache before checking remote allow-list
-      if (domainAllowListCache.get(lruKey)) {
-        res.message = `allow-listed / referer (cache) ${lruKey}`
-        return this.resolveEvent(res)
-      }
-      const allowedReferrer = await this.fetchRemoteAllowList(
-        refererURL.domain,
-        'referrer'
-      )
-      if (allowedReferrer.total > 0) {
-        res.message = `allow-listed / referer (${refererURL.domain}) (DB)`
-        domainAllowListCache.set(lruKey, 1)
+    if (this.payload.headers?.referer) {
+      const { allowed, message } = await this.allowedReferrer()
+      if (allowed) {
+        res.message = message
         return this.resolveEvent(res)
       }
     }
 
-    // Check full hostname in seen domain cache
-    if (seenDomainCache.get(payloadURL.hostname) === 1) {
-      res.message = `seen hostname (cache) ${payloadURL.hostname}`
-      return this.resolveEvent(res)
-    }
+    const seenDomain = await this.wasSeen({
+      value: this.payloadURL.hostname,
+      key: 'domain',
+      cache: seenDomainCache
+    })
 
-    // Check remote cache
-    const seenData = await this.bumpRemoteCache(payloadURL.hostname, 'domain')
-
-    // cache the result
-    seenDomainCache.set(payloadURL.hostname, 1)
     // Alert if domain was not found in any store
-    if (seenData.store === 'none') {
+    if (seenDomain.store === 'none') {
       res.alert = true
-      res.message = `${payloadURL.hostname} unknown`
+      res.message = `${this.payloadURL.hostname} unknown`
     }
+
+    // attach domain
+    res.context.domain = this.payloadURL.hostname
 
     return this.resolveEvent(res)
+  }
+
+  /**
+   * allowedReferrer
+   *
+   * checks if request comes from an allowed referrer
+   *
+   * checks local `domainAllowListCache` then remote allow-list if not found
+   *
+   * updates `domainAllowListCache` if found in remote allow-list
+   *
+   * scopes test scans by `scanID`
+   */
+  async allowedReferrer(): Promise<{ allowed: boolean; message?: string }> {
+    const refererURL = parse(this.payload.headers.referer)
+    let lruKey = `${this.payloadURL.domain}|${refererURL.domain}`
+    // check local cache before checking remote allow-list
+    if (domainAllowListCache.get(lruKey)) {
+      return {
+        allowed: true,
+        message: `allow-listed / referer (cache) ${lruKey}`
+      }
+    }
+    const allowedReferrer = await this.fetchRemoteAllowList(
+      refererURL.domain,
+      'referrer'
+    )
+    if (allowedReferrer.total > 0) {
+      // scope test to this scan
+      if (this.event.test) {
+        lruKey = `${lruKey}|${this.event.scanID}`
+      }
+      domainAllowListCache.set(lruKey, 1)
+      return {
+        allowed: true,
+        message: `allow-listed / referer (${refererURL.domain}) (DB)`
+      }
+    }
+    return { allowed: false }
   }
 }
 
