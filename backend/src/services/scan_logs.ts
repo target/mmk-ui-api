@@ -24,13 +24,13 @@ async function work(
   job: Job<MerryMaker.EventResult | MerryMaker.RuleAlertEvent>
 ): Promise<ScanLog> {
   const evt = job.data
-  if (evt.entry === 'rule-alert') {
+  if (evt.entry === 'rule-alert' && !evt.test) {
     // ALERT!
     try {
       await handleAlert(evt as MerryMaker.RuleAlertEvent)
     } catch (e) {
-      logger.error('ALERT INSERT', e)
-      throw new Error(e)
+      logger.error('Exception while handling alert', e.message)
+      throw e
     }
   } else if (evt.entry === 'complete') {
     await ScanService.updateState(evt.scan_id, 'completed')
@@ -126,7 +126,7 @@ const countByScanID = (
  */
 const handleAlert = async (
   logEvent: MerryMaker.RuleAlertEvent
-): Promise<{ result: string; alertEvent?: Alert; job?: Job}> => {
+): Promise<{ result: string; alertEvent?: Alert; job?: Job }> => {
   if (!logEvent.event.alert) {
     return { result: 'event.alert is false' }
   }
