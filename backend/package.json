@@ -34,7 +34,7 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.0.0",
     "jest": "^26.1.0",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.18",
     "superagent": "^5.3.1",
     "supertest": "^4.0.2",
     "ts-jest": "^26.1.3",
