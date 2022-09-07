@@ -29,8 +29,9 @@ jobs:
 
       - name: Install yara
         run: |
-          apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing yara-dev
-          apk add --no-cache openssh bash git
+          echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+          echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+          apk add --no-cache libcrypto3 yara-dev openssh bash git
           apk add --no-cache --virtual .gyp python3 make g++
         env:
           LANG: C.UTF.8

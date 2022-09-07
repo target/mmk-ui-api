@@ -1,3 +1,4 @@
+// IOC Payload rule
 import { parse } from 'tldts'
 import crypto from 'crypto'
 import path from 'path'
@@ -11,25 +12,25 @@ import logger from '../loaders/logger'
 const yara = new YaraSync()
 const oneHour = 1000 * 60 * 60
 
-const payloadAllowListCache = new LRUCache({
+export const payloadAllowListCache = new LRUCache<number>({
   maxElements: 1000,
   maxAge: oneHour,
   size: 50,
-  maxLoadFactor: 2.0,
+  maxLoadFactor: 2.0
 })
 
-const iocPayloadCache = new LRUCache({
-  maxElements: 1000,
-  maxAge: oneHour,
-  size: 1000,
-  maxLoadFactor: 2.0,
-})
+export const iocPayloadCache = new LRUCache<number>({
+    maxElements: 1000,
+    maxAge: oneHour,
+    size: 1000,
+    maxLoadFactor: 2.0
+  })
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ;(async () => {
   // init yara skimmer rules
   await yara.initAsync({
-    rules: [{ filename: path.resolve(__dirname, 'ioc.payloads.yara') }],
+    rules: [{ filename: path.resolve(__dirname, 'ioc.payloads.yara') }]
   })
 })()
 
@@ -40,9 +41,12 @@ const iocPayloadCache = new LRUCache({
  */
 export class IOCPayloadRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
+  payloadURL: IResult
+  combinedHash: string
   async process(
     scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    this.event = scanEvent
     const payload = scanEvent.payload as MerryMaker.WebRequestEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
@@ -53,46 +57,35 @@ export class IOCPayloadRule extends Rule {
       context: {
         url: payload.url,
         body: payload.postData,
-        header: payload.headers,
-      },
+        header: payload.headers
+      }
     }
 
-    let payloadURL: IResult
     try {
-      payloadURL = parse(payload.url)
+      this.payloadURL = parse(payload.url)
     } catch (e) {
       res.message = 'unable to parse url'
       return this.resolveEvent(res)
     }
 
-    if (payloadURL.hostname === null) {
+    if (this.payloadURL.hostname === null) {
       logger.warn({
         rule: 'ioc.payload',
-        message: `unable to parse request ${payload}`,
+        message: `unable to parse request ${payload}`
       })
       res.message = 'unable to parse / not a URL'
       return this.resolveEvent(res)
     }
 
-    // pass through allowed ioc payload domains
-    if (payloadAllowListCache.get(payloadURL.hostname)) {
-      res.message = `allow-listed (cache) ${payloadURL.domain}`
-      return this.resolveEvent(res)
-    }
-
-    logger.info({
-      rule: 'ioc.payload',
-      message: 'fetching from remote allow list',
+    // Check allow_list cache
+    const allowedHostname = await this.isAllowed({
+      value: this.payloadURL.hostname,
+      key: 'ioc-payload-domain',
+      cache: payloadAllowListCache
     })
-    // check remote
-    const allowListed = await this.fetchRemoteAllowList(
-      payloadURL.hostname,
-      'ioc-payload-domain'
-    )
 
-    if (allowListed.total > 0) {
-      res.message = `allow-listed (DB) ${payloadURL.hostname}`
-      payloadAllowListCache.set(payloadURL.hostname, 1)
+    if (allowedHostname) {
+      res.message = `allow-listed (cache) ${this.payloadURL.domain}`
       return this.resolveEvent(res)
     }
 
@@ -100,30 +93,30 @@ export class IOCPayloadRule extends Rule {
 
     // combine url, headers, and post data and more things
     const combined = `postData:${postData} ${JSON.stringify(payload)}`
-    const combinedHash = crypto
+
+    this.combinedHash = crypto
       .createHash('sha256')
       .update(combined)
       .digest('hex')
 
-    if (iocPayloadCache.get(combinedHash)) {
+    if (this.seenLocal({ value: this.combinedHash, cache: iocPayloadCache })) {
       res.message = `seen request payload (cache)`
       return this.resolveEvent(res)
     }
 
     const result = await yara.scanAsync({
-      buffer: Buffer.from(combined, 'utf-8'),
+      buffer: Buffer.from(combined, 'utf-8')
     })
 
     if (result.rules.length) {
-      this.alertResults = result.rules.map((r) => ({
+      this.alertResults = result.rules.map(r => ({
         ...res,
         alert: true,
-        message: `${r.id} hit`,
+        message: `${r.id} hit`
       }))
     }
 
-    iocPayloadCache.set(combinedHash, 1)
-    // do not update remote cache (these values have extremely high entropy)
+    iocPayloadCache.set(this.scopeValue(this.combinedHash), 1)
 
     if (this.alertResults.length) {
       return this.alertResults
@@ -138,5 +131,5 @@ export default new IOCPayloadRule({
   level: 'prod',
   alert: false,
   context: {},
-  description: 'detects known sensitive payment data',
+  description: 'detects known sensitive payment data'
 })
