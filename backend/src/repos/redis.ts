@@ -1,5 +1,10 @@
-import redis from 'ioredis'
+import redis, { RedisOptions } from 'ioredis'
 import { config } from 'node-config-ts'
+
+const defaultOpts: RedisOptions = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+}
 
 function createClient(): redis.Redis {
   if (
@@ -16,7 +21,8 @@ function createClient(): redis.Redis {
       sentinels: clients,
       name: config.redis.master,
       password: config.redis.sentinelPassword,
-      sentinelPassword: config.redis.sentinelPassword
+      sentinelPassword: config.redis.sentinelPassword,
+      ...defaultOpts
     })
   }
   return new redis(config.redis.uri)
