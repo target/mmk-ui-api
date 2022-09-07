@@ -190,35 +190,56 @@ export abstract class Rule {
     key: string
     cache: LRUCache<number>
   }): Promise<StoreTypeResponse> {
-    let seenString = options.value
-    if (this.event.test) {
-      seenString = `${seenString}|${this.event.scanID}`
-    }
-    if (options.cache.get(options.value) === 1) {
+    const seenString = this.scopeValue(options.value)
+    if (this.seenLocal(options)) {
       logger.info({
         module: 'rules/base',
         method: 'wasSeen',
-        result: `${options.key}/${seenString} found in cache`
+        result: `${options.key}/${options.value} found in cache`
       })
       return { store: 'local' }
     }
-    let seenData: StoreTypeResponse
-    if (this.event.test) {
-      if (options.cache.get(seenString) === 1) {
-        logger.info({
-          module: 'rules/base',
-          method: 'wasSeen/test',
-          result: `${options.key}/${seenString} found in test cache`
-        })
-        return { store: 'local' }
-      }
-      // do not update remote cache for tests
-      seenData = await this.fetchSeenStrings(options.value, options.key)
-    } else {
-      // Check remote cache and update (read-through)
-      seenData = await this.bumpRemoteCache(options.value, options.key)
-    }
+    const seenData = await this.seenRemote(options.key, options.value)
     options.cache.set(seenString, 1)
     return seenData
+  }
+
+    /**
+   * seenLocal
+   *
+   * Logs and checks if value is found in `cache`.
+   * Checks scoped/test cache for test scans.
+   */
+  seenLocal(options: { value: string; cache: LRUCache<number> }): boolean {
+    const { value, cache } = options
+    if (cache.get(value) === 1) {
+      logger.info({
+        module: 'rules/base',
+        method: 'seenLocal',
+        result: `'${value}' found in cache`
+      })
+      return true
+    }
+    const scoped = this.scopeValue(value)
+    if (this.event.test && cache.get(scoped) === 1) {
+      logger.info({
+        module: 'rules/base',
+        method: 'seenLocal',
+        result: `scoped '${scoped}' found in cache`
+      })
+      return true
+    }
+    return false
+  }
+
+  seenRemote(key: string, value: string): Promise<StoreTypeResponse> {
+    if (this.event.test) {
+      return this.fetchSeenStrings(value, key)
+    }
+    return this.bumpRemoteCache(value, key)
+  }
+
+  scopeValue(value: string) {
+    return this.event.test ? `${value}|${this.event.scanID}` : value
   }
 }

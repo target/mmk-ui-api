@@ -1,3 +1,4 @@
+// IOC Payload rule
 import { parse } from 'tldts'
 import crypto from 'crypto'
 import path from 'path'
@@ -11,14 +12,14 @@ import logger from '../loaders/logger'
 const yara = new YaraSync()
 const oneHour = 1000 * 60 * 60
 
-const payloadAllowListCache = new LRUCache({
+export const payloadAllowListCache = new LRUCache<number>({
   maxElements: 1000,
   maxAge: oneHour,
   size: 50,
   maxLoadFactor: 2.0,
 })
 
-const iocPayloadCache = new LRUCache({
+export const iocPayloadCache = new LRUCache<number>({
   maxElements: 1000,
   maxAge: oneHour,
   size: 1000,
@@ -40,9 +41,12 @@ const iocPayloadCache = new LRUCache({
  */
 export class IOCPayloadRule extends Rule {
   alertResults: MerryMaker.RuleAlert[]
+  payloadURL: IResult
+  combinedHash: string
   async process(
     scanEvent: MerryMaker.ScanEvent
   ): Promise<MerryMaker.RuleAlert[]> {
+    this.event = scanEvent
     const payload = scanEvent.payload as MerryMaker.WebRequestEvent
     this.alertResults = []
     const res: MerryMaker.RuleAlert = {
@@ -57,15 +61,14 @@ export class IOCPayloadRule extends Rule {
       },
     }
 
-    let payloadURL: IResult
     try {
-      payloadURL = parse(payload.url)
+      this.payloadURL = parse(payload.url)
     } catch (e) {
       res.message = 'unable to parse url'
       return this.resolveEvent(res)
     }
 
-    if (payloadURL.hostname === null) {
+    if (this.payloadURL.hostname === null) {
       logger.warn({
         rule: 'ioc.payload',
         message: `unable to parse request ${payload}`,
@@ -74,25 +77,15 @@ export class IOCPayloadRule extends Rule {
       return this.resolveEvent(res)
     }
 
-    // pass through allowed ioc payload domains
-    if (payloadAllowListCache.get(payloadURL.hostname)) {
-      res.message = `allow-listed (cache) ${payloadURL.domain}`
-      return this.resolveEvent(res)
-    }
-
-    logger.info({
-      rule: 'ioc.payload',
-      message: 'fetching from remote allow list',
+    // Check allow_list cache
+    const allowedHostname = await this.isAllowed({
+      value: this.payloadURL.hostname,
+      key: 'ioc-payload-domain',
+      cache: payloadAllowListCache
     })
-    // check remote
-    const allowListed = await this.fetchRemoteAllowList(
-      payloadURL.hostname,
-      'ioc-payload-domain'
-    )
 
-    if (allowListed.total > 0) {
-      res.message = `allow-listed (DB) ${payloadURL.hostname}`
-      payloadAllowListCache.set(payloadURL.hostname, 1)
+    if (allowedHostname) {
+      res.message = `allow-listed (cache) ${this.payloadURL.domain}`
       return this.resolveEvent(res)
     }
 
@@ -100,12 +93,13 @@ export class IOCPayloadRule extends Rule {
 
     // combine url, headers, and post data and more things
     const combined = `postData:${postData} ${JSON.stringify(payload)}`
-    const combinedHash = crypto
+
+    this.combinedHash = crypto
       .createHash('sha256')
       .update(combined)
       .digest('hex')
 
-    if (iocPayloadCache.get(combinedHash)) {
+    if (this.seenLocal({ value: this.combinedHash, cache: iocPayloadCache })) {
       res.message = `seen request payload (cache)`
       return this.resolveEvent(res)
     }
@@ -122,8 +116,7 @@ export class IOCPayloadRule extends Rule {
       }))
     }
 
-    iocPayloadCache.set(combinedHash, 1)
-    // do not update remote cache (these values have extremely high entropy)
+    iocPayloadCache.set(this.scopeValue(this.combinedHash), 1)
 
     if (this.alertResults.length) {
       return this.alertResults

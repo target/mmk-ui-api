@@ -1,19 +1,13 @@
 FROM node:14.18.1-alpine
 MAINTAINER Merrymaker Team "merrymaker@target.com"
 
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-      yara-dev
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
 
-RUN apk add wget ca-certificates
+RUN apk add --no-cache \
+    libcrypto3 yara-dev make python3 g++ git curl
+
 RUN update-ca-certificates --fresh
-
-RUN apk add --no-cache --virtual .gyp \
-  bash \
-  git \
-  openssh \
-  python3 \
-  make \
-  g++
 
 RUN mkdir -p /app
 
