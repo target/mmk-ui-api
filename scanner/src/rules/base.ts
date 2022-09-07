@@ -204,7 +204,7 @@ export abstract class Rule {
     return seenData
   }
 
-    /**
+  /**
    * seenLocal
    *
    * Logs and checks if value is found in `cache`.
