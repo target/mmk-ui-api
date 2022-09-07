@@ -16,21 +16,21 @@ export const payloadAllowListCache = new LRUCache<number>({
   maxElements: 1000,
   maxAge: oneHour,
   size: 50,
-  maxLoadFactor: 2.0,
+  maxLoadFactor: 2.0
 })
 
 export const iocPayloadCache = new LRUCache<number>({
-  maxElements: 1000,
-  maxAge: oneHour,
-  size: 1000,
-  maxLoadFactor: 2.0,
-})
+    maxElements: 1000,
+    maxAge: oneHour,
+    size: 1000,
+    maxLoadFactor: 2.0
+  })
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ;(async () => {
   // init yara skimmer rules
   await yara.initAsync({
-    rules: [{ filename: path.resolve(__dirname, 'ioc.payloads.yara') }],
+    rules: [{ filename: path.resolve(__dirname, 'ioc.payloads.yara') }]
   })
 })()
 
@@ -57,8 +57,8 @@ export class IOCPayloadRule extends Rule {
       context: {
         url: payload.url,
         body: payload.postData,
-        header: payload.headers,
-      },
+        header: payload.headers
+      }
     }
 
     try {
@@ -71,7 +71,7 @@ export class IOCPayloadRule extends Rule {
     if (this.payloadURL.hostname === null) {
       logger.warn({
         rule: 'ioc.payload',
-        message: `unable to parse request ${payload}`,
+        message: `unable to parse request ${payload}`
       })
       res.message = 'unable to parse / not a URL'
       return this.resolveEvent(res)
@@ -105,14 +105,14 @@ export class IOCPayloadRule extends Rule {
     }
 
     const result = await yara.scanAsync({
-      buffer: Buffer.from(combined, 'utf-8'),
+      buffer: Buffer.from(combined, 'utf-8')
     })
 
     if (result.rules.length) {
-      this.alertResults = result.rules.map((r) => ({
+      this.alertResults = result.rules.map(r => ({
         ...res,
         alert: true,
-        message: `${r.id} hit`,
+        message: `${r.id} hit`
       }))
     }
 
@@ -131,5 +131,5 @@ export default new IOCPayloadRule({
   level: 'prod',
   alert: false,
   context: {},
-  description: 'detects known sensitive payment data',
+  description: 'detects known sensitive payment data'
 })
