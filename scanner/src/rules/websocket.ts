@@ -51,7 +51,6 @@ export class WebsocketRule extends Rule {
 
     const url = payload.args.toString()
     // Handle invalid URLs
-    let payloadURL: IResult
     try {
       this.payloadURL = parse(url)
     } catch (e) {
@@ -75,7 +74,7 @@ export class WebsocketRule extends Rule {
     })
 
     if (allowedDomain) {
-      res.message = `allow-listed (cache) ${payloadURL.domain}`
+      res.message = `allow-listed (cache) ${this.payloadURL.domain}`
       return this.resolveEvent(res)
     }
 
@@ -102,7 +101,7 @@ export class WebsocketRule extends Rule {
 
     // Check full hostname in seen domain cache
     if (seenDomain.store !== 'none') {
-      res.message = `seen hostname (cache) ${payloadURL.hostname}`
+      res.message = `seen hostname (cache) ${this.payloadURL.hostname}`
       return this.resolveEvent(res)
     }
 
