@@ -38,7 +38,7 @@ describe('Unknown Domain Rule', () => {
         } as WebRequestEvent
       })
     })
-    it('alerts on unknown domain', async () => {
+    it('alerts on unknown domain', () => {
       expect(result[0].alert).toEqual(true)
     })
     it('updates seen_strings cache', () => {
