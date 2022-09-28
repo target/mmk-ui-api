@@ -23,7 +23,7 @@
     "vue-prism-editor": "^1.2.2",
     "vue-property-decorator": "^8.4.2",
     "vue-router": "^3.5.2",
-    "vuetify": "^2.5.8",
+    "vuetify": "^2.6.10",
     "vuex": "^3.4.0"
   },
   "devDependencies": {
