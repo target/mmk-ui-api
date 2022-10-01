@@ -1,4 +1,4 @@
-FROM node:14.18.1-alpine
+FROM node:16.15.0-alpine
 MAINTAINER Merrymaker Team "merrymaker@target.com"
 
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main openssl
@@ -40,7 +40,7 @@ RUN yarn build
 RUN rm -rf node_modules
 RUN yarn workspace backend install --prod
 
-FROM node:14.18.1-alpine
+FROM node:16.15.0-alpine
 
 RUN mkdir -p /app
 

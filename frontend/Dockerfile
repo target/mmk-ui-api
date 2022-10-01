@@ -1,4 +1,4 @@
-FROM node:14.18.1-alpine
+FROM node:16.15.0-alpine
 MAINTAINER Merrymaker Team "merrymaker@target.com"
 
 RUN apk add --no-cache bash \

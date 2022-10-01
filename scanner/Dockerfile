@@ -1,8 +1,8 @@
-FROM node:14.18.1-alpine
+FROM node:16.15.0-alpine AS build
 MAINTAINER Merrymaker Team "merrymaker@target.com"
 
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 RUN apk add --no-cache \
     libcrypto3 yara-dev make python3 g++ git curl
@@ -31,10 +31,7 @@ RUN yarn build
 RUN rm -rf node_modules
 RUN yarn workspace scanner install --prod
 
-FROM node:14.18.1-alpine
-
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-      yara
+FROM build
 
 RUN mkdir -p /app
 

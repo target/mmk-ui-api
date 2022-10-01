@@ -1,9 +1,15 @@
 import Queue from 'bull'
+import EventEmitter from 'events'
+import IORedis from 'ioredis'
 import MerryMaker from '@merrymaker/types'
 import { createClient } from '../repos/redis'
 
+EventEmitter.defaultMaxListeners = 14
+
 const redisClient = createClient()
 const redisSubscriber = createClient()
+
+const openClients: IORedis.Redis[] = [redisClient, redisSubscriber]
 
 const resolveClient = (type: string) => {
   if (type === 'client') {
@@ -11,33 +17,34 @@ const resolveClient = (type: string) => {
   } else if (type === 'subscriber') {
     return redisSubscriber
   } else {
-    return createClient()
+    const c = createClient()
+    openClients.push(c)
+    return c
   }
 }
 
 const scannerScheduler = new Queue('scanner-scheduler', {
-  prefix: 'mmk',
-  createClient: resolveClient,
+  createClient: resolveClient
 })
 
 const scannerQueue = new Queue<MerryMaker.ScanQueueJob>('scanner-queue', {
-  createClient,
+  createClient: resolveClient
 })
 
 const scannerEventQueue = new Queue('scan-log-queue', {
-  createClient,
+  createClient
 })
 
 const localQueue = new Queue('local', {
-  createClient,
+  createClient: resolveClient
 })
 
 const qtSecretRefresh = new Queue('qt-secret-refresh', {
-  createClient,
+  createClient: resolveClient
 })
 
 const alertQueue = new Queue<MerryMaker.EventResult>('alert-queue', {
-  createClient,
+  createClient: resolveClient
 })
 
 export default {
@@ -46,5 +53,5 @@ export default {
   scannerQueue,
   scannerEventQueue,
   qtSecretRefresh,
-  alertQueue,
+  alertQueue
 }

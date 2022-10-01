@@ -21,7 +21,7 @@ function createClient(): redis.Redis {
       ...defaultOpts
     })
   }
-  return new redis(config.redis.uri)
+  return new redis(config.redis.uri, defaultOpts)
 }
 
 export const client = createClient()

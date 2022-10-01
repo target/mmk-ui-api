@@ -83,7 +83,7 @@ services:
       - traefik.enable=false
 
   jsscope:
-    image: target/mmk-js-scope:v1.2.17
+    image: target/mmk-js-scope:v1.3.0
     depends_on:
       - redis
     environment:
