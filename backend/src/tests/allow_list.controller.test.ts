@@ -108,7 +108,7 @@ describe('AllowList Controller', () => {
 
       // validate response OAS object
       const validate = ajv.compile(
-        api['/api/allow_list/:id'].get.responses['200'].content[
+        api['/api/allow_list/{id}'].get.responses['200'].content[
           'application/json'
         ].schema
       )
@@ -187,7 +187,7 @@ describe('AllowList Controller', () => {
         })
         .set('Accept', 'application/json')
       const validate = ajv.compile(
-        api['/api/allow_list/:id'].put.responses['422'].content[
+        api['/api/allow_list/{id}'].put.responses['422'].content[
           'application/json'
         ].schema
       )

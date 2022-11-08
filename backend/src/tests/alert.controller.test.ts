@@ -135,7 +135,7 @@ describe('Alert Controller', () => {
       expect(res.status).toBe(200)
       expect(res.body.id).toBe(seed.id)
       const validate = ajv.compile(
-        api['/api/alerts/:id'].get.responses['200'].content[
+        api['/api/alerts/{id}'].get.responses['200'].content[
           'application/json'
         ].schema
       )
@@ -176,7 +176,7 @@ describe('Alert Controller', () => {
       )
       expect(res.status).toBe(200)
       const validate = ajv.compile(
-        api['/api/alerts/:id'].delete.responses['200'].content[
+        api['/api/alerts/{id}'].delete.responses['200'].content[
           'application/json'
         ].schema
       )
