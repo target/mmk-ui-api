@@ -126,7 +126,7 @@ describe('ScanLog Controller', () => {
       )
       expect(res.body.id).toBe(seedA.id)
       const validate = ajv.compile(
-        api['/api/scan_logs/:id'].get.responses['200'].content[
+        api['/api/scan_logs/{id}'].get.responses['200'].content[
           'application/json'
         ].schema
       )
@@ -147,7 +147,7 @@ describe('ScanLog Controller', () => {
       expect(res.status).toBe(200)
       expect(res.body[0]).toEqual({ entry: seedA.entry })
       const validate = ajv.compile(
-        api['/api/scan_logs/:id/distinct'].get.responses['200']
+        api['/api/scan_logs/{id}/distinct'].get.responses['200']
           .content['application/json'].schema
       )
       expect(validate(res.body)).toBe(true)

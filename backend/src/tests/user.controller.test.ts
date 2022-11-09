@@ -75,12 +75,12 @@ describe('User Controller', () => {
       expect(res.status).toBe(422)
     })
   })
-  describe('GET /api/users/:id', () => {
+  describe('GET /api/users/{id}', () => {
     it('should return a User by id', async () => {
       const res = await request(adminSession().app).get(`/api/users/${seed.id}`)
       expect(res.body.id).toBe(seed.id)
       const validate = ajv.compile(
-        api['/api/users/:id'].get.responses['200'].content[
+        api['/api/users/{id}'].get.responses['200'].content[
           'application/json'
         ].schema
       )
