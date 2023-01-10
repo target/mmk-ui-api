@@ -18,7 +18,7 @@
     "ioredis": "^4.17.3",
     "js-beautify": "^1.13.0",
     "lru-native2": "^1.2.2",
-    "node-config-ts": "^3.0.4",
+    "node-config-ts": "3.1.0",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.19",
     "pino": "^6.11.3",

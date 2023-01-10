@@ -1,12 +1,12 @@
-import redis, { RedisOptions } from 'ioredis'
-import { config } from 'node-config-ts'
+import Redis, { RedisOptions } from 'ioredis'
+import { config, } from 'node-config-ts'
 
 const defaultOpts: RedisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 }
 
-function createClient(): redis.Redis {
+function createClient(): Redis {
   if (
     config.redis?.useSentinel &&
     config.redis.nodes &&
@@ -16,7 +16,7 @@ function createClient(): redis.Redis {
       host: item.trim(),
       port: config.redis.sentinelPort
     }))
-    return new redis({
+    return new Redis({
       updateSentinels: false,
       sentinels: clients,
       name: config.redis.master,
@@ -25,7 +25,7 @@ function createClient(): redis.Redis {
       ...defaultOpts
     })
   }
-  return new redis(config.redis.uri, defaultOpts)
+  return new Redis(config.redis.uri, defaultOpts)
 }
 
 const redisClient = createClient()

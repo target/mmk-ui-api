@@ -1,6 +1,6 @@
 import Queue from 'bull'
 import EventEmitter from 'events'
-import IORedis from 'ioredis'
+import { Redis } from 'ioredis'
 import MerryMaker from '@merrymaker/types'
 import { createClient } from '../repos/redis'
 
@@ -9,9 +9,9 @@ EventEmitter.defaultMaxListeners = 14
 const redisClient = createClient()
 const redisSubscriber = createClient()
 
-const openClients: IORedis.Redis[] = [redisClient, redisSubscriber]
+const openClients: Redis[] = [redisClient, redisSubscriber]
 
-const resolveClient = (type: string) => {
+const resolveClient = (type: 'client' | 'subscriber' | 'bclient') => {
   if (type === 'client') {
     return redisClient
   } else if (type === 'subscriber') {
