@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/target/mmk-ui-api/internal/mocks"
 	"github.com/target/mmk-ui-api/internal/service"
-	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 

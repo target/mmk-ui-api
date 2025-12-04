@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/stretchr/testify/require"
 )
 
 type stubIOCRepo struct {

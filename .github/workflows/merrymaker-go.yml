@@ -1,0 +1,208 @@
+name: Merrymaker Go CI
+
+on:
+  push:
+    paths:
+      - "services/merrymaker-go/**"
+      - ".github/workflows/merrymaker-go.yml"
+  pull_request:
+    paths:
+      - "services/merrymaker-go/**"
+      - ".github/workflows/merrymaker-go.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mmk-go-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOFLAGS: -buildvcs=false
+
+jobs:
+  lint:
+    name: GolangCI-Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/merrymaker-go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          check-latest: true
+          cache: true
+          cache-dependency-path: services/merrymaker-go/go.sum
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.2.2"
+
+      - name: Build frontend assets (embed targets)
+        working-directory: services/merrymaker-go/frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b "$(go env GOPATH)/bin" v2.6.0
+
+      - name: Run golangci-lint
+        run: golangci-lint run
+
+  gosec:
+    name: GoSec
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/merrymaker-go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          check-latest: true
+          cache: true
+          cache-dependency-path: services/merrymaker-go/go.sum
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.2.2"
+
+      - name: Build frontend assets (embed targets)
+        working-directory: services/merrymaker-go/frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec
+        run: gosec ./...
+
+  test:
+    name: Go Tests (integration)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/merrymaker-go
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: merrymaker
+          POSTGRES_USER: merrymaker
+          POSTGRES_PASSWORD: merrymaker
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          check-latest: true
+          cache: true
+          cache-dependency-path: services/merrymaker-go/go.sum
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.2.2"
+
+      - name: Build frontend assets (embed targets)
+        working-directory: services/merrymaker-go/frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Install DB clients
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client redis-tools
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U merrymaker >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Postgres did not become ready in time" >&2
+          exit 1
+
+      - name: Wait for Redis
+        run: |
+          for i in {1..30}; do
+            if redis-cli -h 127.0.0.1 -p 6379 ping >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Redis did not become ready in time" >&2
+          exit 1
+
+      - name: Run Go tests
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: "5432"
+          TEST_DB_USER: merrymaker
+          TEST_DB_PASSWORD: merrymaker
+          TEST_DB_NAME: merrymaker
+          TEST_DB_EPHEMERAL: "1"
+          DB_SSL_MODE: disable
+          TEST_REQUIRE_INFRA: "1"
+          REDIS_ADDR: 127.0.0.1:6379
+        run: go test ./...
+
+  frontend:
+    name: Frontend Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/merrymaker-go/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.2.2"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint frontend
+        run: bun run lint
+
+      - name: Test frontend
+        run: bun run test

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	domainrules "github.com/target/mmk-ui-api/internal/domain/rules"
 	"github.com/target/mmk-ui-api/internal/domain/rules/rulestest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestJobPreparationService_ResolveReturnsSiteAlertMode(t *testing.T) {

@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data/cryptoutil"
 	"github.com/target/mmk-ui-api/internal/data/pgxutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // SecretRepo provides CRUD operations for secrets with at-rest encryption.

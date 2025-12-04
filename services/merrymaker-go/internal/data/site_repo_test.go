@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/target/mmk-ui-api/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain/model"
+	"github.com/target/mmk-ui-api/internal/testutil"
 )
 
 func createTestSource(t *testing.T, db *sql.DB, name string) *model.Source {

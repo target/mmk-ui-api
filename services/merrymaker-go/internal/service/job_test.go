@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	domainjob "github.com/target/mmk-ui-api/internal/domain/job"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/mocks"
 	"github.com/target/mmk-ui-api/internal/observability/notify"
 	"github.com/target/mmk-ui-api/internal/service/failurenotifier"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 

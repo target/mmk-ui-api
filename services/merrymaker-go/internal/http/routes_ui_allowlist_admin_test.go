@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/ports"
 	"github.com/target/mmk-ui-api/internal/service"
-	"github.com/stretchr/testify/assert"
 )
 
 // fakeAllowlistSvc implements the minimal interface used by UI for edit form rendering.

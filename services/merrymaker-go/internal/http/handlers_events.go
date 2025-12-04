@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/service"
-	"github.com/google/uuid"
 )
 
 // EventHandlers provides HTTP handlers for event-related operations.

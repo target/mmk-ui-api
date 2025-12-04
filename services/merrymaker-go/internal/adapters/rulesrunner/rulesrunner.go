@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/domain/model"
@@ -20,7 +21,6 @@ import (
 	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/target/mmk-ui-api/internal/service/failurenotifier"
 	"github.com/target/mmk-ui-api/internal/service/rules"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )
 

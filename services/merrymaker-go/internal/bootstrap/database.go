@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/data"
-	"github.com/redis/go-redis/v9"
 )
 
 // DatabaseConfig contains configuration for database connections.

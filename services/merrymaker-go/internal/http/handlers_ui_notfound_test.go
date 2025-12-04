@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/stretchr/testify/assert"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 )
 
 func TestUIHandlers_NotFound_BrowserRequest_Unauthenticated(t *testing.T) {

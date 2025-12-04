@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/core"
-	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/core"
+	"github.com/target/mmk-ui-api/internal/domain/model"
 )
 
 type stubIOCCache struct {

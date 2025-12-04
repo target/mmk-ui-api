@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/target/mmk-ui-api/internal/data/pgxutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/jackc/pgx/v5"
 )
 
 // ListBySource returns jobs associated with a specific source, ordered by created_at DESC.

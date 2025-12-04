@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/stretchr/testify/assert"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 )
 
 func TestGetUserSessionFromContext(t *testing.T) {

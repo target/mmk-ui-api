@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data"
@@ -22,7 +23,6 @@ import (
 	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/target/mmk-ui-api/internal/service/failurenotifier"
 	"github.com/target/mmk-ui-api/internal/service/rules"
-	"github.com/redis/go-redis/v9"
 )
 
 // ServiceContainer holds all application services.

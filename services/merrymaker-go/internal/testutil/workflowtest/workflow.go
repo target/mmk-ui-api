@@ -16,12 +16,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/target/mmk-ui-api/internal/testutil"
-	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 )
 
 // RepositoryProvider is a simple interface for providing repositories
