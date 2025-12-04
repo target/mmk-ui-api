@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/data/pgxutil"
-	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/target/mmk-ui-api/internal/testutil"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/data/pgxutil"
+	"github.com/target/mmk-ui-api/internal/domain/model"
+	"github.com/target/mmk-ui-api/internal/testutil"
 )
 
 func TestJobRepo_Create(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/target/mmk-ui-api/internal/data/pgxutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/jackc/pgx/v5"
 )
 
 // DomainAllowlistRepo provides database operations for domain allowlists.

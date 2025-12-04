@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/bootstrap"
-	"github.com/redis/go-redis/v9"
 )
 
 type connectInfraOptions struct {

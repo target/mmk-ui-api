@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/migrate"
 	// Import pgx driver for database/sql compatibility in tests.
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
+	"github.com/target/mmk-ui-api/internal/migrate"
 )
 
 // RunMigrations delegates to the shared migrate package to apply production migrations.

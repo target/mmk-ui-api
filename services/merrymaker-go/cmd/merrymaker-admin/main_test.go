@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/service"
 )
 
 func TestPrintRulesJobResultsIncludesFailureBanner(t *testing.T) {

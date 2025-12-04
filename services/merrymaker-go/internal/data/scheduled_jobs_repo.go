@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/data/pgxutil"
-	"github.com/target/mmk-ui-api/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/target/mmk-ui-api/internal/data/pgxutil"
+	"github.com/target/mmk-ui-api/internal/domain"
 )
 
 // ScheduledJobsRepo provides database operations for scheduled jobs management.
@@ -42,8 +42,12 @@ func NewScheduledJobsRepoWithTimeProvider(db *sql.DB, timeProvider TimeProvider)
 func fnvHash(s string) int64 {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(s))
-	//nolint:gosec // G115: converting uint64 to int64 is intentional: Postgres advisory locks use BIGINT (signed); we preserve bit-pattern via modulo wrap.
-	return int64(h.Sum64())
+	// Advisory locks accept BIGINT; constrain the unsigned hash into int64 range before casting.
+	u := h.Sum64()
+	if u > uint64(math.MaxInt64) {
+		u %= uint64(math.MaxInt64)
+	}
+	return int64(u) // #nosec G115 -- value is explicitly bounded to <= MaxInt64 before casting to int64.
 }
 
 const scheduledJobColumns = `

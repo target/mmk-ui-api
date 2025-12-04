@@ -3,13 +3,13 @@ package bootstrap
 import (
 	"log/slog"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/adapters/authroles"
 	"github.com/target/mmk-ui-api/internal/adapters/devauth"
 	"github.com/target/mmk-ui-api/internal/adapters/oidc"
 	redisadapter "github.com/target/mmk-ui-api/internal/adapters/redis"
 	"github.com/target/mmk-ui-api/internal/service"
-	"github.com/redis/go-redis/v9"
 )
 
 // AuthConfig contains configuration for auth service.

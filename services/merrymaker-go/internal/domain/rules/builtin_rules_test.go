@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/target/mmk-ui-api/internal/domain/model"
-	servicerules "github.com/target/mmk-ui-api/internal/service/rules"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain/model"
+	servicerules "github.com/target/mmk-ui-api/internal/service/rules"
 )
 
 type stubUnknownDomainEvaluator struct {

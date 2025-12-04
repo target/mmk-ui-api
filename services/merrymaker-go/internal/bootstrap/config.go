@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/target/mmk-ui-api/config"
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
+	"github.com/target/mmk-ui-api/config"
 )
 
 // InitLogger initializes the structured logger.

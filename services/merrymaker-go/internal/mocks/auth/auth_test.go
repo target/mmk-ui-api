@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
-	"github.com/target/mmk-ui-api/internal/ports"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
+	"github.com/target/mmk-ui-api/internal/ports"
 )
 
 func TestMockAuthProvider_Begin_Defaults(t *testing.T) {

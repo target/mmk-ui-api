@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data/database"
 	"github.com/target/mmk-ui-api/internal/data/pgxutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // ErrAlertNotFound is returned when an alert is not found.

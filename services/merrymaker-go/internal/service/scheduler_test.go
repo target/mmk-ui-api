@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/domain"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	domainscheduler "github.com/target/mmk-ui-api/internal/domain/scheduler"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 const (

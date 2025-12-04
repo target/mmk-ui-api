@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/target/mmk-ui-api/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain/model"
+	"github.com/target/mmk-ui-api/internal/mocks"
 	"go.uber.org/mock/gomock"
 )
 

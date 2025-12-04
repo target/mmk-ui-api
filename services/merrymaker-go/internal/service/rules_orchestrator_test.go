@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	domainrules "github.com/target/mmk-ui-api/internal/domain/rules"
 	rulestest "github.com/target/mmk-ui-api/internal/domain/rules/rulestest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestProcessRulesJob_Success(t *testing.T) {

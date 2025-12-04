@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data/pgxutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/jackc/pgx/v5"
 )
 
 // JobResultRepo provides persistence for job execution results.

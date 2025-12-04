@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
-	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
+	"github.com/target/mmk-ui-api/internal/service"
 )
 
 // mockAuthService is a test double for service.AuthService.

@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/target/mmk-ui-api/internal/domain/model"
 )
 
 type fakeSitesSvc struct{}

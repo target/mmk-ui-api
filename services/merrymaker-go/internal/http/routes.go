@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/target/mmk-ui-api"
+	merrymaker "github.com/target/mmk-ui-api"
 	"github.com/target/mmk-ui-api/internal/core"
 	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/target/mmk-ui-api/internal/service"

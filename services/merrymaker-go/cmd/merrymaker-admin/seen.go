@@ -12,8 +12,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/data/database"
 	"github.com/redis/go-redis/v9"
+	"github.com/target/mmk-ui-api/internal/data/database"
 )
 
 type deleteSeenDomainRequest struct {

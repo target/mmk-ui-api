@@ -8,10 +8,10 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/target/mmk-ui-api/internal/core"
-	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/target/mmk-ui-api/internal/core"
+	"github.com/target/mmk-ui-api/internal/data"
 )
 
 // repositoryProvider implements workflowtest.RepositoryProvider to avoid import cycles.

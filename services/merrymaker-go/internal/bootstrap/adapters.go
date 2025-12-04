@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/adapters/jobrunner"
 	"github.com/target/mmk-ui-api/internal/adapters/reaper"
@@ -21,7 +22,6 @@ import (
 	"github.com/target/mmk-ui-api/internal/observability/statsd"
 	"github.com/target/mmk-ui-api/internal/service/failurenotifier"
 	"github.com/target/mmk-ui-api/internal/service/rules"
-	"github.com/redis/go-redis/v9"
 )
 
 // RulesEngineConfig contains configuration for rules engine.

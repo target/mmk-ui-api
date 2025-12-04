@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/redis/go-redis/v9"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 )
 
 // SessionStore is a Redis-based session store for production use.

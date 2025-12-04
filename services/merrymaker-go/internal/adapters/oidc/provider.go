@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/target/mmk-ui-api/internal/ports"
-	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
 

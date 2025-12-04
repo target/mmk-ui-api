@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/data/cryptoutil"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/target/mmk-ui-api/internal/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // sourcesSvcAdapter adapts arbitrary funcs to the SourcesService interface for tests.

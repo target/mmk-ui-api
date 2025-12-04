@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/stretchr/testify/assert"
+	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 )
 
 func TestRequireAuthBrowser_APIRequest(t *testing.T) {

@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/domain/model"
-	"github.com/target/mmk-ui-api/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain/model"
+	"github.com/target/mmk-ui-api/internal/testutil"
 )
 
 // TestHTTPAlertSinkRepo_Integration_ConcurrentCreate tests concurrent HTTP alert sink creation with unique names.

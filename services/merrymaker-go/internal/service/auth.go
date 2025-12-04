@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	"github.com/target/mmk-ui-api/internal/ports"
-	"github.com/google/uuid"
 )
 
 // AuthServiceOptions groups dependencies for AuthService.

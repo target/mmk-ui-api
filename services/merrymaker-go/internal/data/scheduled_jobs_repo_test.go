@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/testutil"
 )
 
 func TestScheduledJobsRepo_FindDue(t *testing.T) {

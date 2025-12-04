@@ -3,8 +3,8 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/target/mmk-ui-api/internal/domain"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain"
 )
 
 func TestParseOverrunStateMask(t *testing.T) {

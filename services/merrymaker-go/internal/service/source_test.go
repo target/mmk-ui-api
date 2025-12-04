@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/mocks"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 

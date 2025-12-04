@@ -9,9 +9,9 @@ import (
 	"net/url"
 	"strings"
 
+	jmespath "github.com/jmespath-community/go-jmespath"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
-	jmespath "github.com/jmespath-community/go-jmespath"
 )
 
 // JMESPathEvaluator abstracts JMESPath operations for testability.

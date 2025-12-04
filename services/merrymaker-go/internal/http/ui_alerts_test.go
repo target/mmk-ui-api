@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	alertsvm "github.com/target/mmk-ui-api/internal/http/ui/alerts"
 	"github.com/target/mmk-ui-api/internal/service"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var errAlertNotFound = errors.New("alert not found")

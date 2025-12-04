@@ -18,13 +18,13 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/target/mmk-ui-api/config"
 	"github.com/target/mmk-ui-api/internal/bootstrap"
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/devseed"
 	"github.com/target/mmk-ui-api/internal/service"
 	"github.com/target/mmk-ui-api/internal/util"
-	"github.com/redis/go-redis/v9"
 )
 
 type commandFn func(ctx *commandContext, args []string) error

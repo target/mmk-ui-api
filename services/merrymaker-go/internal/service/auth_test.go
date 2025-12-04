@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	domainauth "github.com/target/mmk-ui-api/internal/domain/auth"
 	mocks "github.com/target/mmk-ui-api/internal/mocks/auth"
 	"github.com/target/mmk-ui-api/internal/ports"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // mockSessionStore is a test helper for testing session store errors.

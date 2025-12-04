@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/target/mmk-ui-api/internal/domain"
-	"github.com/target/mmk-ui-api/internal/domain/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/target/mmk-ui-api/internal/domain"
+	"github.com/target/mmk-ui-api/internal/domain/scheduler"
 )
 
 type stubTaskStore struct {
