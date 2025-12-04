@@ -11,7 +11,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.25.0",
+    "axios": "^0.30.2",
     "core-js": "^3.6.5",
     "prismjs": "^1.24.1",
     "vega": "^5.23.0",
