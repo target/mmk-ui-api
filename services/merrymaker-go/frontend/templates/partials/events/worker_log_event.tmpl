@@ -1,0 +1,38 @@
+{{- define "worker-log-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$message := index $data "message"}}
+{{if not $message}}
+{{$message = index $data "text"}}
+{{end}}
+{{if not $message}}
+{{$message = index $data "msg"}}
+{{end}}
+    {{if $message}}
+        <span class="event__summary-text" title="{{$message}}">{{truncateText $message 64}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Worker log entry</span>
+    {{end}}
+{{- end}}
+
+{{- define "worker-log-event-details" -}}
+{{$data := .EventData | parseEventData}}
+{{$message := index $data "message"}}
+{{if not $message}}
+{{$message = index $data "text"}}
+{{end}}
+{{if not $message}}
+{{$message = index $data "msg"}}
+{{end}}
+<div class="event__body">
+    <div class="worker-log"
+         style="padding:4px 8px;
+                background:var(--color-surface-secondary, #f8f9fa);
+                border-left:3px solid var(--color-primary, #007bff);
+                font-family:monospace;
+                font-size:0.875rem">{{if $message}}{{$message}}{{else}}(empty log message){{end}}</div>
+</div>
+{{- end}}
+
+{{- define "worker-log-event" -}}
+{{template "worker-log-event-details" .}}
+{{- end}}

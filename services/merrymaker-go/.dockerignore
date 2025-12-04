@@ -1,0 +1,26 @@
+# Exclude files not needed for building the Go service
+# Keep built static assets and templates for go:embed
+
+# VCS / editor
+.git
+.gitignore
+.vscode
+.DS_Store
+
+# Binaries / local build outputs
+bin
+merrymaker
+merrymaker-prod
+
+# Frontend dev-only deps
+frontend/node_modules
+frontend/vendor
+
+# Tests and docs not needed in container build context
+**/*_test.go
+docs
+examples
+
+# Local docker-compose files
+docker-compose.yml
+

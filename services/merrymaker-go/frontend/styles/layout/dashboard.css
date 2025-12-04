@@ -1,0 +1,173 @@
+/* Layout: Dashboard grid, sidebar, header, main, responsive behavior */
+
+.dashboard-layout {
+	display: grid;
+	grid-template-columns: 240px 1fr;
+	grid-template-rows: auto 1fr;
+	grid-template-areas: "sidebar header" "sidebar main";
+	min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+	grid-area: sidebar;
+	background-color: var(--color-surface);
+	border-right: var(--border-width) solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	padding: var(--space-6) var(--space-4);
+}
+.sidebar-header {
+	padding: 0 var(--space-4) var(--space-4);
+	margin-bottom: var(--space-4);
+}
+.sidebar-header h2 {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+}
+.main-nav {
+	flex-grow: 1;
+}
+
+.nav-heading {
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0 var(--space-4);
+	margin-top: var(--space-6);
+	margin-bottom: var(--space-2);
+}
+.nav-list {
+	list-style: none;
+}
+
+.nav-link {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-4);
+	border-radius: var(--border-radius-md);
+	color: var(--color-text-secondary);
+	text-decoration: none;
+	font-weight: var(--font-weight-medium);
+	transition:
+		background-color 0.2s,
+		color 0.2s;
+	font-size: var(--font-size-sm);
+}
+.nav-link svg {
+	width: 20px;
+	height: 20px;
+}
+.nav-link:hover {
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+}
+.nav-link.is-active {
+	background-color: var(--color-brand-primary);
+	color: var(--color-surface);
+}
+
+/* Header */
+.header {
+	grid-area: header;
+	background-color: var(--color-surface);
+	border-bottom: var(--border-width) solid var(--color-border);
+	padding: var(--space-4) var(--space-8);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: sticky;
+	top: 0;
+	z-index: 500;
+}
+.header-title {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-secondary);
+}
+
+/* Hide hamburger by default on wide screens; show via media query on small screens */
+.sidebar-toggle {
+	display: none;
+}
+
+/* Main */
+.main-content {
+	grid-area: main;
+	padding: var(--space-8);
+	background: linear-gradient(180deg, var(--color-background) 0%, var(--color-gradient-end) 100%);
+	min-height: calc(
+		100vh -
+		var(--header-height)
+	); /* Subtract header height for full viewport coverage */
+}
+
+/* Card container hover polish comes from components/cards.css */
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgb(0 0 0 / 0.25);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	z-index: 900;
+}
+
+/* Responsive sidebar behavior */
+@media (max-width: 1024px) {
+	.dashboard-layout {
+		grid-template-columns: 1fr;
+
+		grid-template-rows: auto 1fr;
+		grid-template-areas: "header" "main";
+	}
+
+	/* Improve hamburger DX on small screens: icon-only ghost button */
+	.sidebar-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		margin-right: var(--space-2);
+		background-color: transparent;
+		border-color: transparent;
+		color: var(--color-text-muted);
+	}
+	.sidebar-toggle:hover {
+		background-color: var(--color-background);
+		color: var(--color-text-secondary);
+	}
+	.sidebar-toggle svg {
+		width: 22px;
+		height: 22px;
+	}
+
+	.sidebar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100dvh;
+		width: 280px;
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+		z-index: 1000;
+	}
+	body.sidebar-open .sidebar {
+		transform: translateX(0);
+		box-shadow: var(--shadow-md);
+	}
+	body.sidebar-open .sidebar-overlay {
+		opacity: 1;
+		pointer-events: auto;
+	}
+	body.sidebar-open {
+		overflow: hidden;
+	}
+}

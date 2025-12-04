@@ -1,0 +1,311 @@
+/* Component: Job Detail View - Compact Design */
+
+/* Compact header design */
+.job-detail-compact-header {
+	background-color: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-lg);
+	margin-bottom: var(--space-4);
+	box-shadow: var(--shadow-sm);
+}
+
+/* Back navigation link */
+.job-detail-compact-nav {
+	padding: var(--space-3) var(--space-4);
+	border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.job-detail-back-link {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	color: var(--color-text-secondary);
+	text-decoration: none;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	transition: color 0.2s;
+}
+
+.job-detail-back-link:hover {
+	color: var(--color-text-primary);
+}
+
+.job-detail-back-link i {
+	width: 16px;
+	height: 16px;
+}
+
+/* Compact summary section */
+.job-detail-compact-summary {
+	padding: var(--space-4);
+}
+
+.job-detail-compact-title-row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	margin-bottom: var(--space-2);
+}
+
+.job-detail-compact-title {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin: 0;
+}
+
+/* Compact metadata row */
+.job-detail-compact-meta {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	font-size: var(--font-size-sm);
+	color: var(--color-text-secondary);
+}
+
+.job-detail-compact-id {
+	color: var(--color-text-muted);
+	font-size: var(--font-size-xs);
+}
+
+.job-detail-compact-separator {
+	color: var(--color-text-muted);
+}
+
+.job-detail-compact-info {
+	color: var(--color-text-secondary);
+}
+
+/* Expandable details section */
+.job-detail-compact-details {
+	border-top: var(--border-width) solid var(--color-border);
+}
+
+.job-detail-compact-toggle {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-3) var(--space-4);
+	cursor: pointer;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	transition:
+		background-color 0.2s,
+		color 0.2s;
+	list-style: none;
+}
+
+.job-detail-compact-toggle::-webkit-details-marker {
+	display: none;
+}
+
+.job-detail-compact-toggle:hover {
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+}
+
+.job-detail-compact-toggle-icon {
+	width: 16px;
+	height: 16px;
+	transition: transform 0.2s;
+}
+
+.job-detail-compact-details[open] .job-detail-compact-toggle-icon {
+	transform: rotate(180deg);
+}
+
+.job-detail-compact-expanded {
+	padding: var(--space-4);
+	background-color: var(--color-surface);
+	border-top: var(--border-width) solid var(--color-border);
+	border-bottom-left-radius: var(--border-radius-lg);
+	border-bottom-right-radius: var(--border-radius-lg);
+}
+
+/* Grid layout for expanded details */
+.job-detail-compact-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--space-6);
+}
+
+@media (max-width: 900px) {
+	.job-detail-compact-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Section within expanded area */
+.job-detail-compact-section {
+	background-color: var(--color-background);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	padding: var(--space-4);
+}
+
+.job-detail-run-snapshot {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+
+.job-detail-breakdown-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: var(--space-4);
+}
+
+.job-detail-breakdown-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+
+/* Section title */
+.job-detail-compact-section-title {
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin: 0 0 var(--space-3) 0;
+}
+
+/* Definition list for key-value pairs */
+.job-detail-compact-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin: 0;
+}
+
+.job-detail-compact-item {
+	display: grid;
+	grid-template-columns: 120px 1fr;
+	gap: var(--space-3);
+	align-items: start;
+}
+
+.job-detail-compact-item--full {
+	grid-template-columns: 1fr;
+}
+
+.job-detail-compact-item dt {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	margin: 0;
+}
+
+.job-detail-compact-item dd {
+	font-size: var(--font-size-sm);
+	color: var(--color-text-primary);
+	margin: 0;
+}
+
+/* Error banner */
+.job-detail-compact-error {
+	display: flex;
+	align-items: start;
+	gap: var(--space-2);
+	padding: var(--space-3) var(--space-4);
+	background-color: var(--color-danger-bg);
+	border-top: var(--border-width) solid var(--color-danger-border);
+	color: var(--color-danger-text);
+	font-size: var(--font-size-sm);
+	word-break: break-word;
+}
+
+.job-detail-compact-error i {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+/* Domain tags for rules results */
+.job-detail-domains {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	margin-top: var(--space-1);
+}
+
+.job-detail-domain-tag {
+	display: inline-block;
+	padding: var(--space-1) var(--space-2);
+	font-size: var(--font-size-xs);
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+	background-color: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-sm);
+	color: var(--color-text-primary);
+}
+
+.job-detail-metric-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+}
+
+.job-detail-metric-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--border-radius-lg);
+	background-color: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	line-height: 1;
+}
+
+.job-detail-metric-chip i {
+	width: 16px;
+	height: 16px;
+	color: inherit;
+}
+
+.job-detail-metric-chip.is-warning {
+	background-color: hsla(38, 92%, 95%, 1);
+	border-color: hsla(38, 92%, 75%, 1);
+	color: var(--color-warning);
+}
+
+.job-detail-metric-chip.is-alert {
+	background-color: var(--color-danger-bg);
+	border-color: var(--color-danger-border);
+	color: var(--color-danger-text);
+}
+
+.job-detail-metric-chip.is-info {
+	background-color: var(--color-brand-primary-subtle);
+	border-color: hsla(220, 10%, 60%, 0.4);
+	color: var(--color-brand-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.job-detail-compact-item {
+		grid-template-columns: 1fr;
+		gap: var(--space-1);
+	}
+
+	.job-detail-compact-item dt {
+		font-weight: var(--font-weight-semibold);
+	}
+
+	.job-detail-compact-meta {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-1);
+	}
+
+	.job-detail-compact-separator {
+		display: none;
+	}
+}

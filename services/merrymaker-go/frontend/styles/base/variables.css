@@ -1,0 +1,9 @@
+/**
+ * DESIGN TOKENS - CSS Custom Properties
+ *
+ * Design tokens now live in ./tokens.css so they can be shared between the
+ * main bundle and the critical CSS bundle. This wrapper keeps the original
+ * import path stable for existing imports.
+ */
+
+@import "./tokens.css";

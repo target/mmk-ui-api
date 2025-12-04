@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:15.14
+    profiles: ["dev"]
+    environment:
+      POSTGRES_DB: merrymaker
+      POSTGRES_USER: merrymaker
+      POSTGRES_PASSWORD: merrymaker
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+
+  postgres_test:
+    image: postgres:15.14
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: merrymaker
+      POSTGRES_USER: merrymaker
+      POSTGRES_PASSWORD: merrymaker
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 1s
+      timeout: 5s
+      retries: 60
+    volumes:
+      - pgdata_test:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["dev"]
+    command: ["redis-server", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  redis_test:
+    image: redis:7-alpine
+    profiles: ["test"]
+    command: ["redis-server", "--appendonly", "no"]
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "ping"]
+      interval: 1s
+      timeout: 5s
+      retries: 60
+
+
+volumes:
+  pgdata_dev:
+  pgdata_test:

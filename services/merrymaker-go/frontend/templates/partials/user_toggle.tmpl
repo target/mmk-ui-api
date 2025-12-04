@@ -1,0 +1,51 @@
+{{ define "user-toggle" }}
+{{ if .IsAuthenticated }}
+<div class="user-toggle">
+    <button class="btn btn-secondary user-toggle-btn"
+            aria-label="User menu"
+            aria-expanded="false"
+            data-user-toggle>
+        <i data-lucide="user"></i>
+        <span>{{.User.Email}}</span>
+        <i data-lucide="chevron-down" class="user-toggle-chevron"></i>
+    </button>
+    <div class="user-toggle-menu" data-user-menu>
+        <div class="user-toggle-header">
+            <div class="user-info">
+                <div class="user-role">{{.User.Role}}</div>
+            </div>
+        </div>
+        <div class="user-toggle-theme">
+            <div class="user-toggle-theme-header" id="user-toggle-theme-label">
+                <i data-lucide="moon-star"></i>
+                <span>Appearance</span>
+            </div>
+            <select class="user-toggle-select"
+                    data-theme-select
+                    aria-labelledby="user-toggle-theme-label"
+                    aria-describedby="user-toggle-theme-label">
+                <option value="system">System default</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </div>
+        <div class="user-toggle-divider"></div>
+        <div class="user-toggle-actions">
+            <form method="post" action="/auth/logout" style="margin: 0;">
+                <button type="submit" class="user-toggle-action">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{{ else }}
+<div class="auth-actions">
+    <a href="/auth/login" class="btn btn-primary">
+        <i data-lucide="log-in"></i>
+        <span>Sign In</span>
+    </a>
+</div>
+{{ end }}
+{{ end }}

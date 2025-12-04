@@ -1,0 +1,34 @@
+/* Page: Sites header layout */
+
+.sites-header-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+	gap: var(--space-3) var(--space-4);
+	width: 100%;
+}
+
+.sites-filters {
+	min-width: 0;
+}
+
+.sites-filters .filter-bar {
+	width: 100%;
+}
+
+/* Normalize the size of header action buttons to match filter controls */
+.sites-header-layout .btn {
+	height: 36px;
+	padding: 0 var(--space-4);
+	display: inline-flex;
+	align-items: center;
+	align-self: start;
+	justify-self: start;
+}
+
+@media (min-width: 1100px) {
+	.sites-header-layout {
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0 var(--space-4);
+	}
+}

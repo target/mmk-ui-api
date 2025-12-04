@@ -1,0 +1,101 @@
+# Air configuration for live-reloading Go + frontend assets
+# See https://github.com/air-verse/air for full documentation
+
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  # Array of commands to run before each build
+  pre_cmd = ["cd frontend && bun run build:dev"]
+
+  # Just plain old shell command. You could use `make` as well.
+  cmd = "go build -o ./tmp/main ./cmd/merrymaker"
+
+  # Binary file yields from `cmd`.
+  bin = "tmp/main"
+
+  # Customize binary, can setup environment variables when run your app.
+  # Note: Environment variables are loaded from .env file by the application
+  # (see internal/bootstrap/config.go). No need to duplicate config here.
+  full_bin = "./tmp/main"
+
+  # Watch these filename extensions.
+  include_ext = ["go", "tpl", "tmpl", "html", "css", "js", "ts"]
+
+  # Ignore these filename extensions or directories.
+  # Note: frontend/public is excluded to prevent rebuild loops (pre_cmd writes to it)
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "node_modules", "bin", "frontend/static", "frontend/public", "frontend/node_modules", "tools", "docs", ".git"]
+
+  # Watch these directories if you specified.
+  # Note: Only watch source directories, not build output (frontend/public excluded)
+  include_dir = ["cmd", "internal", "config", "frontend/styles", "frontend/templates", "frontend/vendor"]
+  
+  # Exclude files.
+  exclude_file = []
+
+  # Exclude specific regular expressions.
+  # Excludes: test files, editor temp files, swap files, sourcemaps, and other generated assets
+  exclude_regex = ["_test\\.go", "\\.#.*", ".*\\.swp", ".*\\.map", ".*\\.json$", "manifest\\.json"]
+  
+  # Exclude unchanged files.
+  exclude_unchanged = true
+  
+  # Follow symlink for directories
+  follow_symlink = false
+  
+  # This log file places in your tmp_dir.
+  log = "build-errors.log"
+  
+  # Poll files for changes instead of using fsnotify (useful for Docker/VM/WSL2).
+  poll = false
+  
+  # Poll interval (ms) if poll is enabled.
+  poll_interval = 500
+  
+  # It's not necessary to trigger build each time file changes if it's too frequent.
+  delay = 1000 # ms
+  
+  # Stop running old binary when build errors occur.
+  stop_on_error = true
+  
+  # Send Interrupt signal before killing process (useful on Windows)
+  send_interrupt = false
+  
+  # Delay after sending Interrupt signal
+  kill_delay = 500 # ms
+  
+  # Rerun binary or not
+  rerun = false
+  
+  # Delay after each execution
+  rerun_delay = 500
+  
+  # Add additional arguments when running binary (bin/full_bin). Will run './tmp/main hello world'.
+  args_bin = []
+
+[color]
+  # Customize each part's color. If no color found, use the raw app log.
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[log]
+  # Show log time
+  time = false
+  
+  # Only show main log (silences watcher, build, runner)
+  main_only = false
+
+[misc]
+  # Delete tmp directory on exit
+  clean_on_exit = true
+
+[screen]
+  # Clear screen on rebuild
+  clear_on_rebuild = true
+  
+  # Enable or disable keep_scroll
+  keep_scroll = true
+

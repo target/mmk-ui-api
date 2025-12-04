@@ -1,0 +1,55 @@
+/**
+ * MERRYMAKER FRONTEND STYLES - MODULAR ARCHITECTURE
+ *
+ * This is the main entry point for all CSS styles.
+ * It imports all modular CSS files in the correct order.
+ *
+ * Order matters:
+ * 1. Fonts (self-hosted with font-display: swap)
+ * 2. Base styles (variables, reset, typography)
+ * 3. Layout styles (grid, header, responsive)
+ * 4. Components (buttons, forms, tables, etc.)
+ * 5. Pages (specific page styles)
+ * 6. Utilities (helper classes)
+ */
+
+/* === FONTS === */
+@import "./base/fonts.css";
+
+/* === BASE STYLES === */
+@import "./base/variables.css";
+@import "./base/reset.css";
+
+/* === LAYOUT === */
+/* Dashboard layout will be created separately */
+
+/* === COMPONENTS === */
+@import "./components/buttons.css";
+@import "./components/forms.css";
+@import "./components/filters.css";
+
+/* === MODULAR EXTENSIONS (override legacy block) === */
+@import "./layout/dashboard.css";
+@import "./components/cards.css";
+@import "./components/dashboard-stats.css";
+@import "./components/tables.css";
+@import "./components/pagination.css";
+@import "./components/alerts.css";
+@import "./components/badges.css";
+@import "./components/job-status.css";
+@import "./components/job-detail.css";
+@import "./components/spinner.css";
+@import "./components/lists.css";
+@import "./components/toolbar.css";
+@import "./components/events.css";
+@import "./components/failure-event.css";
+@import "./components/user-toggle.css";
+@import "./components/toast.css";
+@import "./components/ioc-mode-toggle.css";
+@import "./pages/auth.css";
+@import "./pages/sites.css";
+@import "./utilities/width.css";
+@import "./utilities/text.css";
+@import "./utilities/spacing.css";
+@import "./utilities/flex.css";
+@import "./utilities/layout.css";

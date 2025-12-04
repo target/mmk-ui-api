@@ -1,0 +1,21 @@
+{{/*
+list-view renders a complete list view with header, content, and pagination.
+SECURITY NOTE: .Content field should contain safe HTML or use sub-templates.
+If passing raw HTML strings, ensure they are sanitized and typed as template.HTML.
+*/}}
+{{define "list-view"}}
+<div class="{{if .SectionClass}}{{.SectionClass}}{{else}}list-section{{end}}">
+<div class="card">
+    {{template "list-header" .}}
+    <div class="card-body">
+        {{template "error-banner" .}}
+        {{if not .Error}}
+        {{.Content}}
+        {{if .ShowPagination}}
+        {{template "pagination" .}}
+        {{end}}
+        {{end}}
+    </div>
+</div>
+</div>
+{{end}}

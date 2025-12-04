@@ -1,0 +1,103 @@
+{{ define "sites-filter-bar" }}
+<form class="filter-bar w-full"
+      hx-get="/sites"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      role="search"
+      aria-label="Filter sites">
+    <!-- Primary filters group -->
+    <div class="filter-group filter-group--primary"
+         role="group"
+         aria-label="Primary filters">
+        <input type="search"
+               name="q"
+               value="{{.Query}}"
+               placeholder="Search sites..."
+               class="filter-input"
+               aria-label="Search sites by name"
+               autocomplete="off" />
+        <!-- Status filter pills - compact -->
+        <div class="filter-pill-group filter-pill-group--compact"
+             data-component="filter-pills"
+             data-filter-name="enabled"
+             role="group"
+             aria-label="Filter by status">
+        <button type="button"
+                class="filter-pill filter-pill--compact {{ if not .EnabledFilterSet }}active{{ end }}"
+                data-filter-value=""
+                aria-pressed="{{ if not .EnabledFilterSet }}true{{ else }}false{{ end }}"
+                aria-label="Show all sites"
+                title="All sites">All</button>
+    <button type="button"
+            class="filter-pill filter-pill--compact {{ if eq .Enabled "true" }}active{{ end }}"
+            data-filter-value="true"
+            aria-pressed="{{ if eq .Enabled "true" }}true{{ else }}false{{ end }}"
+            aria-label="Show only enabled sites"
+            title="Enabled sites">
+        <i data-lucide="check-circle" aria-hidden="true"></i>
+        <span class="filter-pill-text">On</span>
+    </button>
+<button type="button"
+        class="filter-pill filter-pill--compact {{ if eq .Enabled "false" }}active{{ end }}"
+        data-filter-value="false"
+        aria-pressed="{{ if eq .Enabled "false" }}true{{ else }}false{{ end }}"
+        aria-label="Show only disabled sites"
+        title="Disabled sites">
+    <i data-lucide="x-circle" aria-hidden="true"></i>
+    <span class="filter-pill-text">Off</span>
+</button>
+</div>
+<input type="text"
+       name="scope"
+       value="{{.Scope}}"
+       placeholder="Filter by scope..."
+       class="filter-input"
+       aria-label="Filter sites by scope"
+       autocomplete="off" />
+</div>
+<!-- Secondary controls group -->
+<div class="filter-group filter-group--secondary"
+     role="group"
+     aria-label="Sort and display options">
+    <select name="sort" class="filter-select" aria-label="Sort sites">
+        <option value="created_at:desc" {{ if or (eq .Sort "") (and (eq .Sort "created_at") (or (eq .Dir "") (eq .Dir "desc"))) }} selected {{ end }}>Newest First
+        </option>
+        <option value="created_at:asc" {{ if and (eq .Sort "created_at") (eq .Dir "asc") }} selected {{ end }}>Oldest First
+        </option>
+        <option value="name:asc" {{ if and (eq .Sort "name") (eq .Dir "asc") }} selected {{ end }}>Name (A-Z)
+        </option>
+        <option value="name:desc" {{ if and (eq .Sort "name") (eq .Dir "desc") }} selected {{ end }}>Name (Z-A)
+        </option>
+    </select>
+    <select name="page_size"
+            class="filter-select filter-select--compact"
+            aria-label="Items per page">
+        <option value="10" {{ if eq .PageSize 10 }}selected{{ end }}>10 per page
+        </option>
+        <option value="25" {{ if or (eq .PageSize 25) (eq .PageSize 0) }} selected {{ end }}>25 per page
+        </option>
+        <option value="50" {{ if eq .PageSize 50 }}selected{{ end }}>50 per page
+        </option>
+    </select>
+    <button type="submit"
+            class="filter-action filter-action--secondary"
+            aria-label="Apply current filter settings">
+        <i data-lucide="search" aria-hidden="true"></i>
+        Apply
+    </button>
+    <a class="filter-action filter-action--tertiary"
+       href="/sites"
+       hx-get="/sites"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="true"
+       aria-label="Clear all filters and reset to default view">Clear</a>
+</div>
+<!-- Hidden input to track enabled filter state (managed by filter-pills component) -->
+<input type="hidden"
+       name="enabled"
+       value="{{.Enabled}}"
+       class="enabled-filter-input" />
+</form>
+{{ end }}

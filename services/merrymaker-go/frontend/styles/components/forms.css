@@ -1,0 +1,268 @@
+/**
+ * FORM COMPONENTS
+ *
+ * This file contains all form-related styles including inputs,
+ * textareas, selects, checkboxes, radio buttons, and form layouts.
+ */
+
+/* Form groups and labels */
+.form-group {
+	margin-bottom: var(--space-6);
+}
+
+.form-group:last-child {
+	margin-bottom: 0;
+}
+
+.form-group label {
+	display: block;
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-primary);
+	margin-bottom: var(--space-3);
+}
+
+/* Base input styles */
+.input {
+	display: block;
+	width: 100%;
+	padding: var(--space-3) var(--space-4);
+	font-size: var(--font-size-base);
+	line-height: 1.5;
+	color: var(--color-text-primary);
+	background-color: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
+}
+
+/* Compact input variants for subordinate controls */
+.input-sub {
+	padding: var(--space-2) var(--space-3);
+	font-size: var(--font-size-sm);
+	border-radius: var(--border-radius-sm);
+}
+
+.input-sub-xs {
+	padding: var(--space-1) var(--space-2);
+	font-size: var(--font-size-2xs);
+	border-radius: var(--border-radius-sm);
+}
+
+/* Input states - use :focus-visible for keyboard-only focus indication */
+.input:focus-visible,
+select:focus-visible:not(.filter-select) {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+.input:disabled {
+	background-color: var(--color-background);
+	color: var(--color-text-muted);
+	cursor: not-allowed;
+}
+
+/* Textarea styling */
+textarea.input {
+	resize: vertical;
+	min-height: 100px;
+	font-family: var(--font-family-sans);
+	line-height: 1.5;
+}
+
+/* Code textarea styling - override font for monospace textareas */
+textarea.input.mono {
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+	font-size: var(--font-size-sm);
+	line-height: 1.4;
+}
+
+/* Make preformatted preview blocks wrap or scroll without breaking layout */
+pre.input {
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow: auto;
+}
+
+/* Secret input container */
+.secret-input-container {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+
+.secret-textarea {
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+	font-size: var(--font-size-sm);
+	margin-bottom: 0;
+}
+
+.secret-toggle-btn {
+	align-self: flex-start;
+	margin-top: 0;
+}
+
+.secret-input-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+}
+
+.secret-textarea.secret-hidden {
+	-webkit-text-security: disc;
+}
+
+.secret-replacement-container {
+	margin-top: var(--space-4);
+}
+
+.secret-reveal {
+	margin-top: var(--space-3);
+}
+
+.secret-reveal textarea {
+	margin-top: var(--space-2);
+}
+
+.secret-reveal-value {
+	background-color: var(--color-surface-subtle);
+}
+
+.secret-reveal .text-muted {
+	display: block;
+	margin-top: var(--space-1);
+}
+
+/* Radio button styling */
+.form-group input[type="radio"] {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	accent-color: var(--color-brand-primary);
+	cursor: pointer;
+}
+
+.form-group label:has(input[type="radio"]) {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0;
+	cursor: pointer;
+	font-weight: var(--font-weight-regular);
+}
+
+/* Status item spans - must come before more specific selectors */
+.status-item span:not(.badge) {
+	font-size: var(--font-size-base);
+	color: var(--color-text-primary);
+}
+
+.form-group label:has(input[type="radio"]) span {
+	margin-left: var(--space-2);
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	margin-right: var(--space-2);
+	accent-color: var(--color-brand-primary);
+	cursor: pointer;
+}
+
+.form-group label:has(input[type="checkbox"]) {
+	display: flex;
+	align-items: center;
+	margin-bottom: var(--space-3);
+	cursor: pointer;
+	font-weight: var(--font-weight-regular);
+}
+
+/* Form actions (buttons) */
+.form-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	margin-top: var(--space-6);
+	padding-top: var(--space-4);
+	border-top: var(--border-width) solid var(--color-border);
+}
+
+/* Field error styling */
+.field-error {
+	display: block;
+	margin-top: var(--space-2);
+	font-size: var(--font-size-sm);
+	color: var(--color-danger);
+	font-weight: var(--font-weight-medium);
+}
+
+/* Form layout improvements */
+.form-group .row {
+	align-items: stretch;
+}
+
+.form-group .row .input {
+	flex: 1;
+}
+
+.form-group .row .btn {
+	flex-shrink: 0;
+	align-self: center;
+}
+
+.form-group .row > .w-full {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+/* Form sections for grouping related fields */
+.form-section {
+	margin-bottom: var(--space-8);
+	padding: var(--space-6);
+	background-color: var(--color-surface-secondary);
+	border: var(--border-width) solid var(--color-border-subtle);
+	border-radius: var(--border-radius-lg);
+}
+
+.form-section h3 {
+	margin: 0 0 var(--space-4) 0;
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+}
+
+.form-section p {
+	margin: 0 0 var(--space-6) 0;
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-sm);
+}
+
+/* Status grid for displaying read-only status information */
+.status-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: var(--space-4);
+}
+
+.status-item {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.status-item label {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	margin: 0;
+}

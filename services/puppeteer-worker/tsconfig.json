@@ -1,0 +1,41 @@
+{
+	// Visit https://aka.ms/tsconfig to read more about this file
+	"compilerOptions": {
+		/* Basic Options */
+		"target": "ES2024", // Target Node.js v24 with latest ES features
+		"module": "NodeNext", // Use the modern Node.js ES module system
+		"outDir": "./dist", // Redirect output structure to the dist folder
+		"rootDir": "./src", // Specify the root directory of input files
+		"sourceMap": true, // Generate corresponding .map files for debugging
+
+		/* Module Resolution Options */
+		"moduleResolution": "NodeNext", // Use Node.js-style module resolution
+		"allowImportingTsExtensions": false, // Keep false for Node.js compatibility
+		"resolveJsonModule": true, // Allow importing JSON files
+
+		/* Strict Type-Checking Options */
+		"strict": false, // Disable strict checking for simplified version
+		"noUncheckedIndexedAccess": false,
+		"exactOptionalPropertyTypes": false,
+
+		/* Additional Checks */
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noImplicitReturns": false,
+		"noFallthroughCasesInSwitch": false,
+
+		/* Module Interop and Output */
+		"esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+		"verbatimModuleSyntax": true, // Enforces 'import type' and ensures module specifiers are not elided
+		"declaration": true, // Generate corresponding .d.ts files
+		"declarationMap": true, // Create sourcemaps for d.ts files
+
+		/* Performance and Completeness */
+		"skipLibCheck": true, // Skip type checking of all declaration files (*.d.ts)
+		"forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+		"incremental": true, // Enable incremental compilation for faster builds
+		"tsBuildInfoFile": "./dist/.tsbuildinfo" // Store build info for incremental compilation
+	},
+	"include": ["src/**/*"], // Specifies which files to include in compilation
+	"exclude": ["node_modules", "dist", "src/*.js"] // Specifies which files to exclude
+}

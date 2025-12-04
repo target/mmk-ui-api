@@ -1,0 +1,161 @@
+{{ define "iocs-content" }}
+<div class="card">
+    <div class="card-header">
+        <div class="sites-header-layout">
+            {{ if and .IsAuthenticated (eq .User.Role "admin") }}
+            <a href="/iocs/new"
+               class="btn btn-primary"
+               hx-get="/iocs/new"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">
+                <i data-lucide="plus"></i>
+                <span>New IOC</span>
+            </a>
+            {{ end }}
+            <div class="sites-filters">
+            {{/* Filter Bar */}}
+            <form class="filter-bar w-full"
+                  hx-get="/iocs"
+                  hx-target="#main-content"
+                  hx-swap="innerHTML"
+                  hx-push-url="true"
+                  hx-trigger="change from:select, keyup changed delay:300ms from:input[name='q'], submit, search from:input[name='q']"
+                  hx-include="form.filter-bar"
+                  role="search"
+                  aria-label="Filter IOCs">
+            {{/* Primary filters group */}}
+            <div class="filter-group filter-group--primary"
+                 role="group"
+                 aria-label="Primary filters">
+            {{/* Search Input */}}
+            <input type="search"
+                   name="q"
+                   class="filter-input"
+                   placeholder="Search IOCs..."
+                   value="{{ .SearchQuery }}"
+                   aria-label="Search IOCs"
+                   autocomplete="off"
+                   spellcheck="false">
+        {{/* Type Filter */}}
+        <select name="type" class="filter-select" aria-label="Filter by type">
+            <option value="">All Types</option>
+            <option value="fqdn" {{ if eq .TypeFilter "fqdn" }}selected{{ end }}>FQDN
+            </option>
+            <option value="ip" {{ if eq .TypeFilter "ip" }}selected{{ end }}>IP
+            </option>
+        </select>
+    {{/* Enabled Filter */}}
+    <select name="enabled" class="filter-select" aria-label="Filter by status">
+        <option value="">All Status</option>
+        <option value="true" {{ if eq .EnabledFilter "true" }}selected{{ end }}>Enabled
+        </option>
+        <option value="false" {{ if eq .EnabledFilter "false" }}selected{{ end }}>Disabled
+        </option>
+    </select>
+</div>
+{{/* Secondary controls group */}}
+<div class="filter-group filter-group--secondary"
+     role="group"
+     aria-label="Filter actions">
+{{/* Clear Filters Button */}}
+{{ if .HasActiveFilters }}
+<a href="/iocs"
+   class="filter-action filter-action--tertiary"
+   hx-get="/iocs"
+   hx-target="#main-content"
+   hx-swap="innerHTML"
+   hx-push-url="true"
+   aria-label="Clear all filters">Clear</a>
+{{ end }}
+</div>
+</form>
+</div>
+</div>
+</div>
+<div class="card-body">
+    {{ if .Error }}
+    {{ template "error-banner" . }}
+    {{ end }}
+{{/* IOCs Table */}}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th>Created</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ if .IOCs }}
+            {{ range .IOCs }}
+            <tr class="row-link {{ if not .Enabled }}row-resolved{{ end }}"
+                hx-get="/iocs/{{ .ID }}/edit"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                hx-trigger="row-nav"
+                role="link"
+                tabindex="0">
+                <td class="mono font-medium">{{ .Value }}</td>
+                <td>
+                <span class="badge badge-sm {{ if eq .Type "fqdn" }}badge-blue{{ else if eq .Type "ip" }}badge-purple{{ else }}badge-gray{{ end }}">
+                {{ if eq .Type "fqdn" }}FQDN{{ else if eq .Type "ip" }}IP{{ else }}{{ .Type }}{{ end }}
+                </span>
+            </td>
+            <td>
+                {{ if .Enabled }}
+                <span class="badge badge-sm badge-green">Enabled</span>
+            {{ else }}
+                <span class="badge badge-sm badge-gray">Disabled</span>
+                {{ end }}
+            </td>
+            {{ $desc := safeDeref .Description }}
+            <td class="text-sm text-muted max-w-xs truncate"
+                {{ if $desc }}
+                title="{{ $desc }}"
+                {{ end }}>
+                {{ if $desc }}{{ $desc }}{{ else }}<em>No description</em>{{ end }}
+            </td>
+            <td class="text-muted nowrap">{{ timeTag .CreatedAt }}</td>
+            <td class="text-right">
+                {{ if and $.IsAuthenticated (eq $.User.Role "admin") }}
+                <div class="table-actions">
+                    <button class="btn-table-action btn-table-action--danger"
+                            type="button"
+                            hx-post="/iocs/{{ .ID }}/delete"
+                            hx-confirm="Delete this IOC? This action cannot be undone."
+                            hx-target="#main-content"
+                            hx-swap="innerHTML swap:500ms"
+                            hx-push-url="false"
+                            hx-disabled-elt="this"
+                            data-row-delete
+                            data-component="row-delete"
+                            title="Delete IOC"
+                            aria-label="Delete IOC"
+                            data-stop-row-nav>
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+                {{ end }}
+            </td>
+        </tr>
+        {{ end }}
+    {{ else }}
+        <tr>
+            <td colspan="6" class="text-center text-muted py-8">
+                <em>No IOCs found.</em>
+            </td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+</div>
+{{ template "pagination" . }}
+</div>
+</div>
+{{ end }}

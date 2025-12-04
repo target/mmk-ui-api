@@ -1,0 +1,21 @@
+{{/*
+list-table renders a table with headers and body content.
+SECURITY NOTE: .TableBody should contain safe HTML or use sub-templates.
+If passing raw HTML strings, ensure they are sanitized and typed as template.HTML.
+*/}}
+{{define "list-table"}}
+<div class="mt-3" id="{{.TableID}}">
+    <table class="table w-full">
+        <thead>
+            <tr>
+                {{range .Headers}}
+            <th align="{{if .Align}}{{.Align}}{{else}}left{{end}}">{{.Text}}</th>
+            {{end}}
+        </tr>
+    </thead>
+    <tbody>
+        {{.TableBody}}
+    </tbody>
+</table>
+</div>
+{{end}}

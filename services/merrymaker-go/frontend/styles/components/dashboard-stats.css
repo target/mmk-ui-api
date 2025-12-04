@@ -1,0 +1,132 @@
+/* Component: Dashboard Grid */
+
+/* Stats grid container - responsive grid layout */
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--space-6);
+	margin-bottom: var(--space-6);
+}
+
+/* Base stat card styling reused across dashboard views */
+.stat-card {
+	background: linear-gradient(
+		135deg,
+		var(--color-surface) 0%,
+		var(--color-brand-primary-subtle) 100%
+	);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-6);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.stat-card:hover {
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
+	border-color: var(--color-border-interactive);
+}
+
+.stat-card-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-3);
+	position: relative;
+	z-index: 1;
+}
+
+.stat-card-icon-title {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.stat-card-icon {
+	width: 18px;
+	height: 18px;
+	color: var(--color-brand-primary);
+	flex-shrink: 0;
+}
+
+.stat-card-title {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin: 0;
+	padding: 0;
+	line-height: 1.2;
+}
+
+.stat-card-value {
+	font-size: var(--font-size-xl);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin: var(--space-2) 0;
+	line-height: 1.2;
+	position: relative;
+	z-index: 1;
+}
+
+.stat-card-context {
+	font-size: var(--font-size-xs);
+	color: var(--color-text-muted);
+	margin-top: var(--space-2);
+	margin-bottom: 0;
+	position: relative;
+	z-index: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.stats-grid {
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+	}
+
+	.stat-card {
+		padding: var(--space-5);
+	}
+
+	.stat-card-value {
+		font-size: 2rem;
+	}
+}
+
+/* Enhanced card styles for secondary content sections */
+.stats-grid .card {
+	background: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-6);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.3s ease;
+}
+
+.stats-grid .card:hover {
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
+}
+
+/* Ensure proper spacing for multi-row grids */
+.stats-grid + .stats-grid {
+	margin-top: var(--space-6);
+}
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	.stat-card,
+	.stats-grid .card {
+		transition: none;
+		transform: none;
+	}
+	.stat-card:hover,
+	.stats-grid .card:hover {
+		transform: none;
+	}
+}

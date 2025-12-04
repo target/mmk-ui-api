@@ -1,0 +1,22 @@
+# Reduce build context size for puppeteer-worker
+
+# Node/NPM
+node_modules
+npm-debug.log*
+yarn-error.log*
+.pnpm-store
+
+# Builds
+.dist
+/dist
+coverage
+
+# Env/local
+.env
+.env.*
+.DS_Store
+
+# Tests and dev files
+**/*.test.*
+Dockerfile.test
+docker-compose.test.yml

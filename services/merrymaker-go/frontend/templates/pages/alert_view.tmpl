@@ -1,0 +1,354 @@
+{{ define "alert-view-content" }}
+<div class="card">
+    <div class="card-header row-between gap-2">
+        <a class="btn btn-secondary"
+           href="/alerts"
+           hx-get="/alerts"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="arrow-left"></i>
+            Back to Alerts
+        </a>
+        {{ with .Alert }}
+        {{ if not .IsResolved }}
+        <button class="btn btn-primary"
+                hx-post="/alerts/{{ .ID }}/resolve"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+                hx-push-url="false">
+            <i data-lucide="check-circle"></i>
+            Mark as Resolved
+        </button>
+        {{ end }}
+        {{ end }}
+    </div>
+    <div class="card-body">
+        {{ template "error-banner" . }}
+        {{ if .Alert }}
+                <div class="alert-detail">
+                <div class="alert-detail-header">
+                    <h2 class="alert-detail-title">{{ .Alert.Title }}</h2>
+                    <div class="alert-detail-badges">
+                        <span class="badge {{ severityClass .Alert.Severity }}">
+                            {{ .Alert.Severity }}
+                        </span>
+                        <span class="badge badge-secondary">{{ .Alert.RuleType }}</span>
+                        {{ if .Alert.WasMutedOnFire }}
+                        <span class="badge badge-muted badge-icon-only"
+                              role="img"
+                              aria-label="{{ .Alert.MutedOnFireLabel }}"
+                              title="{{ .Alert.MutedOnFireLabel }}">
+                            <i data-lucide="bell-off" aria-hidden="true"></i>
+                        </span>
+                        {{ end }}
+                    </div>
+                </div>
+                <dl class="data-list alert-detail-data">
+                    <div class="data-item data-item--full">
+                        <dt>Description</dt>
+                        <dd class="text-muted">{{ .Alert.Description }}</dd>
+                    </div>
+                    <div class="data-item">
+                        <dt>Alert ID</dt>
+                        <dd><code class="mono">{{ .Alert.ID }}</code></dd>
+                    </div>
+                    <div class="data-item">
+                        <dt>Alert Delivery Status</dt>
+                        <dd>
+                            <span class="badge {{ .Alert.DeliveryStatusBadgeClass }}">
+                                <i data-lucide="{{ .Alert.DeliveryStatusIcon }}"></i>
+                                {{ .Alert.DeliveryStatusDisplay }}
+                            </span>
+                        </dd>
+                    </div>
+                    <div class="data-item">
+                        <dt>Site</dt>
+                        <dd>{{ .Alert.SiteName }}</dd>
+                    </div>
+                    <div class="data-item">
+                        <dt>Current Site Alert Mode</dt>
+                        <dd>
+                            <span class="badge {{ if .Alert.IsSiteMuted }}badge-warning{{ else }}badge-success{{ end }}">
+                                <i data-lucide="{{ if .Alert.IsSiteMuted }}bell-off{{ else }}bell-ring{{ end }}"></i>
+                                {{ .Alert.SiteAlertModeDisplay }}
+                            </span>
+                        </dd>
+                    </div>
+                    <div class="data-item">
+                        <dt>Fired At</dt>
+                        <dd class="text-muted">{{ .FiredAtFormatted }}</dd>
+                    </div>
+                    {{ if .Alert.IsResolved }}
+                    <div class="data-item">
+                        <dt>Resolved At</dt>
+                        <dd class="text-muted">{{ .ResolvedAtFormatted }}</dd>
+                    </div>
+                    {{ if .Alert.ResolvedBy }}
+                    <div class="data-item">
+                        <dt>Resolved By</dt>
+                        <dd class="text-muted">{{ .Alert.ResolvedBy }}</dd>
+                    </div>
+                    {{ end }}
+                    {{ end }}
+                    {{ if .RuleID }}
+                    <div class="data-item">
+                        <dt>Rule ID</dt>
+                        <dd><code class="mono">{{ .RuleID }}</code></dd>
+                    </div>
+                    {{ end }}
+                    {{ if .JobDetails }}
+                    <div class="data-item data-item--full">
+                        <dt>Job Attribution</dt>
+                        <dd>
+                            <div class="job-detail-metric-chips">
+                                {{ range .JobDetails }}
+                                <span class="job-detail-metric-chip">
+                                    <i data-lucide="briefcase"></i>
+                                    <span>{{ .Label }}: <code class="mono">{{ .Value }}</code></span>
+                                </span>
+                                {{ end }}
+                            </div>
+                        </dd>
+                    </div>
+                    {{ end }}
+                    {{ if .EventContextDisplay }}
+                    <div class="data-item data-item--full">
+                        <dt>Event Context</dt>
+                        <dd>
+                            <pre class="code-block">{{ .EventContextDisplay }}</pre>
+                        </dd>
+                    </div>
+                    {{ end }}
+                    {{ if .MetadataDisplay }}
+                    <div class="data-item data-item--full">
+                        <dt>Additional Metadata</dt>
+                        <dd>
+                            <pre class="code-block">{{ .MetadataDisplay }}</pre>
+                        </dd>
+                    </div>
+                {{ end }}
+                </dl>
+                <section class="alert-detail-section">
+                    <h3>DELIVERY STATUS</h3>
+                {{ $stats := .DeliveryStats }}
+                {{ $alert := .Alert }}
+                {{ $wasMutedOnFire := and $alert ($alert.WasMutedOnFire) }}
+                {{ $siteMutedNow := and $alert ($alert.IsSiteMuted) }}
+                {{ if $wasMutedOnFire }}
+                <div class="alert alert-warning mt-3">
+                    <i data-lucide="bell-off"></i>
+                    <div>
+                        <strong>Alert notifications muted when fired</strong>
+                        <p class="text-muted mb-0">No delivery attempts were created because the site was muted when this alert triggered.</p>
+                    </div>
+                </div>
+                {{ else if $siteMutedNow }}
+                <div class="alert alert-warning mt-3">
+                    <i data-lucide="bell-off"></i>
+                    <div>
+                        <strong>Site currently muted</strong>
+                        <p class="text-muted mb-0">Future alerts remain muted until the site alert mode is re-enabled.</p>
+                    </div>
+                </div>
+                {{ end }}
+                {{if not .SinksConfigured}}
+                <p class="text-muted">Alert delivery attempts to configured HTTP alert sinks.</p>
+                <!-- No sinks configured -->
+                <div class="alert alert-info mt-3">
+                    <i data-lucide="info"></i>
+                    <div>
+                        <strong>No HTTP alert sinks configured</strong>
+                        <p class="text-muted mb-0">Configure HTTP alert sinks to receive alert notifications via webhook.</p>
+                    </div>
+                </div>
+                {{else if eq $stats.Total 0}}
+                {{ if $wasMutedOnFire }}
+                <p class="text-muted">This alert has no delivery attempts because notifications were muted when it fired.</p>
+                {{ else }}
+                <p class="text-muted">Alert delivery attempts to configured HTTP alert sinks.</p>
+                <!-- Sinks configured but no deliveries found -->
+                {{if .JobsMayBeReaped}}
+                <!-- Old alert - jobs likely reaped -->
+                <div class="alert alert-info mt-3">
+                    <i data-lucide="info"></i>
+                    <div>
+                        <strong>Delivery history unavailable</strong>
+                        <p class="text-muted mb-0">
+                            This alert is older than 24 hours. Delivery job records may have been cleaned up by the system reaper.
+                        </p>
+                    </div>
+                </div>
+            {{else}}
+                <!-- Recent alert - jobs may be pending -->
+                <div class="alert alert-warning mt-3">
+                    <i data-lucide="clock"></i>
+                    <div>
+                        <strong>Delivery pending</strong>
+                        <p class="text-muted mb-0">Alert delivery jobs are being created. Check back in a moment.</p>
+                    </div>
+                </div>
+                {{end}}
+                {{ end }}
+            {{else}}
+                <p class="text-muted">
+                    {{ if $wasMutedOnFire }}
+                    Delivery attempts completed before muting.
+                    {{ else }}
+                    Latest alert delivery attempts to configured HTTP alert sinks.
+                    {{ end }}
+                </p>
+                <div class="job-detail-metric-chips mt-3">
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="repeat"></i>
+                        <span>{{ $stats.Total }} attempt{{ if ne $stats.Total 1 }}s{{ end }}</span>
+                    </span>
+                    {{ if gt $stats.Completed 0 }}
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="check-circle"></i>
+                        <span>{{ $stats.Completed }} delivered</span>
+                    </span>
+                    {{ end }}
+                    {{ if gt $stats.Failed 0 }}
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="x-circle"></i>
+                        <span>{{ $stats.Failed }} failed</span>
+                    </span>
+                    {{ end }}
+                    {{ if gt $stats.Running 0 }}
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="loader"></i>
+                        <span>{{ $stats.Running }} running</span>
+                    </span>
+                    {{ end }}
+                    {{ if gt $stats.Pending 0 }}
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="clock"></i>
+                        <span>{{ $stats.Pending }} pending</span>
+                    </span>
+                    {{ end }}
+                    {{ if gt $stats.Other 0 }}
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="help-circle"></i>
+                        <span>{{ $stats.Other }} other</span>
+                    </span>
+                    {{ end }}
+                </div>
+                <div class="mt-3">
+                    {{range $delivery := .Deliveries}}
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="row-between gap-3" style="flex-wrap: wrap;">
+                                <div class="row gap-3 align-center">
+                                    <i data-lucide="webhook"></i>
+                                    <div>
+                                        <div class="fw-medium">
+                                            {{ if $delivery.SinkName }}
+                                            {{ $delivery.SinkName }}
+                                            {{ else }}
+                                            Unknown sink
+                                            {{ end }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            Attempt {{ $delivery.AttemptNumber }}
+                                            {{ if not ($delivery.AttemptedAt.IsZero) }}
+                                            • {{ $delivery.AttemptedAt | friendlyTime }}
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    {{if eq $delivery.Status "completed"}}
+                                    <span class="badge badge-success">
+                                        <i data-lucide="check-circle"></i>
+                                        Delivered
+                                    </span>
+                                    {{else if eq $delivery.Status "failed"}}
+                                    <span class="badge badge-danger">
+                                        <i data-lucide="x-circle"></i>
+                                        Failed
+                                    </span>
+                                    {{else if eq $delivery.Status "running"}}
+                                    <span class="badge badge-info">
+                                        <i data-lucide="loader"></i>
+                                        In Progress
+                                    </span>
+                                {{else}}
+                                    <span class="badge badge-secondary">
+                                        <i data-lucide="clock"></i>
+                                        Pending
+                                    </span>
+                                    {{end}}
+                                </div>
+                            </div>
+                            {{ if $delivery.CompletedAt }}
+                            <p class="text-muted small mt-2">
+                                Completed {{ $delivery.CompletedAt | friendlyTime }}
+                            </p>
+                            {{ else if eq $delivery.Status "failed" }}
+                            <p class="text-muted small mt-2">
+                                Last attempt ended
+                                {{ if not ($delivery.AttemptedAt.IsZero) }}
+                                {{ $delivery.AttemptedAt | friendlyTime }}
+                                {{ else }}
+                                recently
+                                {{ end }}.
+                            </p>
+                            {{ else if eq $delivery.Status "running" }}
+                            <p class="text-muted small mt-2">Delivery is currently running.</p>
+                            {{ else if eq $delivery.Status "pending" }}
+                            <p class="text-muted small mt-2">Delivery has been scheduled.</p>
+                            {{ end }}
+                            {{ if $delivery.ErrorMessage }}
+                            <p class="text-danger small mono mt-3 mb-0">
+                                Error: {{ $delivery.ErrorMessage }}
+                            </p>
+                            {{ end }}
+                            {{ if $delivery.JobID }}
+                            <div class="mt-3">
+                                <a href="/jobs/{{ $delivery.JobID }}"
+                                   hx-get="/jobs/{{ $delivery.JobID }}"
+                                   hx-target="#main-content"
+                                   hx-swap="innerHTML"
+                                   hx-push-url="true"
+                                   class="btn btn-secondary btn-sm">
+                                    <i data-lucide="external-link"></i>
+                                    View delivery job
+                                </a>
+                            </div>
+                            {{ end }}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+                </section>
+                <section class="alert-detail-section alert-detail-actions">
+                    <h3>RELATED RESOURCES</h3>
+                    <div class="alert-detail-links">
+                        {{ if .JobID }}
+                        <a href="/jobs/{{ .JobID }}"
+                           hx-get="/jobs/{{ .JobID }}"
+                           hx-target="#main-content"
+                           hx-swap="innerHTML"
+                           hx-push-url="true"
+                           class="btn btn-secondary">
+                            <i data-lucide="briefcase"></i>
+                            View Browser Job
+                        </a>
+                        {{ else }}
+                        <button class="btn btn-secondary"
+                                disabled
+                                title="No job information available for this alert">
+                            <i data-lucide="briefcase"></i>
+                            View Browser Job
+                        </button>
+                        {{ end }}
+                    </div>
+                </section>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{ end }}

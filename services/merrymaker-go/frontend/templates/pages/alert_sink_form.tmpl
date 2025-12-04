@@ -1,0 +1,184 @@
+{{define "alert-sink-form-content"}}
+<div class="alert-sink-form-section">
+    <div class="card">
+        <div class="card-header">
+            <a class="btn btn-secondary"
+               href="/alert-sinks"
+               hx-get="/alert-sinks"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">Back</a>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+        <form id="alert-sink-form"
+              data-component="alert-sink-form"
+              hx-post="{{if eq .Mode "edit"}}/alert-sinks/{{index .AlertSink "ID"}}{{else}}/alert-sinks{{end}}"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+        {{/* Name */}}
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input id="name"
+                   name="name"
+                   type="text"
+                   class="input"
+                   value="{{if .FormName}}{{.FormName}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Name"}}{{end}}{{end}}"
+                   maxlength="512"
+                   required>
+            {{with index .Errors "name"}}
+            <div class="field-error">{{.}}</div>
+            {{end}}
+        </div>
+    {{/* Method + OK Status + Retries (inline) */}}
+    <div class="form-group">
+        <div class="row gap-4">
+            <div class="max-w-sm">
+                <label for="method">Method</label>
+                <select id="method" name="method" class="input" required>
+                    {{ $isGet := or (eq .FormMethod "GET") (and (eq .Mode "edit") (eq (index .AlertSink "Method") "GET")) }}
+                    {{ $isPost := or (eq .FormMethod "POST") (and (eq .Mode "edit") (eq (index .AlertSink "Method") "POST")) }}
+                    {{ $isPut := or (eq .FormMethod "PUT") (and (eq .Mode "edit") (eq (index .AlertSink "Method") "PUT")) }}
+                    {{ $isDelete := or (eq .FormMethod "DELETE") (and (eq .Mode "edit") (eq (index .AlertSink "Method") "DELETE")) }}
+                    <option value="GET" {{if $isGet}}selected{{end}}>GET
+                    </option>
+                    <option value="POST" {{if $isPost}}selected{{end}}>POST
+                    </option>
+                    <option value="PUT" {{if $isPut}}selected{{end}}>PUT
+                    </option>
+                    <option value="DELETE" {{if $isDelete}}selected{{end}}>DELETE
+                    </option>
+                </select>
+                {{with index .Errors "method"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="max-w-2xs">
+                <label for="ok_status">OK Status</label>
+                <input id="ok_status"
+                       name="ok_status"
+                       class="input"
+                       type="number"
+                       min="100"
+                       max="599"
+                       value="{{if .FormOkStatus}}{{.FormOkStatus}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "OkStatus"}}{{else}}200{{end}}{{end}}">
+                <small>Default 200.</small>
+                {{with index .Errors "ok_status"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="max-w-xs">
+                <label for="retry">Retries</label>
+                <input id="retry"
+                       name="retry"
+                       class="input"
+                       type="number"
+                       min="0"
+                       value="{{if .FormRetry}}{{.FormRetry}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Retry"}}{{else}}3{{end}}{{end}}">
+                <small>Default 3.</small>
+                {{with index .Errors "retry"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+{{/* URI */}}
+<div class="form-group">
+    <label for="uri">URI</label>
+    <input id="uri"
+           name="uri"
+           type="url"
+           class="input"
+           value="{{if .FormURI}}{{.FormURI}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "URI"}}{{end}}{{end}}"
+           placeholder="https://example.com/alerts"
+           required>
+    {{with index .Errors "uri"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{/* Secrets (optional) */}}
+<div class="form-group">
+    <label for="secrets">
+        Secrets <span class="text-muted">(optional)</span>
+    </label>
+    <select id="secrets" name="secrets" class="input max-w-md" multiple size="4">
+        {{range .SecretOptions}}
+        <option value="{{.Name}}" {{if .Selected}}selected{{end}}>{{.Name}}
+        </option>
+        {{end}}
+    </select>
+    <small>Use placeholders like __SECRET_NAME__ in URI, headers, query, or body.</small>
+    {{with index .Errors "secrets"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{/* Query params + Headers (inline) */}}
+<div class="form-group">
+    <div class="row gap-4">
+        <div class="w-full">
+            <label for="query_params">Query Params</label>
+            <textarea id="query_params"
+                      name="query_params"
+                      class="input mono"
+                      rows="3"
+                      placeholder="key=value&foo=__API_KEY__">{{if .FormQueryParams}}{{.FormQueryParams}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "QueryParams"}}{{end}}{{end}}</textarea>
+            {{with index .Errors "query_params"}}
+            <div class="field-error">{{.}}</div>
+            {{end}}
+        </div>
+        <div class="w-full">
+            <label for="headers">Headers (JSON)</label>
+            <textarea id="headers"
+                      name="headers"
+                      class="input mono"
+                      rows="3"
+                      placeholder='{"Content-Type": "application/json", "Authorization": "Bearer __TOKEN__"}'>{{if .FormHeaders}}{{.FormHeaders}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Headers"}}{{end}}{{end}}</textarea>
+            <small>JSON object of header key/values. Placeholders like __SECRET_NAME__ are supported.</small>
+            {{with index .Errors "headers"}}
+            <div class="field-error">{{.}}</div>
+            {{end}}
+        </div>
+    </div>
+</div>
+<div class="form-group mt-6"
+     style="border-top: var(--border-width) solid var(--color-border);
+            padding-top: var(--space-4)">
+    <div class="row-between">
+        <h3>JMESPath Body Builder</h3>
+        <small id="jmes-validity">Ready</small>
+    </div>
+    <small class="text-muted">Build request body from alert JSON using JMESPath. Live preview updates as you type.</small>
+    <div class="row gap-4">
+        <div class="w-full">
+            <label for="body">JMESPath Query</label>
+            <textarea id="body"
+                      name="body"
+                      class="input mono"
+                      rows="8"
+                      placeholder="e.g., { created: created_at, type: 'Alert', payload: @ }">{{if .FormBody}}{{.FormBody}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Body"}}{{end}}{{end}}</textarea>
+            <label for="sample_data" class="mt-3">Sample Alert Data (for preview)</label>
+            <textarea id="sample_data" class="input mono" rows="8">{{or .SampleAlertJSON "{\n  \"type\": \"info\",\n  \"name\": \"rule-alert\",\n  \"scan_id\": \"8a497372-6b43-426c-a323-37706302589c\",\n  \"scope\": \"\",\n  \"site\": \"Site2\",\n  \"message\": \"unknown.domain - static.ericdraken.com unknown\",\n  \"details\": \"{\\\"url\\\":\\\"https://static.ericdraken.com/wp-content/plugins/smpl-shortcodes/assets/images/accept.png\\\",\\\"domain\\\":\\\"static.ericdraken.com\\\"}\",\n  \"body\": {\n    \"name\": \"unknown.domain\",\n    \"alert\": true,\n    \"level\": \"prod\",\n    \"context\": {\n      \"url\": \"https://static.ericdraken.com/wp-content/plugins/smpl-shortcodes/assets/images/accept.png\",\n      \"domain\": \"static.ericdraken.com\"\n    },\n    \"message\": \"static.ericdraken.com unknown\"\n  },\n  \"created_at\": \"2021-06-01T00:00:00Z\"\n}"}}</textarea>
+        </div>
+        <div class="w-full">
+            <label>Query Result</label>
+            <pre id="jmes_result" class="input mono"></pre>
+        </div>
+    </div>
+</div>
+<div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{if eq .Mode "edit"}}Save Changes{{else}}Create{{end}}</button>
+    <a class="btn btn-secondary"
+       href="/alert-sinks"
+       hx-get="/alert-sinks"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="true">Cancel</a>
+</div>
+</form>
+<!-- Load JMESPath library on-demand (only needed for this form) -->
+<script defer src="{{ asset "js/vendor.jmespath.js" }}"></script>
+</div>
+</div>
+</div>
+{{end}}

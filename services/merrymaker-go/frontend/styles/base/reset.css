@@ -1,0 +1,50 @@
+/**
+ * CSS RESET AND BASE STYLES
+ *
+ * This file contains the CSS reset and base element styles.
+ * It provides a consistent foundation across all browsers.
+ */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+/* Fallback focus styles for accessibility - ensures all inputs have focus indicators */
+input:focus-visible:not(.input):not(.filter-input),
+select:focus-visible:not(.filter-select),
+textarea:focus-visible:not(.input) {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family: var(--font-family-sans);
+	font-size: var(--font-size-base);
+	color: var(--color-text-primary);
+	background-color: var(--color-background);
+	line-height: 1.6;
+}
+
+/* Help text styling */
+small {
+	display: block;
+	margin-top: var(--space-2);
+	font-size: var(--font-size-sm);
+	color: var(--color-text-muted);
+	line-height: 1.4;
+}
+
+/* Simple unstyled, divided list */
+.list {
+	list-style: none;
+	padding-left: 0;
+}

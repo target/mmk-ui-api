@@ -1,0 +1,91 @@
+{{ define "sites-content" }}
+<div class="sites-section">
+    <div class="card">
+        <div class="card-header">
+            <div class="sites-header-layout">
+                <a class="btn btn-primary"
+                   href="/sites/new"
+                   hx-get="/sites/new"
+                   hx-target="#main-content"
+                   hx-swap="innerHTML"
+                   hx-push-url="true">
+                    <i data-lucide="plus"></i>
+                    <span>New Site</span>
+                </a>
+                <div class="sites-filters">{{ template "sites-filter-bar" . }}</div>
+            </div>
+        </div>
+        <div class="card-body">
+            {{ if not .Error }}
+            <div class="mt-3" id="sites-table">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th align="left">Name</th>
+                            <th align="left">Scope</th>
+                            <th align="left">Active</th>
+                            <th align="left">Every (min)</th>
+                            <th align="right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Sites }}
+                        <tr class="row-link {{if not .Enabled}}row-resolved{{end}}"
+                            hx-get="/sites/{{.ID}}/edit"
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                            hx-push-url="true"
+                            hx-trigger="row-nav"
+                            role="link"
+                            tabindex="0">
+                            <td class="mono">{{.Name}}</td>
+                            <td class="text-muted">{{.ScopeDisplay}}</td>
+                            <td>
+                                {{ if .Enabled }}
+                                <span class="badge badge-success">
+                                    <i data-lucide="check-circle"></i>
+                                    Enabled
+                                </span>
+                            {{ else }}
+                                <span class="badge badge-secondary">
+                                    <i data-lucide="x-circle"></i>
+                                    Disabled
+                                </span>
+                                {{ end }}
+                            </td>
+                            <td class="text-muted">{{.RunEveryMinutes}}</td>
+                            <td align="right">
+                                <div class="table-actions">
+                                    <button class="btn-table-action btn-table-action--danger"
+                                            type="button"
+                                            hx-post="/sites/{{.ID}}/delete"
+                                            hx-confirm="Delete this site? This action cannot be undone."
+                                            hx-target="#main-content"
+                                            hx-swap="innerHTML swap:500ms"
+                                            hx-push-url="false"
+                                            data-row-delete
+                                            data-component="row-delete"
+                                            data-stop-row-nav
+                                            title="Delete site"
+                                            aria-label="Delete site">
+                                        <i data-lucide="trash-2"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {{ else }}
+                        <tr>
+                            <td colspan="5">
+                                <em>No sites found.</em>
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+            {{ template "pagination" . }}
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{ end }}

@@ -1,0 +1,163 @@
+{{ define "job-alert-delivery" }}
+{{ $delivery := . }}
+<div class="card mt-4">
+    <div class="card-body">
+        <h3 class="job-detail-compact-section-title">Alert Delivery Result</h3>
+        <div class="job-detail-metric-chips mt-3">
+            {{ if $delivery.SinkName }}
+            <span class="job-detail-metric-chip">
+                <i data-lucide="webhook"></i>
+                <span>{{ $delivery.SinkName }}</span>
+            </span>
+            {{ end }}
+            <span class="job-detail-metric-chip">
+                <i data-lucide="shield-check"></i>
+                <span>Status: {{ $delivery.Status }}</span>
+            </span>
+            <span class="job-detail-metric-chip">
+                <i data-lucide="hash"></i>
+                <span>Attempt {{ $delivery.AttemptNumber }}</span>
+            </span>
+            {{ if $delivery.Duration }}
+            <span class="job-detail-metric-chip">
+                <i data-lucide="timer"></i>
+                <span>{{ $delivery.Duration }}</span>
+            </span>
+            {{ end }}
+        </div>
+        <div class="job-detail-compact-section mt-4">
+            <h4 class="job-detail-compact-section-title">Attempt Details</h4>
+            <dl class="job-detail-compact-list">
+                {{ if not ($delivery.AttemptedAt.IsZero) }}
+                <div class="job-detail-compact-item">
+                    <dt>Attempted</dt>
+                    <dd>{{ $delivery.AttemptedAt | friendlyTime }}</dd>
+                </div>
+                {{ end }}
+                {{ if $delivery.CompletedAt }}
+                <div class="job-detail-compact-item">
+                    <dt>Completed</dt>
+                    <dd>{{ $delivery.CompletedAt | friendlyTime }}</dd>
+                </div>
+                {{ end }}
+                {{ if gt $delivery.AttemptNumber 0 }}
+                <div class="job-detail-compact-item">
+                    <dt>Attempts Used</dt>
+                    <dd>
+                        {{ $delivery.AttemptNumber }}
+                        {{ if gt $delivery.MaxRetries 0 }}
+                        / {{ $delivery.MaxRetries }}
+                        {{ end }}
+                    </dd>
+                </div>
+                {{ end }}
+                {{ if or (gt $delivery.RetryCount 0) (gt $delivery.RetriesAllowed 0) }}
+                <div class="job-detail-compact-item">
+                    <dt>Retries Used</dt>
+                    <dd>
+                        {{ $delivery.RetryCount }}
+                        {{ if gt $delivery.RetriesAllowed 0 }}
+                        / {{ $delivery.RetriesAllowed }}
+                        {{ end }}
+                    </dd>
+                </div>
+                {{ end }}
+                {{ if $delivery.ErrorMessage }}
+                <div class="job-detail-compact-item job-detail-compact-item--full">
+                    <dt>Error</dt>
+                    <dd><code class="small text-danger">{{ $delivery.ErrorMessage }}</code></dd>
+                </div>
+                {{ end }}
+            </dl>
+        </div>
+        {{ if $delivery.Payload }}
+        <div class="job-detail-compact-section mt-4">
+            <h4 class="job-detail-compact-section-title">Alert Payload</h4>
+            <pre class="input mono small mt-2" style="max-height: 240px; overflow-y: auto">{{ $delivery.Payload }}</pre>
+        </div>
+        {{ end }}
+        <div class="job-detail-compact-grid mt-4">
+            <div class="job-detail-compact-section">
+                <h4 class="job-detail-compact-section-title">HTTP Request</h4>
+                <dl class="job-detail-compact-list">
+                    <div class="job-detail-compact-item">
+                        <dt>Method</dt>
+                        <dd>{{ $delivery.Request.Method }}</dd>
+                    </div>
+                    <div class="job-detail-compact-item job-detail-compact-item--full">
+                        <dt>URL</dt>
+                        <dd class="mono small">{{ $delivery.Request.URL }}</dd>
+                    </div>
+                    {{ if $delivery.Request.OkStatus }}
+                    <div class="job-detail-compact-item">
+                        <dt>Expected Status</dt>
+                        <dd>{{ $delivery.Request.OkStatus }}</dd>
+                    </div>
+                    {{ end }}
+                    {{ if $delivery.Request.Headers }}
+                    <div class="job-detail-compact-item job-detail-compact-item--full">
+                        <dt>Headers</dt>
+                        <dd>
+                            <div class="job-detail-domains">
+                                {{ range $delivery.Request.Headers }}
+                                <div><code class="job-detail-domain-tag">{{ .Key }}</code> <span class="small text-muted">{{ .Value }}</span></div>
+                                {{ end }}
+                            </div>
+                        </dd>
+                    </div>
+                    {{ end }}
+                    {{ if $delivery.Request.Body }}
+                    <div class="job-detail-compact-item job-detail-compact-item--full">
+                        <dt>Body</dt>
+                        <dd>
+                            <pre class="input mono small mt-2" style="max-height: 200px; overflow-y: auto">{{ $delivery.Request.Body }}</pre>
+                            {{ if $delivery.Request.BodyTruncated }}
+                            <p class="text-muted small mt-1">Body truncated to first 4KB.</p>
+                            {{ end }}
+                        </dd>
+                    </div>
+                    {{ end }}
+                </dl>
+            </div>
+            <div class="job-detail-compact-section">
+                <h4 class="job-detail-compact-section-title">HTTP Response</h4>
+                {{ if $delivery.Response }}
+                <dl class="job-detail-compact-list">
+                    <div class="job-detail-compact-item">
+                        <dt>Status</dt>
+                        <dd>{{ $delivery.Response.StatusCode }}</dd>
+                    </div>
+                    {{ if $delivery.Response.Headers }}
+                    <div class="job-detail-compact-item job-detail-compact-item--full">
+                        <dt>Headers</dt>
+                        <dd>
+                            <div class="job-detail-domains">
+                                {{ range $delivery.Response.Headers }}
+                                <div><code class="job-detail-domain-tag">{{ .Key }}</code> <span class="small text-muted">{{ .Value }}</span></div>
+                                {{ end }}
+                            </div>
+                        </dd>
+                    </div>
+                    {{ end }}
+                    {{ if $delivery.Response.Body }}
+                    <div class="job-detail-compact-item job-detail-compact-item--full">
+                        <dt>Body</dt>
+                        <dd>
+                            <pre class="input mono small mt-2" style="max-height: 200px; overflow-y: auto">
+{{ $delivery.Response.Body }}
+                            </pre>
+                            {{ if $delivery.Response.BodyTruncated }}
+                            <p class="text-muted small mt-1">Body truncated to first 4KB.</p>
+                            {{ end }}
+                        </dd>
+                    </div>
+                    {{ end }}
+                </dl>
+                {{ else }}
+                <p class="text-muted">The sink did not return a response.</p>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}

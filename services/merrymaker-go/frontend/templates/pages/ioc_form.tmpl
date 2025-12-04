@@ -1,0 +1,165 @@
+{{ define "ioc-form-content" }}
+<div class="ioc-form-section">
+    <div class="card">
+        <div class="card-header row-between gap-2">
+            <a class="btn btn-secondary"
+               href="/iocs"
+               hx-get="/iocs"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">Back</a>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+        <form id="ioc-form"
+              data-ioc-form
+              hx-post="{{if eq .Mode "edit"}}/iocs/{{.IOCID}}{{else}}/iocs{{end}}"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+              hx-disabled-elt="#ioc-form [type=submit]">
+            <input type="hidden" name="mode" value="{{.Mode}}">
+            {{ if eq .Mode "edit" }}
+            <input type="hidden" name="ioc_id" value="{{.IOCID}}">
+            {{ end }}
+        {{/* Entry Mode Toggle - Only show for create mode */}}
+        {{ if eq .Mode "create" }}
+        <div class="form-group">
+            <label>Entry Mode</label>
+            <div class="ioc-mode-toggle" role="radiogroup" aria-label="IOC entry mode">
+                <button type="button"
+                        class="ioc-mode-btn active"
+                        data-ioc-mode-btn="single"
+                        role="radio"
+                        aria-checked="true">Single IOC</button>
+                <button type="button"
+                        class="ioc-mode-btn"
+                        data-ioc-mode-btn="bulk"
+                        role="radio"
+                        aria-checked="false">Bulk Import</button>
+            </div>
+            <input type="hidden" id="entry_mode" name="entry_mode" value="single">
+            <div class="field-help text-sm text-muted">
+                <strong>Single:</strong> Add one IOC at a time with optional description
+                <br>
+                <strong>Bulk:</strong> Paste multiple IOC values (one per line) to import many at once
+            </div>
+        </div>
+        {{ end }}
+    {{/* Type Field */}}
+    <div class="form-group">
+        <label for="type">
+            Type <span class="text-danger">*</span>
+        </label>
+        <select id="type" name="type" class="input max-w-sm" required {{ if eq .Mode "edit" }}disabled{{ end }}>
+            <option value="">Select type...</option>
+            <option value="fqdn" {{if eq .FormType "fqdn"}}selected{{end}}>FQDN (Domain)
+            </option>
+            <option value="ip" {{if eq .FormType "ip"}}selected{{end}}>IP (Address or CIDR)
+            </option>
+        </select>
+        <div class="field-help text-sm text-muted">
+            <strong>FQDN:</strong> Domain names (exact or wildcard like *.evil.com or malware.*.com)
+            <br>
+            <strong>IP:</strong> IP addresses (exact like 192.0.2.1 or CIDR like 192.0.2.0/24)
+        </div>
+        {{ if eq .Mode "edit" }}
+    {{/* Hidden field to submit the type value when disabled */}}
+    <input type="hidden" name="type" value="{{.FormType}}">
+    {{ end }}
+    {{with index .Errors "type"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{/* Single Value Field */}}
+<div class="form-group" id="single-value-group">
+    <label for="value">
+        Value <span class="text-danger">*</span>
+    </label>
+    <input id="value" name="value" type="text" class="input mono max-w-lg" value="{{.FormValue}}" maxlength="500" {{ if eq .Mode "create" }}data-single-only{{ end }} placeholder="e.g., evil.com, *.malware.net, 192.0.2.1, or 10.0.0.0/8" spellcheck="false" autocapitalize="off" autocomplete="off">
+    <div class="field-help text-sm text-muted">
+        For FQDN: exact domain, wildcard (*.example.com), or multi-wildcard (malware.*.com)
+        <br>
+        For IP: exact address (192.0.2.1) or CIDR range (192.0.2.0/24)
+    </div>
+    {{with index .Errors "value"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{/* Bulk Values Field - Only show for create mode */}}
+{{ if eq .Mode "create" }}
+<div class="form-group" id="bulk-values-group" style="display: none;">
+    <label for="bulk-values">
+        Values <span class="text-danger">*</span>
+    </label>
+    <textarea id="bulk-values"
+              name="bulk_values"
+              class="input mono max-w-lg"
+              rows="10"
+              data-bulk-only
+              placeholder="Paste IOC values here, one per line:&#10;evil.com&#10;malware.net&#10;192.0.2.1&#10;10.0.0.0/8"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off">{{.FormBulkValues}}</textarea>
+    <div class="field-help text-sm text-muted">
+        Enter one IOC value per line. Empty lines and duplicates will be ignored.
+        <br>
+        Maximum 10,000 IOCs per bulk import.
+    </div>
+    {{with index .Errors "bulk_values"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{ end }}
+{{/* Description Field */}}
+<div class="form-group" id="description-group">
+    <label for="description">
+        Description <span class="text-muted" id="description-optional-label">(optional)</span>
+    </label>
+    <textarea id="description" name="description" class="input max-w-lg" rows="3" maxlength="1000" {{ if eq .Mode "create" }}data-single-only{{ end }} placeholder="Optional description of this IOC (e.g., source, threat intel reference, etc.)">{{.FormDescription}}</textarea>
+    <div class="field-help text-sm text-muted" id="description-help-single">
+        Add context about this IOC's source or purpose.
+    </div>
+    <div class="field-help text-sm text-muted"
+         id="description-help-bulk"
+         style="display: none">This description will be applied to all imported IOCs.</div>
+    {{with index .Errors "description"}}
+    <div class="field-error">{{.}}</div>
+    {{end}}
+</div>
+{{/* Enabled Checkbox */}}
+<div class="form-group">
+    <label>
+        <input id="enabled" name="enabled" type="checkbox" value="1" {{if .FormEnabled}}checked{{end}}>Enabled
+    </label>
+    <div class="field-help text-sm text-muted">
+        Uncheck to disable {{ if eq .Mode "create" }}<span id="enabled-help-single">this IOC</span><span id="enabled-help-bulk" style="display: none;">all imported IOCs</span>{{ else }}this IOC{{ end }} without deleting.
+    </div>
+</div>
+{{/* Form Actions */}}
+<div class="form-actions">
+    <button type="submit" class="btn btn-primary" id="submit-btn">
+        {{if eq .Mode "edit"}}Save Changes{{else}}<span id="submit-single">Create IOC</span><span id="submit-bulk" style="display: none;">Import IOCs</span>{{end}}
+    </button>
+    <a class="btn btn-secondary"
+       href="/iocs"
+       hx-get="/iocs"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="true">Cancel</a>
+    {{ if eq .Mode "edit" }}
+    <button type="button"
+            class="btn btn-danger"
+            hx-post="/iocs/{{.IOCID}}/delete"
+            hx-confirm="Delete this IOC? This action cannot be undone."
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            hx-push-url="false"
+            hx-disabled-elt="this">Delete</button>
+    {{ end }}
+</div>
+</form>
+</div>
+</div>
+</div>
+{{ end }}

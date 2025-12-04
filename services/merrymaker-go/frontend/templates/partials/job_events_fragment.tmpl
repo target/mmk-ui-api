@@ -1,0 +1,19 @@
+{{define "job-events-fragment"}}
+<div class="events-container"
+     data-job-id="{{ .JobID }}"
+     id="job-events-{{ .JobID }}">
+    <!-- Filter bar -->
+    <div class="mb-4">{{ template "job-events-filter-bar" . }}</div>
+    {{ if .Events }}
+    <div class="events-list" id="events-{{ .JobID }}">
+        {{range .Events}}
+        {{template "event-item" .}}
+        {{end}}
+    </div>
+    <!-- Pagination controls for job events -->
+    <div class="mt-4">{{ template "job-events-pagination" . }}</div>
+{{ else }}
+    <div class="text-muted">No events found{{ if hasEventFilters .Filters }} matching the current filters{{ end }}.</div>
+    {{ end }}
+</div>
+{{end}}

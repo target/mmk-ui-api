@@ -1,0 +1,170 @@
+{{ define "alerts-row" }}
+<tr id="alert-row-{{.ID}}"
+    class="row-link {{ if .IsResolved }}row-resolved{{ end }}"
+    hx-get="/alerts/{{.ID}}"
+    hx-target="#main-content"
+    hx-swap="innerHTML"
+    hx-push-url="true"
+    hx-trigger="row-nav"
+    role="link"
+    tabindex="0">
+    {{ $primary := .PrimaryLabel }}
+    {{ $isDomainType := or (eq .RuleType "unknown_domain") (eq .RuleType "ioc_domain") }}
+    <td class="fw-medium">
+        {{ if $primary }}
+        <div{{ if $isDomainType }} class="mono"{{ end }}>
+            {{ $primary }}
+        </div>
+        {{ else }}
+        <div>{{ .Title }}</div>
+        {{ end }}
+        {{ if and .Title (ne $primary .Title) (not $isDomainType) }}
+        <div class="text-muted text-sm">{{ .Title }}</div>
+        {{ end }}
+        {{ if .JobDetails }}
+        <div class="text-muted text-xs mt-1">
+            {{ range $index, $detail := .JobDetails }}
+            {{ if $index }}<span class="text-muted">&middot;</span>{{ end }}
+            <span class="mono">{{ $detail.Label }}: {{ $detail.Value }}</span>
+            {{ end }}
+        </div>
+        {{ end }}
+    </td>
+    <td>
+        <span class="badge {{ .StatusBadgeClass }}">
+            {{ if .IsResolved }}
+            <i data-lucide="check-circle"></i>
+            Resolved
+        {{ else }}
+            <i data-lucide="alert-triangle"></i>
+            Active
+            {{ end }}
+        </span>
+        {{ if .WasMutedOnFire }}
+        <span class="badge badge-muted badge-icon-only"
+              role="img"
+              aria-label="{{ .MutedOnFireLabel }}"
+              title="{{ .MutedOnFireLabel }}">
+            <i data-lucide="bell-off" aria-hidden="true"></i>
+        </span>
+        {{ end }}
+    </td>
+    <td>
+        <a href="/sites/{{.SiteID}}/edit"
+           hx-get="/sites/{{.SiteID}}/edit"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           class="text-link"
+           data-stop-row-nav>{{.SiteName}}</a>
+    </td>
+    <td class="text-muted">{{ or .RuleTypeDisplay .RuleType }}</td>
+    <td>
+    <span class="badge {{ severityClass .Severity }}">
+        {{.Severity}}
+    </span>
+</td>
+<td class="text-muted nowrap">{{.FriendlyFiredAt}}</td>
+<td align="right">
+    <div class="table-actions">
+        {{ if not .IsResolved }}
+        <button class="btn-table-action"
+                type="button"
+                hx-post="/alerts/{{.ID}}/resolve"
+                hx-target="#alert-row-{{.ID}}"
+                hx-swap="outerHTML"
+                hx-push-url="false"
+                title="Mark alert as resolved"
+                aria-label="Mark alert as resolved"
+                data-stop-row-nav>
+            <i data-lucide="check"></i>
+        </button>
+        {{ end }}
+    </div>
+</td>
+</tr>
+{{ end }}
+
+{{ define "alerts-content" }}
+<div class="alerts-section">
+    <div class="card">
+        <div class="card-header">
+            <div class="sites-header-layout">
+                <a class="btn btn-secondary"
+                   href="/alert-sinks"
+                   hx-get="/alert-sinks"
+                   hx-target="#main-content"
+                   hx-push-url="true">
+                    <i data-lucide="webhook"></i>
+                    <span>Manage Sinks</span>
+                </a>
+                <div class="sites-filters">{{ template "alerts-filter-bar" . }}</div>
+            </div>
+        </div>
+        <div class="card-body">
+            {{ if not .Error }}
+            <div class="mt-3" id="alerts-table">
+                {{ if .Alerts }}
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th align="left">Alert</th>
+                            <th align="left">Status</th>
+                            <th align="left">Site</th>
+                            <th align="left">Rule Type</th>
+                            <th align="left">Severity</th>
+                            <th align="left">Fired At</th>
+                            <th align="right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Alerts }}
+                        {{ template "alerts-row" . }}
+                    {{ end }}
+                </tbody>
+            </table>
+        {{ else }}
+            <div class="empty-state">
+                <i data-lucide="bell-off" class="empty-state-icon"></i>
+                <h3 class="empty-state-title">No alerts found</h3>
+                <p class="empty-state-description">
+                    {{ if or .SiteID .Severity .RuleType .Unresolved }}
+                    No alerts match your current filters. Try adjusting your filter criteria.
+                {{ else }}
+                    When your monitoring detects issues, fired alerts will appear here.
+                    {{ end }}
+                </p>
+                <div class="empty-state-actions">
+                    {{ if or .SiteID .Severity .RuleType .Unresolved }}
+                    <a class="btn btn-secondary"
+                       href="/alerts"
+                       hx-get="/alerts"
+                       hx-target="#main-content"
+                       hx-push-url="true">
+                        <i data-lucide="x"></i>
+                        <span>Clear Filters</span>
+                    </a>
+                {{ else }}
+                    <a class="btn btn-primary"
+                       href="/alert-sinks"
+                       hx-get="/alert-sinks"
+                       hx-target="#main-content"
+                       hx-push-url="true">
+                        <i data-lucide="webhook"></i>
+                        <span>Configure Alert Sinks</span>
+                    </a>
+                    {{ end }}
+                </div>
+            </div>
+            {{ end }}
+        </div>
+        {{ if .Alerts }}
+        {{ template "pagination" . }}
+        {{ end }}
+    {{ else }}
+        {{ template "error-banner" . }}
+        {{ end }}
+    </div>
+</div>
+</div>
+{{ end }}

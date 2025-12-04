@@ -1,0 +1,110 @@
+{{ define "jobs-filter-bar" }}
+<form class="filter-bar w-full"
+      hx-get="/jobs"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      role="search"
+      aria-label="Filter jobs">
+    <!-- Primary filters group -->
+    <div class="filter-group filter-group--primary"
+         role="group"
+         aria-label="Primary filters">
+        <!-- Status filter dropdown - compact -->
+        <select name="status"
+                class="filter-select filter-select--medium"
+                aria-label="Filter by status">
+            <option value="" {{if eq .Status ""}}selected{{end}}>All Statuses
+            </option>
+            <option value="pending" {{if eq .Status "pending"}}selected{{end}}>Pending
+            </option>
+            <option value="running" {{if eq .Status "running"}}selected{{end}}>Running
+            </option>
+            <option value="completed" {{if eq .Status "completed"}}selected{{end}}>Completed
+            </option>
+            <option value="failed" {{if eq .Status "failed"}}selected{{end}}>Failed
+            </option>
+        </select>
+        <!-- Type filter - compact -->
+        <select name="type"
+                class="filter-select filter-select--medium"
+                aria-label="Filter by job type">
+            <option value="">All Types</option>
+            <option value="browser" {{if eq .Type "browser"}}selected{{end}}>Browser
+            </option>
+            <option value="rules" {{if eq .Type "rules"}}selected{{end}}>Rules
+            </option>
+            <option value="alert" {{if eq .Type "alert"}}selected{{end}}>Alert
+            </option>
+            <option value="secret_refresh" {{if eq .Type "secret_refresh"}}selected{{end}}>Secret Refresh
+            </option>
+        </select>
+        <!-- Site selector - compact -->
+        <select name="site_id"
+                class="filter-select filter-select--medium"
+                aria-label="Filter by site">
+            <option value="">All Sites</option>
+            {{if .Sites}}
+            {{range .Sites}}
+            <option value="{{.ID}}" {{if eq $.SiteID (printf "%s" .ID)}}selected{{end}}>{{.Name}}
+            </option>
+            {{end}}
+            {{end}}
+        </select>
+        <!-- Test/Production filter - compact -->
+        <select name="is_test"
+                class="filter-select"
+                aria-label="Filter by environment">
+            <option value="" {{if eq .IsTest ""}}selected{{end}}>All
+            </option>
+            <option value="true" {{if eq .IsTest "true"}}selected{{end}}>Test
+            </option>
+            <option value="false" {{if eq .IsTest "false"}}selected{{end}}>Prod
+            </option>
+        </select>
+    </div>
+    <!-- Secondary controls group -->
+    <div class="filter-group filter-group--secondary"
+         role="group"
+         aria-label="Sort and display options">
+        <!-- Combined sort with direction -->
+        <select name="sort" class="filter-select" aria-label="Sort jobs">
+            <option value="created_at:desc" {{ if or (eq .SortBy "") (and (eq .SortBy "created_at") (or (eq .SortOrder "") (eq .SortOrder "desc"))) }} selected {{ end }}>Newest First
+            </option>
+            <option value="created_at:asc" {{ if and (eq .SortBy "created_at") (eq .SortOrder "asc") }} selected {{ end }}>Oldest First
+            </option>
+            <option value="status:asc" {{ if and (eq .SortBy "status") (eq .SortOrder "asc") }} selected {{ end }}>Status (A-Z)
+            </option>
+            <option value="status:desc" {{ if and (eq .SortBy "status") (eq .SortOrder "desc") }} selected {{ end }}>Status (Z-A)
+            </option>
+            <option value="type:asc" {{ if and (eq .SortBy "type") (eq .SortOrder "asc") }} selected {{ end }}>Type (A-Z)
+            </option>
+            <option value="type:desc" {{ if and (eq .SortBy "type") (eq .SortOrder "desc") }} selected {{ end }}>Type (Z-A)
+            </option>
+        </select>
+        <select name="page_size"
+                class="filter-select filter-select--compact"
+                aria-label="Items per page">
+            <option value="10" {{ if eq .PageSize 10 }}selected{{ end }}>10 per page
+            </option>
+            <option value="25" {{ if or (eq .PageSize 25) (eq .PageSize 0) }} selected {{ end }}>25 per page
+            </option>
+            <option value="50" {{ if eq .PageSize 50 }}selected{{ end }}>50 per page
+            </option>
+        </select>
+        <button type="submit"
+                class="filter-action filter-action--secondary"
+                aria-label="Apply current filter settings">
+            <i data-lucide="search" aria-hidden="true"></i>
+            Apply
+        </button>
+        <a class="filter-action filter-action--tertiary"
+           href="/jobs"
+           hx-get="/jobs"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           aria-label="Clear all filters and reset to default view">Clear</a>
+    </div>
+</form>
+{{ end }}

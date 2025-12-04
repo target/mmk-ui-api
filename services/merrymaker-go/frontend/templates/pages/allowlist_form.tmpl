@@ -1,0 +1,142 @@
+{{ define "allowlist-form-content" }}
+<div class="allowlist-form-section">
+    <div class="card">
+        <div class="card-header row-between gap-2">
+            <a class="btn btn-secondary"
+               href="/allowlist"
+               hx-get="/allowlist"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">Back</a>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+        <form id="allowlist-form"
+              hx-post="{{if eq .Mode "edit"}}/allowlist/{{.AllowlistID}}{{else}}/allowlist{{end}}"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+            <input type="hidden" name="mode" value="{{.Mode}}">
+            {{ if eq .Mode "edit" }}
+            <input type="hidden" name="allowlist_id" value="{{.AllowlistID}}">
+            {{ end }}
+            <div class="form-group">
+                <label for="pattern">
+                    Domain Pattern <span class="text-danger">*</span>
+                </label>
+                <input id="pattern"
+                       name="pattern"
+                       type="text"
+                       class="input max-w-lg"
+                       value="{{.FormPattern}}"
+                       maxlength="255"
+                       required
+                       placeholder="e.g., example.com or *.example.com">
+                <div class="field-help text-sm text-muted">Enter a domain pattern to allow. Use * for wildcards.</div>
+                {{with index .Errors "pattern"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="pattern_type">
+                    Pattern Type <span class="text-danger">*</span>
+                </label>
+                <select id="pattern_type" name="pattern_type" class="input max-w-sm" required>
+                    <option value="exact" {{if eq .FormPatternType "exact"}}selected{{end}}>Exact Match
+                    </option>
+                    <option value="wildcard" {{if eq .FormPatternType "wildcard"}}selected{{end}}>Wildcard (*.example.com)
+                    </option>
+                    <option value="glob" {{if eq .FormPatternType "glob"}}selected{{end}}>Glob Pattern
+                    </option>
+                    <option value="etld_plus_one" {{if eq .FormPatternType "etld_plus_one"}}selected{{end}}>eTLD+1 (includes subdomains)
+                    </option>
+                </select>
+                <div class="field-help text-sm text-muted">
+                    <strong>Exact:</strong> matches domain exactly
+                    <br>
+                    <strong>Wildcard:</strong> simple wildcard matching with *
+                    <br>
+                    <strong>Glob:</strong> full glob pattern support
+                    <br>
+                    <strong>eTLD+1:</strong> matches domain and all subdomains
+                </div>
+                {{with index .Errors "pattern_type"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="scope">
+                    Scope <span class="text-muted">(optional)</span>
+                </label>
+                <input id="scope"
+                       name="scope"
+                       type="text"
+                       class="input max-w-sm"
+                       value="{{.FormScope}}"
+                       maxlength="100"
+                       placeholder="default">
+                <div class="field-help text-sm text-muted">
+                    Scope context for the allowlist entry. Sites with matching scope will use this entry. Use 'global' for entries that apply to all scopes.
+                </div>
+                {{with index .Errors "scope"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="description">
+                    Description <span class="text-muted">(optional)</span>
+                </label>
+                <textarea id="description"
+                          name="description"
+                          class="input max-w-lg"
+                          rows="3"
+                          maxlength="1000"
+                          placeholder="Optional description of this allowlist entry">{{.FormDescription}}</textarea>
+                {{with index .Errors "description"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <input id="priority"
+                       name="priority"
+                       type="number"
+                       class="input max-w-xs"
+                       value="{{.FormPriority}}"
+                       min="1"
+                       max="1000"
+                       placeholder="100">
+                <div class="field-help text-sm text-muted">Lower numbers have higher priority (1-1000). Defaults to 100.</div>
+                {{with index .Errors "priority"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label>
+                    <input id="enabled" name="enabled" type="checkbox" {{if .FormEnabled}}checked{{end}}>Enabled
+                </label>
+                <div class="field-help text-sm text-muted">Uncheck to disable this allowlist entry without deleting it.</div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{if eq .Mode "edit"}}Save Changes{{else}}Create{{end}}</button>
+                <a class="btn btn-secondary"
+                   href="/allowlist"
+                   hx-get="/allowlist"
+                   hx-target="#main-content"
+                   hx-swap="innerHTML"
+                   hx-push-url="true">Cancel</a>
+                {{ if eq .Mode "edit" }}
+                <button type="button"
+                        class="btn btn-danger"
+                        hx-post="/allowlist/{{.AllowlistID}}/delete"
+                        hx-confirm="Delete this allowlist entry? This action cannot be undone."
+                        hx-target="#main-content"
+                        hx-swap="innerHTML"
+                        hx-push-url="false">Delete</button>
+                {{ end }}
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{{ end }}

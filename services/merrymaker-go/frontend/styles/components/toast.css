@@ -1,0 +1,143 @@
+/* Toast Notification Styles */
+
+.toast-container {
+	position: fixed;
+	top: var(--space-4);
+	right: var(--space-4);
+	z-index: 9999;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+	pointer-events: none;
+	max-width: 400px;
+}
+
+.toast {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-4) var(--space-5);
+	background: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-md);
+	pointer-events: auto;
+	min-width: 300px;
+	animation: toast-slide-in 0.3s ease-out;
+	transition:
+		opacity 0.3s ease-out,
+		transform 0.3s ease-out;
+}
+
+.toast.toast--removing {
+	opacity: 0;
+	transform: translateX(100%);
+}
+
+.toast-icon {
+	flex-shrink: 0;
+	width: var(--icon-size-md);
+	height: var(--icon-size-md);
+}
+
+.toast-content {
+	flex: 1;
+	font-size: var(--font-size-sm);
+	line-height: 1.5;
+	color: var(--color-text-primary);
+}
+
+.toast-close {
+	flex-shrink: 0;
+	background: none;
+	border: none;
+	padding: var(--space-1);
+	cursor: pointer;
+	color: var(--color-text-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--border-radius-sm);
+	transition: background-color 0.2s ease;
+}
+
+.toast-close:hover {
+	background-color: var(--color-background);
+}
+
+.toast-close:focus {
+	outline: 2px solid var(--color-info);
+	outline-offset: 2px;
+}
+
+/* Toast variants */
+.toast--success {
+	border-left: 4px solid var(--color-success);
+}
+
+.toast--success .toast-icon {
+	color: var(--color-success);
+}
+
+.toast--error {
+	border-left: 4px solid var(--color-danger);
+}
+
+.toast--error .toast-icon {
+	color: var(--color-danger);
+}
+
+.toast--warning {
+	border-left: 4px solid var(--color-warning);
+}
+
+.toast--warning .toast-icon {
+	color: var(--color-warning);
+}
+
+.toast--info {
+	border-left: 4px solid var(--color-info);
+}
+
+.toast--info .toast-icon {
+	color: var(--color-info);
+}
+
+/* Animation */
+@keyframes toast-slide-in {
+	from {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.toast-container {
+		top: var(--space-2);
+		right: var(--space-2);
+		left: var(--space-2);
+		max-width: none;
+	}
+
+	.toast {
+		min-width: auto;
+	}
+}
+
+/* Accessibility: respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+	.toast {
+		animation: none;
+		transition: none;
+	}
+
+	.toast.toast--removing {
+		opacity: 0;
+		transform: none;
+	}
+}

@@ -1,0 +1,120 @@
+{{ define "site-form-content" }}
+<div class="site-form-section">
+    <div class="card">
+        <div class="card-header row-between gap-2">
+            <a class="btn btn-secondary"
+               href="/sites"
+               hx-get="/sites"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">Back</a>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+        <form id="site-form"
+              hx-post="{{if eq .Mode "edit"}}/sites/{{.SiteID}}{{else}}/sites{{end}}"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              hx-push-url="true">
+            <input type="hidden" name="mode" value="{{.Mode}}">
+            {{ if eq .Mode "edit" }}
+            <input type="hidden" name="site_id" value="{{.SiteID}}">
+            {{ end }}
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input id="name"
+                       name="name"
+                       type="text"
+                       class="input max-w-md"
+                       value="{{.FormName}}"
+                       maxlength="255"
+                       required>
+                {{with index .Errors "name"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label>
+                    <input id="enabled" name="enabled" type="checkbox" {{if .FormEnabled}}checked{{end}}>Active
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="alert_mode">Alert Mode</label>
+                <select id="alert_mode"
+                        name="alert_mode"
+                        class="input max-w-sm">
+                    {{ $mode := .FormAlertMode }}
+                    <option value="active" {{if eq $mode "active"}}selected{{end}}>Deliver alerts</option>
+                    <option value="muted" {{if eq $mode "muted"}}selected{{end}}>Mute alerts</option>
+                </select>
+                {{with index .Errors "alert_mode"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="run_every_minutes">Run every n-minutes</label>
+                <select id="run_every_minutes"
+                        name="run_every_minutes"
+                        class="input max-w-xs">
+                    {{ $cur := .FormRunEveryMinutes }}
+                    {{ range (slice 1 5 10 15 30 60) }}
+                    <option value="{{.}}" {{if eq . $cur}}selected{{end}}>{{.}}
+                    </option>
+                    {{ end }}
+                </select>
+                {{with index .Errors "run_every_minutes"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="source_id">Source</label>
+                <select id="source_id" name="source_id" class="input max-w-lg" required>
+                    {{ range .SourceOptions }}
+                    <option value="{{.ID}}" {{if .Selected}}selected{{end}}>{{.Name}}
+                    </option>
+                    {{ end }}
+                </select>
+                {{with index .Errors "source_id"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-group">
+                <label for="scope">
+                    Scope <span class="text-muted">(optional)</span>
+                </label>
+                <input id="scope"
+                       name="scope"
+                       type="text"
+                       class="input max-w-sm"
+                       value="{{.FormScope}}"
+                       placeholder="e.g., sh1ft or * for all">
+            </div>
+            <div class="form-group">
+                <label for="alert_sink_id">Alert Sink</label>
+                <select id="alert_sink_id"
+                        name="alert_sink_id"
+                        class="input max-w-lg"
+                        required>
+                    {{ range .AlertSinkOptions }}
+                    <option value="{{.ID}}" {{if .Selected}}selected{{end}}>{{.Name}}
+                    </option>
+                    {{ end }}
+                </select>
+                {{with index .Errors "alert_sink_id"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-secondary"
+                   href="/sites"
+                   hx-get="/sites"
+                   hx-target="#main-content"
+                   hx-swap="innerHTML"
+                   hx-push-url="true">Cancel</a>
+            </div>
+        </form>
+</div>
+</div>
+</div>
+{{ end }}

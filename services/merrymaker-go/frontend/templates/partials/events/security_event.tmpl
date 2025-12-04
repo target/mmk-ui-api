@@ -1,0 +1,23 @@
+{{- define "security-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$message := index $data "message"}}
+{{$source := index $data "source"}}
+    {{if $source}}<code class="event__badge event__badge--muted">{{$source}}</code>{{end}}
+    {{if $message}}
+        <span class="event__summary-text" title="{{$message}}">{{truncateText $message 60}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Security alert</span>
+    {{end}}
+{{- end}}
+
+{{- define "security-event-details" -}}
+<div class="event__body">
+    <div class="event__details-content">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "security-event" -}}
+{{template "security-event-details" .}}
+{{- end}}

@@ -1,0 +1,35 @@
+{{define "alert-sink-view-content"}}
+<div class="alert-detail-section">
+    {{with .AlertSink}}
+    <h2>{{.Name}}</h2>
+    <div class="card">
+        <div class="card-body">
+            <dl class="data-list data-list--stacked">
+                <div class="data-item">
+                    <dt>Method</dt>
+                    <dd>{{ .Method }}</dd>
+                </div>
+                <div class="data-item">
+                    <dt>URI</dt>
+                    <dd><code class="mono">{{ .URI }}</code></dd>
+                </div>
+                <div class="data-item">
+                    <dt>OK Status</dt>
+                    <dd>{{ .OkStatus }}</dd>
+                </div>
+                <div class="data-item">
+                    <dt>Retry</dt>
+                    <dd>{{ .Retry }}</dd>
+                </div>
+                <div class="data-item">
+                    <dt>Secrets</dt>
+                    <dd>{{ if .Secrets }}{{ range $i, $s := .Secrets }}{{ if $i }}, {{ end }}{{ $s }}{{ end }}{{ else }}None{{ end }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+{{else}}
+    <p>Alert sink not found.</p>
+    {{end}}
+</div>
+{{end}}

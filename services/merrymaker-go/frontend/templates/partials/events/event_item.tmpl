@@ -1,0 +1,33 @@
+{{define "event-item"}}
+{{$category := .EventType | eventTypeCategory}}
+{{$typeTpl := eventTemplateName $category "type"}}
+{{$summaryTpl := eventTemplateName $category "summary"}}
+{{$detailsTpl := eventTemplateName $category "details"}}
+<details class="event-card event-card--compact" data-event-type="{{$category}}">
+    <summary class="event__summary">
+        <span class="event__summary-caret" aria-hidden="true">
+            <i data-lucide="chevron-right" class="event__summary-caret-icon w-3 h-3"></i>
+        </span>
+        <span class="event__summary-content">
+            {{renderEventPartial $typeTpl .}}
+            <span class="event__summary-main">
+                <span class="event__summary-info">
+                    {{renderEventPartial $summaryTpl .}}
+                </span>
+            </span>
+        </span>
+        <span class="event__summary-timestamp text-muted">{{.CreatedAt | timeTag}}</span>
+    </summary>
+    <div class="event__details"
+         id="event-details-{{.ID}}"
+         hx-get="{{.DetailsURL}}"
+         hx-trigger="revealed once"
+         hx-swap="innerHTML">
+        {{if .DataTrimmed}}
+        <div class="text-muted small">Loading full details on demand…</div>
+        {{else}}
+        <div class="text-muted small">Loading event details…</div>
+        {{end}}
+    </div>
+</details>
+{{end}}

@@ -1,0 +1,15 @@
+{{- define "other-event-summary" -}}
+    <span class="event__summary-text event__summary-text--muted">Raw event</span>
+{{- end}}
+
+{{- define "other-event-details" -}}
+<div class="event__body">
+    <div class="event__details-content">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "other-event" -}}
+{{template "other-event-details" .}}
+{{- end}}

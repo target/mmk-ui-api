@@ -1,0 +1,147 @@
+/**
+ * CRITICAL CSS - Above-the-fold styles
+ *
+ * This file contains only the minimal CSS needed to render the initial viewport.
+ * It should be inlined in the <head> to prevent render-blocking.
+ *
+ * Includes:
+ * - CSS variables (design tokens)
+ * - Basic resets
+ * - Layout structure (dashboard grid, sidebar, header)
+ * - Typography basics
+ */
+
+/* === CSS VARIABLES === */
+@import "./base/tokens.css";
+
+/* === BASIC RESET === */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family: var(--font-family-sans);
+	font-size: var(--font-size-base);
+	color: var(--color-text-primary);
+	background-color: var(--color-background);
+	line-height: 1.6;
+}
+
+/* === DASHBOARD LAYOUT === */
+.dashboard-layout {
+	display: grid;
+	grid-template-columns: 240px 1fr;
+	grid-template-rows: auto 1fr;
+	grid-template-areas: "sidebar header" "sidebar main";
+	min-height: 100vh;
+}
+
+.sidebar {
+	grid-area: sidebar;
+	background-color: var(--color-surface);
+	border-right: var(--border-width) solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	padding: var(--space-6) var(--space-4);
+}
+
+.sidebar-header {
+	padding: 0 var(--space-4) var(--space-4);
+	margin-bottom: var(--space-4);
+}
+
+.sidebar-header h2 {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+}
+
+.header {
+	grid-area: header;
+	background-color: var(--color-surface);
+	border-bottom: var(--border-width) solid var(--color-border);
+	padding: var(--space-4) var(--space-8);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 500;
+}
+
+.header-title {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-secondary);
+}
+
+.main-content {
+	grid-area: main;
+	padding: var(--space-8);
+}
+
+/* === NAVIGATION === */
+.main-nav {
+	flex-grow: 1;
+}
+
+.nav-list {
+	list-style: none;
+}
+
+.nav-link {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-4);
+	border-radius: var(--border-radius-md);
+	color: var(--color-text-secondary);
+	text-decoration: none;
+	font-weight: var(--font-weight-medium);
+	font-size: var(--font-size-sm);
+	transition:
+		background-color 0.2s,
+		color 0.2s;
+}
+
+.nav-link:hover {
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+}
+
+.nav-link.is-active {
+	background-color: var(--color-brand-primary);
+	color: var(--color-surface);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+	.dashboard-layout {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+		grid-template-areas: "header" "main";
+	}
+
+	.sidebar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 280px;
+		height: 100vh;
+		z-index: 1000;
+		transform: translateX(-100%);
+		transition: transform 0.2s;
+	}
+
+	body.sidebar-open .sidebar {
+		transform: translateX(0);
+	}
+}

@@ -1,0 +1,30 @@
+{{- define "page-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$url := index $data "url"}}
+{{$selector := index $data "selector"}}
+{{$value := index $data "value"}}
+{{$text := index $data "text"}}
+    {{if $url}}
+        <span class="event__summary-text" title="{{$url}}">{{truncateURL120 $url}}</span>
+    {{else if $selector}}
+        <code class="event__badge event__badge--muted">{{$selector}}</code>
+    {{else if $text}}
+        <span class="event__summary-text" title="{{$text}}">{{truncateText $text 60}}</span>
+    {{else if $value}}
+        <span class="event__summary-text" title="{{$value}}">{{truncateText $value 60}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Event details</span>
+    {{end}}
+{{- end}}
+
+{{- define "page-event-details" -}}
+<div class="event__body">
+    <div class="event__details-content">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "page-event" -}}
+{{template "page-event-details" .}}
+{{- end}}

@@ -1,0 +1,45 @@
+/* Utilities: Layout helpers */
+
+.row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.row-between {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-4);
+	min-width: 0;
+}
+
+/* Icon sizing utilities */
+.icon-sm {
+	width: 14px;
+	height: 14px;
+}
+
+.icon-md {
+	width: 16px;
+	height: 16px;
+}
+
+.icon-lg {
+	width: 20px;
+	height: 20px;
+}
+
+.icon-xl {
+	width: 22px;
+	height: 22px;
+}
+
+.icon-xxl {
+	width: 24px;
+	height: 24px;
+}
+
+/* Vertical alignment */
+.v-middle {
+	vertical-align: middle;
+}

@@ -1,0 +1,36 @@
+/* Component: Job Status Pills */
+
+.job-status {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	text-decoration: none;
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--border-radius-sm);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+.job-status.completed {
+	color: var(--color-success);
+	background-color: var(--color-success-subtle, hsl(150, 60%, 95%));
+}
+.job-status.failed {
+	color: var(--color-danger);
+	background-color: var(--color-danger-subtle, hsl(0, 70%, 95%));
+}
+.job-status.running {
+	color: var(--color-warning);
+	background-color: var(--color-warning-subtle, hsl(38, 92%, 95%));
+}
+.job-status.pending {
+	color: var(--color-text-secondary);
+	background-color: var(--color-background);
+}
+.job-status.timeout,
+.job-status.error {
+	color: var(--color-text-muted);
+	background-color: var(--color-background);
+}
+.job-status:hover {
+	text-decoration: underline;
+}

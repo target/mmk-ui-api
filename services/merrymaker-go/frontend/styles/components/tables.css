@@ -1,0 +1,141 @@
+/* Component: Tables */
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-size-sm);
+}
+.table th {
+	padding: var(--space-3) var(--space-4);
+	text-align: left;
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	border-bottom: var(--border-width) solid var(--color-border);
+	background-color: var(--color-background);
+}
+.table td {
+	padding: var(--space-3) var(--space-4);
+	border-bottom: var(--border-width) solid var(--color-border);
+	vertical-align: middle;
+}
+.table tbody tr {
+	transition:
+		background-color 150ms ease,
+		opacity 400ms ease,
+		transform 400ms ease;
+}
+.table tbody tr:hover {
+	background-color: var(--color-background);
+}
+.table tbody tr.row-link {
+	cursor: pointer;
+}
+.table tbody tr.row-link:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: -2px;
+}
+
+/* Row state styling - resolved/archived items */
+.table tbody tr.row-resolved {
+	background-color: var(--color-background-muted);
+}
+
+.table tbody tr.row-resolved:hover {
+	background-color: var(--color-background-hover);
+}
+
+.table tbody tr.row-resolved td {
+	color: var(--color-text-secondary);
+}
+
+.table tbody tr.row-resolved td.fw-medium,
+.table tbody tr.row-resolved td.font-medium {
+	color: var(--color-text-primary);
+}
+
+/* HTMX swap-out animation: element being removed gets this class during swap delay */
+.table tbody tr.htmx-swapping {
+	opacity: 0;
+	transform: translateX(-6px);
+}
+/* Pre-request hint: immediately fade & nudge when user clicks delete */
+.table tbody tr.row-removing {
+	background-color: var(--color-danger-bg);
+	opacity: 0;
+	transform: translateX(-6px);
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.table tbody tr,
+	.table tbody tr.htmx-swapping,
+	.table tbody tr.row-removing {
+		transition: none;
+		transform: none;
+	}
+}
+
+/* Table action buttons - consistent styling for row actions */
+.table-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--space-1);
+}
+
+/* Icon-only action buttons for tables */
+.btn-table-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	min-height: 32px;
+	padding: 0;
+	border-radius: var(--border-radius-sm);
+	border: var(--border-width) solid transparent;
+	background-color: transparent;
+	color: var(--color-text-secondary);
+	cursor: pointer;
+	transition:
+		background-color 0.2s,
+		color 0.2s,
+		border-color 0.2s;
+	text-decoration: none;
+}
+
+.btn-table-action:hover {
+	background-color: var(--color-background-hover);
+	color: var(--color-text-primary);
+	border-color: var(--color-border);
+}
+
+.btn-table-action:active {
+	background-color: var(--color-background-active);
+}
+
+.btn-table-action:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+
+.btn-table-action i[data-lucide] {
+	width: 16px;
+	height: 16px;
+}
+
+/* Danger variant for delete actions */
+.btn-table-action.btn-table-action--danger:hover {
+	background-color: var(--color-danger-bg);
+	color: var(--color-danger-text);
+	border-color: var(--color-danger-border);
+}
+
+.btn-table-action.btn-table-action--danger:active {
+	background-color: var(--color-danger-bg-active);
+}
+
+/* Prevent action buttons from triggering row click */
+.table tbody tr.row-link .table-actions .btn-table-action {
+	position: relative;
+	z-index: 1;
+}

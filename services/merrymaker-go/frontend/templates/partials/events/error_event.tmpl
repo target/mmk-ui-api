@@ -1,0 +1,26 @@
+{{- define "error-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$name := index $data "name"}}
+{{$message := index $data "message"}}
+{{$value := index $data "value"}}
+    {{if $name}}<code class="event__badge event__badge--muted">{{$name}}</code>{{end}}
+    {{if $message}}
+        <span class="event__summary-text" title="{{$message}}">{{truncateText $message 64}}</span>
+    {{else if $value}}
+        <span class="event__summary-text" title="{{$value}}">{{truncateText $value 64}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Error event</span>
+    {{end}}
+{{- end}}
+
+{{- define "error-event-details" -}}
+<div class="event__body">
+    <div class="event__details-content">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "error-event" -}}
+{{template "error-event-details" .}}
+{{- end}}

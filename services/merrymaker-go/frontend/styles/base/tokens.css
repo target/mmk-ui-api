@@ -1,0 +1,195 @@
+/**
+ * DESIGN TOKENS - Shared CSS Custom Properties
+ *
+ * This file centralizes all design tokens so they can be imported wherever
+ * needed (e.g., critical CSS bundle, main bundle).
+ */
+
+:root {
+	/* Colors - Modern SaaS palette */
+	--color-background: hsl(220, 20%, 97%);
+	--color-background-muted: hsl(0, 0%, 98%);
+	--color-background-hover: hsl(0, 0%, 95%);
+	--color-background-active: hsl(0, 0%, 90%);
+	--color-surface: hsl(0, 0%, 100%);
+	--color-surface-secondary: hsl(220, 20%, 96%);
+	--color-text-primary: hsl(220, 10%, 20%);
+	--color-text-secondary: hsl(220, 8%, 45%);
+	--color-text-muted: hsl(220, 8%, 65%);
+	--color-border: hsl(220, 15%, 90%);
+	--color-border-interactive: hsl(220, 10%, 80%);
+	--color-brand-primary: hsl(220, 10%, 25%);
+	--color-brand-primary-hover: hsl(220, 10%, 15%);
+	--color-brand-primary-subtle: hsl(220, 10%, 97%);
+	--color-success: hsl(150, 60%, 45%);
+	--color-success-soft-bg: hsl(150, 60%, 93%);
+	--color-success-soft-border: hsl(150, 60%, 82%);
+	--color-success-soft-text: hsl(150, 60%, 32%);
+	--color-danger: hsl(0, 70%, 60%);
+	--color-danger-text: hsl(0, 70%, 40%);
+	--color-danger-bg: hsl(0, 70%, 93%);
+	--color-danger-bg-active: hsl(0, 70%, 92%);
+	--color-danger-border: hsl(0, 70%, 80%);
+	--color-danger-bg-hover: hsl(0, 70%, 90%);
+	--color-danger-border-hover: hsl(0, 70%, 75%);
+	--color-warning: hsl(38, 92%, 50%);
+	--color-warning-soft-bg: hsl(38, 92%, 94%);
+	--color-warning-soft-border: hsl(38, 92%, 82%);
+	--color-warning-soft-text: hsl(38, 92%, 36%);
+	--color-info: hsl(210, 100%, 56%);
+	--color-info-soft-bg: hsl(210, 100%, 94%);
+	--color-info-soft-border: hsl(210, 100%, 82%);
+	--color-info-soft-text: hsl(210, 100%, 38%);
+	--color-neutral-soft-bg: hsl(210, 20%, 94%);
+	--color-neutral-soft-border: hsl(210, 20%, 82%);
+	--color-neutral-soft-text: hsl(210, 20%, 38%);
+	--color-accent-purple: hsl(262, 83%, 58%);
+	--color-accent-cyan: hsl(188, 94%, 43%);
+	--color-gradient-start: hsl(220, 10%, 98%);
+	--color-gradient-end: hsl(220, 10%, 96%);
+
+	/* Typography */
+	--font-family-sans:
+		"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	--font-size-2xs: 0.7rem;
+	--font-size-xs: 0.75rem;
+	--font-size-sm: 0.875rem;
+	--font-size-base: 1rem;
+	--font-size-md: 1.125rem;
+	--font-size-lg: 1.25rem;
+	--font-size-xl: 2.5rem;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+
+	/* Components - badges */
+	--badge-font-size: var(--font-size-xs);
+	--badge-font-weight: var(--font-weight-medium);
+	--badge-padding-y: var(--space-1);
+	--badge-padding-x: var(--space-2);
+	--badge-gap: var(--space-1);
+	--badge-radius: var(--border-radius-sm);
+	--badge-icon-size: 1em;
+
+	/* Spacing */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-12: 3rem;
+
+	/* Icon sizes */
+	--icon-size-sm: 18px;
+	--icon-size-md: 20px;
+	--icon-size-lg: 24px;
+
+	/* Borders & Shadows */
+	--border-radius-sm: 4px;
+	--border-radius-md: 8px;
+	--border-radius: var(--border-radius-md);
+	--border-radius-lg: 16px;
+	--border-width: 1px;
+	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+	/* Layout dimensions */
+	--header-height: 73px;
+}
+
+/* Dark theme overrides */
+:root[data-theme="dark"] {
+	--color-background: hsl(220, 18%, 12%);
+	--color-background-muted: hsl(220, 18%, 14%);
+	--color-background-hover: hsl(220, 18%, 18%);
+	--color-background-active: hsl(220, 18%, 22%);
+	--color-surface: hsl(220, 20%, 16%);
+	--color-surface-secondary: hsl(220, 20%, 18%);
+	--color-text-primary: hsl(220, 40%, 92%);
+	--color-text-secondary: hsl(220, 24%, 75%);
+	--color-text-muted: hsl(220, 18%, 60%);
+	--color-border: hsl(220, 16%, 28%);
+	--color-border-interactive: hsl(220, 24%, 36%);
+	--color-brand-primary: hsl(220, 80%, 70%);
+	--color-brand-primary-hover: hsl(220, 90%, 75%);
+	--color-brand-primary-subtle: hsl(220, 36%, 20%);
+	--color-success: hsl(150, 65%, 55%);
+	--color-success-soft-bg: hsla(150, 65%, 45%, 0.16);
+	--color-success-soft-border: hsla(150, 65%, 55%, 0.38);
+	--color-success-soft-text: hsl(150, 65%, 72%);
+	--color-danger: hsl(0, 75%, 65%);
+	--color-danger-text: hsl(0, 70%, 85%);
+	--color-danger-bg: hsla(0, 70%, 55%, 0.15);
+	--color-danger-bg-active: hsla(0, 70%, 55%, 0.2);
+	--color-danger-border: hsla(0, 70%, 55%, 0.5);
+	--color-danger-bg-hover: hsla(0, 70%, 55%, 0.18);
+	--color-danger-border-hover: hsla(0, 70%, 55%, 0.6);
+	--color-warning: hsl(38, 92%, 60%);
+	--color-warning-soft-bg: hsla(38, 92%, 60%, 0.16);
+	--color-warning-soft-border: hsla(38, 92%, 65%, 0.4);
+	--color-warning-soft-text: hsl(38, 92%, 70%);
+	--color-info: hsl(210, 100%, 70%);
+	--color-info-soft-bg: hsla(210, 100%, 70%, 0.16);
+	--color-info-soft-border: hsla(210, 100%, 70%, 0.4);
+	--color-info-soft-text: hsl(210, 100%, 75%);
+	--color-neutral-soft-bg: hsla(220, 16%, 62%, 0.14);
+	--color-neutral-soft-border: hsla(220, 18%, 62%, 0.32);
+	--color-neutral-soft-text: hsl(220, 20%, 85%);
+	--color-accent-purple: hsl(262, 90%, 72%);
+	--color-accent-cyan: hsl(188, 94%, 60%);
+	--color-gradient-start: hsl(220, 24%, 16%);
+	--color-gradient-end: hsl(220, 20%, 12%);
+	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+	--shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+}
+
+/* Respect system preference when no explicit override is set */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]),
+	:root[data-theme="system"] {
+		--color-background: hsl(220, 18%, 12%);
+		--color-background-muted: hsl(220, 18%, 14%);
+		--color-background-hover: hsl(220, 18%, 18%);
+		--color-background-active: hsl(220, 18%, 22%);
+		--color-surface: hsl(220, 20%, 16%);
+		--color-surface-secondary: hsl(220, 20%, 18%);
+		--color-text-primary: hsl(220, 40%, 92%);
+		--color-text-secondary: hsl(220, 24%, 75%);
+		--color-text-muted: hsl(220, 18%, 60%);
+		--color-border: hsl(220, 16%, 28%);
+		--color-border-interactive: hsl(220, 24%, 36%);
+		--color-brand-primary: hsl(220, 80%, 70%);
+		--color-brand-primary-hover: hsl(220, 90%, 75%);
+		--color-brand-primary-subtle: hsl(220, 36%, 20%);
+		--color-success: hsl(150, 65%, 55%);
+		--color-success-soft-bg: hsla(150, 65%, 45%, 0.16);
+		--color-success-soft-border: hsla(150, 65%, 55%, 0.38);
+		--color-success-soft-text: hsl(150, 65%, 72%);
+		--color-danger: hsl(0, 75%, 65%);
+		--color-danger-text: hsl(0, 70%, 85%);
+		--color-danger-bg: hsla(0, 70%, 55%, 0.15);
+		--color-danger-bg-active: hsla(0, 70%, 55%, 0.2);
+		--color-danger-border: hsla(0, 70%, 55%, 0.5);
+		--color-danger-bg-hover: hsla(0, 70%, 55%, 0.18);
+		--color-danger-border-hover: hsla(0, 70%, 55%, 0.6);
+		--color-warning: hsl(38, 92%, 60%);
+		--color-warning-soft-bg: hsla(38, 92%, 60%, 0.16);
+		--color-warning-soft-border: hsla(38, 92%, 65%, 0.4);
+		--color-warning-soft-text: hsl(38, 92%, 70%);
+		--color-info: hsl(210, 100%, 70%);
+		--color-info-soft-bg: hsla(210, 100%, 70%, 0.16);
+		--color-info-soft-border: hsla(210, 100%, 70%, 0.4);
+		--color-info-soft-text: hsl(210, 100%, 75%);
+		--color-neutral-soft-bg: hsla(220, 16%, 62%, 0.14);
+		--color-neutral-soft-border: hsla(220, 18%, 62%, 0.32);
+		--color-neutral-soft-text: hsl(220, 20%, 85%);
+		--color-accent-purple: hsl(262, 90%, 72%);
+		--color-accent-cyan: hsl(188, 94%, 60%);
+		--color-gradient-start: hsl(220, 24%, 16%);
+		--color-gradient-end: hsl(220, 20%, 12%);
+		--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+		--shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+	}
+}

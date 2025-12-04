@@ -1,0 +1,128 @@
+/* Component: Job Failure Event Display */
+
+.event__body--failure {
+	background-color: var(--color-danger-bg);
+	border-left: 3px solid var(--color-danger);
+	padding: var(--space-3);
+	border-radius: var(--border-radius-md);
+}
+
+.failure-summary {
+	padding-bottom: var(--space-2);
+	border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.failure-error-type-badge {
+	display: inline-block;
+	padding: var(--space-1) var(--space-2);
+	background-color: var(--color-danger);
+	color: white;
+	border-radius: var(--border-radius-sm);
+	font-size: var(--font-size-sm);
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+}
+
+.failure-context {
+	padding: var(--space-2) 0;
+}
+
+.failure-context-item {
+	margin-bottom: var(--space-1);
+	font-size: var(--font-size-sm);
+}
+
+.failure-context-item strong {
+	color: var(--color-text-secondary);
+	font-weight: var(--font-weight-semibold);
+}
+
+.failure-context-item code {
+	background-color: var(--color-surface);
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--border-radius-sm);
+	font-size: var(--font-size-sm);
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+}
+
+.failure-selector {
+	color: var(--color-warning);
+	font-weight: var(--font-weight-medium);
+}
+
+.failure-url {
+	color: var(--color-info);
+	text-decoration: none;
+	word-break: break-all;
+}
+
+.failure-url:hover {
+	text-decoration: underline;
+}
+
+.failure-screenshot {
+	padding-top: var(--space-2);
+}
+
+.failure-stack-trace {
+	margin-top: var(--space-2);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	background-color: var(--color-surface);
+}
+
+.failure-stack-trace-summary {
+	padding: var(--space-2) var(--space-3);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-secondary);
+	user-select: none;
+}
+
+/* Hide the native marker and use our own chevron for consistent alignment */
+.failure-stack-trace summary {
+	list-style: none;
+}
+.failure-stack-trace summary::-webkit-details-marker {
+	display: none;
+}
+.failure-stack-trace .disclosure-icon {
+	display: inline-block;
+	transition: transform 0.2s ease;
+}
+.failure-stack-trace[open] .disclosure-icon {
+	transform: rotate(90deg);
+}
+
+.failure-stack-trace-summary:hover {
+	background-color: var(--color-background);
+}
+
+.failure-stack-trace-content {
+	padding: var(--space-3);
+	margin: 0;
+	background-color: var(--color-background);
+	border-top: var(--border-width) solid var(--color-border);
+	overflow-x: auto;
+	font-size: var(--font-size-sm);
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+	color: var(--color-text-primary);
+}
+
+.failure-stack-trace-content code {
+	background: none;
+	padding: 0;
+}
+
+/* Icon styling for failure events */
+.event-icon--job_failure {
+	color: var(--color-danger);
+}

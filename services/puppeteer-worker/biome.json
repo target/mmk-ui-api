@@ -1,0 +1,183 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+	"files": {
+		"ignoreUnknown": false,
+		"maxSize": 2097152
+	},
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"style": {
+				"useNodejsImportProtocol": "error"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["**/.js"],
+			"javascript": {
+				"formatter": {
+					"quoteStyle": "single"
+				}
+			}
+		},
+		{
+			"includes": [
+				"test/**/*",
+				"**/*.test.js",
+				"**/*.test.ts",
+				"**/*-test.js",
+				"**/*-test.ts",
+				"src/example-test.js"
+			],
+			"linter": {
+				"rules": {
+					"security": {
+						"noGlobalEval": "off"
+					},
+					"complexity": {
+						"noStaticOnlyClass": "off"
+					},
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["*.json", "**/*.json"],
+			"linter": {
+				"enabled": false
+			}
+		},
+		{
+			"includes": ["dist/**/*"],
+			"linter": {
+				"enabled": false
+			},
+			"formatter": {
+				"enabled": false
+			}
+		},
+		{
+			"includes": ["src/**/*"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noStaticOnlyClass": "warn"
+					},
+					"suspicious": {
+						"noExplicitAny": "warn"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["client-monitoring.js", "src/client-monitoring.js"],
+			"linter": {
+				"enabled": false
+			}
+		},
+		{
+			"includes": ["src/client-monitoring.js"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noGlobalEval": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/event-monitor.ts",
+				"src/file-capture.ts",
+				"src/puppeteer-runner.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "warn"
+					},
+					"correctness": {
+						"noUnusedFunctionParameters": "warn",
+						"noUnusedVariables": "warn"
+					},
+					"style": {
+						"noNonNullAssertion": "warn"
+					},
+					"complexity": {
+						"useArrowFunction": "warn"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/event-monitor.ts",
+				"src/event-shipper.ts",
+				"src/file-capture.ts",
+				"src/lib/logger.ts"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedPrivateClassMembers": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/test-utils.js"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "warn"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["debug-*.js", "decode-*.js", "demo-*.js"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noGlobalEval": "off"
+					},
+					"complexity": {
+						"useOptionalChain": "off"
+					},
+					"style": {
+						"useNodejsImportProtocol": "off"
+					},
+					"correctness": {
+						"noUnusedImports": "off"
+					}
+				}
+			}
+		}
+	]
+}

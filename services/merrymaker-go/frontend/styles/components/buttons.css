@@ -1,0 +1,131 @@
+/**
+ * BUTTON COMPONENTS
+ *
+ * This file contains all button variants and states.
+ * Buttons are a core interactive element with multiple variants.
+ */
+
+/* Base button styles */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	padding: 0 var(--space-4);
+	min-height: 40px; /* Consistent height across <button> and <a> */
+	line-height: 1; /* Prevent inconsistent vertical sizing */
+	border-radius: var(--border-radius-md);
+	border: var(--border-width) solid transparent;
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition:
+		background-color 0.2s,
+		color 0.2s,
+		border-color 0.2s,
+		box-shadow 0.2s;
+	text-decoration: none;
+	font-size: var(--font-size-sm);
+	white-space: nowrap;
+	vertical-align: middle;
+}
+
+/* Accessible focus and disabled states */
+.btn:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+.btn[aria-disabled="true"] {
+	pointer-events: none;
+}
+
+/* Button variants */
+.btn-primary {
+	background-color: var(--color-brand-primary);
+	color: var(--color-surface);
+}
+.btn-primary:hover {
+	background-color: var(--color-brand-primary-hover);
+}
+
+.btn-success {
+	background-color: var(--color-success);
+	color: var(--color-surface);
+	border-color: var(--color-success);
+}
+.btn-success:hover {
+	background-color: hsl(150, 60%, 40%);
+	border-color: hsl(150, 60%, 40%);
+}
+
+.btn-secondary {
+	background-color: var(--color-surface);
+	color: var(--color-text-secondary);
+	border-color: var(--color-border);
+}
+.btn-secondary:hover {
+	border-color: var(--color-border-interactive);
+	color: var(--color-text-primary);
+}
+
+.btn-tertiary {
+	background-color: transparent;
+	color: var(--color-text-muted);
+	border-color: transparent;
+
+	/* Semantic, color-differentiated actions */
+	/* Use .btn-primary for primary actions like Save/Submit */
+	/* Use .btn-secondary for neutral/cancel/less critical actions */
+	/* Use .btn-danger for destructive actions */
+}
+.btn-tertiary:hover {
+	color: var(--color-text-secondary);
+	background-color: var(--color-background);
+}
+
+.btn-danger {
+	background-color: var(--color-danger-bg);
+	color: var(--color-danger-text);
+	border-color: var(--color-danger-border);
+}
+.btn-danger:hover {
+	background-color: var(--color-danger-bg-hover);
+	border-color: var(--color-danger-border-hover);
+}
+
+/* Button sizes */
+.btn-sm {
+	padding: 0 var(--space-3);
+	min-height: 32px;
+	font-size: var(--font-size-sm);
+	gap: var(--space-2);
+}
+
+.btn-xs {
+	border-radius: var(--border-radius-sm);
+	line-height: 1;
+	padding: var(--space-1) var(--space-2);
+	font-size: var(--font-size-2xs);
+	gap: var(--space-1);
+}
+
+/* Icon sizing inside buttons */
+.btn i[data-lucide] {
+	width: 16px;
+	height: 16px;
+}
+.btn-xs i[data-lucide] {
+	width: 12px;
+	height: 12px;
+}
+
+/* Icon-only button variant */
+.btn-icon {
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+}

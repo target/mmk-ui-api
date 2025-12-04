@@ -1,0 +1,48 @@
+{
+	"name": "puppeteer-worker",
+	"version": "1.0.0",
+	"description": "merrymaker puppeteer worker",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "npm run build && node --test src/*.test.js",
+		"test:watch": "npm run build:watch & node --test --watch src/*.test.js src/*-test.js",
+		"lint": "biome lint",
+		"lint:fix": "biome lint --write",
+		"format": "biome format --write",
+		"build": "tsc --emitDeclarationOnly && node scripts/esbuild.mjs",
+		"build:watch": "node scripts/esbuild.mjs --watch",
+		"start": "tsx src/index.ts",
+		"start:dist": "node dist/index.js",
+		"start:env": "node --env-file=.env dist/index.js",
+		"worker": "tsx src/worker-main.ts",
+		"worker:dist": "node dist/worker-main.js",
+		"worker:env": "node --env-file=.env dist/worker-main.js",
+		"dev": "tsx --watch src/index.ts",
+		"examples": "node dist/examples.js",
+		"demo": "tsx src/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "module",
+	"engines": {
+		"node": ">=20.18.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.8",
+		"esbuild": "^0.27.0",
+		"tsx": "^4.20.4",
+		"typescript": "^5.9.2"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.873.0",
+		"@aws-sdk/s3-request-presigner": "^3.873.0",
+		"@azure/storage-blob": "^12.28.0",
+		"@google-cloud/storage": "^7.17.0",
+		"ioredis": "^5.7.0",
+		"minio": "^8.0.5",
+		"puppeteer": "^24.17.0",
+		"undici": "^7.14.0",
+		"yaml": "^2.8.1"
+	}
+}
