@@ -6,5 +6,4 @@ dist-dev/
 security-report.json
 src/client-side-monitoring-bundled.js
 src/client-side-monitoring-dev.js
-src/index.ts
 .tsbuildinfo

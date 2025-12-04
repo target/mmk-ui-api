@@ -34,27 +34,28 @@ const rawPlugin = {
 };
 
 const nodeEntries = [
-	resolve(projectRoot, "src/index.ts"),
-	resolve(projectRoot, "src/examples.ts"),
-	resolve(projectRoot, "src/worker-main.ts"),
+	"src/index.ts",
+	"src/examples.ts",
+	"src/worker-main.ts",
 	// Include core modules to keep dist in sync for tests
-	resolve(projectRoot, "src/file-capture.ts"),
-	resolve(projectRoot, "src/puppeteer-runner.ts"),
-	resolve(projectRoot, "src/event-monitor.ts"),
-	resolve(projectRoot, "src/event-shipper.ts"),
-	resolve(projectRoot, "src/config-loader.ts"),
-	resolve(projectRoot, "src/config-schema.ts"),
-	resolve(projectRoot, "src/types.ts"),
-	resolve(projectRoot, "src/logger.ts"),
-	resolve(projectRoot, "src/job-client.ts"),
-	resolve(projectRoot, "src/worker-loop.ts"),
+	"src/file-capture.ts",
+	"src/puppeteer-runner.ts",
+	"src/event-monitor.ts",
+	"src/event-shipper.ts",
+	"src/config-loader.ts",
+	"src/config-schema.ts",
+	"src/types.ts",
+	"src/logger.ts",
+	"src/job-client.ts",
+	"src/worker-loop.ts",
 ];
 
-const clientMonitoringEntry = resolve(projectRoot, "src/client-monitoring.js");
+const clientMonitoringEntry = "src/client-monitoring.js";
 
 const nodeBuildConfig = {
 	entryPoints: nodeEntries,
-	outdir: resolve(projectRoot, "dist"),
+	absWorkingDir: projectRoot,
+	outdir: "dist",
 	platform: "node",
 	format: "esm",
 	bundle: true,
@@ -66,7 +67,8 @@ const nodeBuildConfig = {
 
 const clientMonitoringConfig = {
 	entryPoints: [clientMonitoringEntry],
-	outdir: resolve(projectRoot, "dist"),
+	absWorkingDir: projectRoot,
+	outdir: "dist",
 	platform: "browser",
 	format: "iife",
 	bundle: true,
