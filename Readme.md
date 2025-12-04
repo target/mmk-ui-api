@@ -1,6 +1,3 @@
->[!WARNING]
-This repository is in an archived state. Use caution when evaluating or using this code as its methods or dependencies may be outdated or insecure.
-
 # Merry Maker 2.0
 
 <div align="center">
@@ -49,13 +46,11 @@ information helps other cybersecurity teams stand up their own customized defens
 - Distributed event scanning (rule engine)
 - Role based UI with local and OAuth2 authentication options
 
-
 ## Related Projects
 
 - [mmk-js-scope](https://github.com/target/mmk-js-scope) Enumerates javascript requests and hooks native function calls
   with Headless Chrome for use by Merry Maker
 - [mmk-types](https://github.com/target/mmk-types) Shared typings between services - only needed for developers
-
 
 ## Full Stack Demo
 
