@@ -1,0 +1,109 @@
+{{ define "sources-content" }}
+<div class="sources-section">
+    <div class="card">
+        <div class="card-header row-between gap-2">
+            <a class="btn btn-primary"
+               href="/sources/new"
+               hx-get="/sources/new"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">
+                <i data-lucide="plus"></i>
+                <span>New Source</span>
+            </a>
+            <div class="filter-bar ml-auto">
+                <form class="filter-group"
+                      hx-get="/sources"
+                      hx-target="#main-content"
+                      hx-swap="innerHTML"
+                      hx-push-url="true">
+                    <input type="search"
+                           name="q"
+                           value="{{.Query}}"
+                           placeholder="Search sources..."
+                           class="filter-input max-w-md" />
+                    <button type="submit" class="filter-action filter-action--secondary">
+                        <i data-lucide="search"></i>
+                        Search
+                    </button>
+                </form>
+            <a class="filter-pill {{ if .IncludeTests }}active{{ else }}{{ end }}"
+               href="/sources?include_tests={{ if .IncludeTests }}0{{ else }}1{{ end }}{{ if .Query }}&q={{.Query | urlquery}}{{ end }}"
+               hx-get="/sources?include_tests={{ if .IncludeTests }}0{{ else }}1{{ end }}{{ if .Query }}&q={{.Query | urlquery}}{{ end }}"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true"
+               aria-pressed="{{ if .IncludeTests }}true{{ else }}false{{ end }}"
+               aria-label="Toggle test scans"
+               title="Toggle test scans">
+                <i data-lucide="test-tube"></i>
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {{ template "error-banner" . }}
+        {{ if not .Error }}
+        <div class="mt-3" id="sources-table">
+            <table class="table w-full">
+                <thead>
+                    <tr>
+                        <th align="left">Name</th>
+                        <th align="left">Scans</th>
+                        <th align="left">Created</th>
+                        <th align="right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range .Sources }}
+                    {{ $counts := index $.SourceScanCounts .ID }}
+                    <tr id="source-row-{{.ID}}">
+                        <td class="mono">{{.Name}}</td>
+                        <td class="text-muted">
+                        {{ if $counts }}{{ index $counts "total" }} / {{ index $counts "browser" }}{{ else }}0 / 0{{ end }}
+                        </td>
+                        <td class="text-muted nowrap">{{ timeTag .CreatedAt }}</td>
+                        <td align="right">
+                            <div class="table-actions">
+                                <a class="btn-table-action"
+                                   href="/sources/{{.ID}}/copy"
+                                   hx-get="/sources/{{.ID}}/copy"
+                                   hx-target="#main-content"
+                                   hx-swap="innerHTML"
+                                   hx-push-url="true"
+                                   title="Copy source"
+                                   aria-label="Copy source">
+                                    <i data-lucide="copy"></i>
+                                </a>
+                                <button class="btn-table-action btn-table-action--danger"
+                                        type="button"
+                                        hx-post="/sources/{{.ID}}/delete"
+                                        hx-confirm="Delete this source? This action cannot be undone."
+                                        hx-target="#source-row-{{.ID}}"
+                                        hx-swap="outerHTML swap:500ms"
+                                        hx-push-url="false"
+                                        data-row-delete
+                                        data-component="row-delete"
+                                        data-stop-row-nav
+                                        title="Delete source"
+                                        aria-label="Delete source">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {{ else }}
+                    <tr>
+                        <td colspan="4">
+                            <em>No sources found.</em>
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "pagination" . }}
+        {{ end }}
+    </div>
+</div>
+</div>
+{{ end }}

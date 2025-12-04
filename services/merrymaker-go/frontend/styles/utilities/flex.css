@@ -1,0 +1,24 @@
+/* Utilities: Flex & Sizing */
+
+.w-full {
+	width: 100%;
+}
+.flex-1 {
+	flex: 1;
+}
+
+/* Flex utilities */
+.flex {
+	display: flex;
+}
+
+.flex-center {
+	display: flex;
+	align-items: center;
+}
+
+.flex-between {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}

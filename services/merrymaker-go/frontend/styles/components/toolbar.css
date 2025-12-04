@@ -1,0 +1,12 @@
+/* Component: Legacy toolbar compatibility */
+
+.toolbar .input-sub,
+.toolbar .input-sub-xs,
+.toolbar .btn.btn-sm,
+.toolbar .btn.btn-tertiary.btn-sm {
+	height: 32px;
+}
+.toolbar i[data-lucide] {
+	width: 14px;
+	height: 14px;
+}

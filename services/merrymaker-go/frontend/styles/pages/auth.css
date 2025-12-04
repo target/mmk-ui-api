@@ -1,0 +1,62 @@
+/* Page: Auth */
+
+.auth-page {
+	max-width: 720px;
+	margin: var(--space-12) auto;
+	padding: 0 var(--space-6);
+}
+.page-title {
+	font-size: 2rem;
+	font-weight: var(--font-weight-semibold);
+}
+.page-subtitle {
+	margin-top: var(--space-3);
+	color: var(--color-text-secondary);
+}
+.auth-page .actions,
+.auth-actions {
+	margin-top: var(--space-5);
+	display: flex;
+	gap: var(--space-3);
+	align-items: center;
+}
+
+/* Connection status indicators for polling */
+.connection-status {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--border-radius);
+	display: inline-block;
+}
+.connection-status.connecting {
+	color: var(--color-brand-primary);
+	background-color: var(--color-brand-primary-subtle);
+}
+.connection-status.connected {
+	color: var(--color-success);
+	background-color: var(--color-success-subtle, hsl(150, 60%, 95%));
+}
+.connection-status.error {
+	color: var(--color-danger);
+	background-color: var(--color-danger-subtle, hsl(0, 70%, 95%));
+}
+.connection-status.waiting {
+	color: var(--color-text-muted);
+	background-color: var(--color-background);
+}
+.connection-status.stopped {
+	color: var(--color-warning);
+	background-color: hsl(38, 92%, 95%);
+}
+
+/* Polling control buttons */
+.stop-polling-btn,
+.retry-btn {
+	font-size: var(--font-size-sm);
+	padding: var(--space-1) var(--space-2);
+	margin-left: var(--space-2);
+}
+.status-text {
+	font-weight: var(--font-weight-medium);
+}

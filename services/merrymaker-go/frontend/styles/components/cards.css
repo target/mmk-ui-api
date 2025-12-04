@@ -1,0 +1,69 @@
+/* Component: Card */
+
+.card {
+	background-color: var(--color-surface);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-6);
+	box-shadow: var(--shadow-sm);
+	transition: box-shadow 0.2s ease;
+}
+.card:hover {
+	box-shadow: var(--shadow-md);
+}
+
+.card h3,
+.card-title {
+	margin: 0 0 var(--space-3);
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-md);
+	line-height: 1.2;
+	padding: 0;
+}
+.card-subtitle {
+	margin-top: var(--space-1);
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-sm);
+}
+.card-body > * + * {
+	margin-top: var(--space-3);
+}
+
+/* Card header with icon and title */
+.card-header {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
+}
+
+.card-header .card-title {
+	margin: 0;
+}
+
+.card-header-icon {
+	width: var(--icon-size-sm);
+	height: var(--icon-size-sm);
+	color: var(--color-brand-primary);
+	flex-shrink: 0;
+}
+
+/* Card header with space-between layout (e.g., title on left, action on right) */
+.card-header-between {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-3);
+}
+
+/* When .card-header is nested inside .card-header-between, remove its bottom margin */
+.card-header-between .card-header {
+	margin-bottom: 0;
+}
+
+/* Button group with gap */
+.btn-group {
+	margin-top: var(--space-4);
+	display: flex;
+	gap: var(--space-2);
+}

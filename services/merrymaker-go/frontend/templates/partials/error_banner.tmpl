@@ -1,0 +1,7 @@
+{{define "error-banner"}}
+{{if or .Error .ErrorMessage}}
+<div class="alert alert-danger">
+{{if .ErrorMessage}}{{.ErrorMessage}}{{else}}Something went wrong. Please try again.{{end}}
+</div>
+{{end}}
+{{end}}

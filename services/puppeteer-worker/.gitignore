@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-dev/
+*.log
+*.report.json
+security-report.json
+src/client-side-monitoring-bundled.js
+src/client-side-monitoring-dev.js
+src/index.ts
+.tsbuildinfo

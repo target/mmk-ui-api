@@ -1,0 +1,28 @@
+{{- define "console-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$level := index $data "type"}}
+{{$text := index $data "text"}}
+    {{if $level}}<code class="event__badge event__badge--muted">{{$level}}</code>{{end}}
+    {{if $text}}
+        <span class="event__summary-text" title="{{$text}}">{{truncateText $text 64}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Console output</span>
+    {{end}}
+{{- end}}
+
+{{- define "console-event-details" -}}
+{{$data := .EventData | parseEventData}}
+{{$text := index $data "text"}}
+<div class="event__body">
+    {{if $text}}
+    <div class="event__console-preview mono small">{{$text}}</div>
+    {{end}}
+    <div class="event__details-content">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "console-event" -}}
+{{template "console-event-details" .}}
+{{- end}}

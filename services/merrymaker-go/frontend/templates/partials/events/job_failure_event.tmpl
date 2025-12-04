@@ -1,0 +1,105 @@
+{{- define "job-failure-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$errorType := index $data "errorType"}}
+{{$errorMessage := index $data "errorMessage"}}
+    {{if $errorType}}<code class="event__badge event__badge--status-server-error">{{$errorType}}</code>{{end}}
+    {{if $errorMessage}}
+        <span class="event__summary-text text-danger" title="{{$errorMessage}}">{{truncateText $errorMessage 60}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Job failure</span>
+    {{end}}
+{{- end}}
+
+{{- define "job-failure-event-details" -}}
+{{$data := .EventData | parseEventData}}
+{{$errorType := index $data "errorType"}}
+{{$errorMessage := index $data "errorMessage"}}
+{{$failedStep := index $data "failedStep"}}
+{{$selector := index $data "selector"}}
+{{$url := index $data "url"}}
+{{$screenshot := index $data "screenshot"}}
+{{$screenshotMime := index $data "screenshotMime"}}
+{{$stackTrace := index $data "stackTrace"}}
+<div class="event__body event__body--failure">
+{{/* Error summary */}}
+<div class="failure-summary mb-3">
+    <div class="failure-error-type">
+        <strong>Error Type:</strong>
+        <code class="failure-error-type-badge">{{if $errorType}}{{$errorType}}{{else}}Unknown{{end}}</code>
+    </div>
+    <div class="failure-error-message mt-2">
+        <strong>Message:</strong>
+        <span class="text-danger">{{if $errorMessage}}{{$errorMessage}}{{else}}No error message available{{end}}</span>
+    </div>
+</div>
+{{/* Failure context */}}
+{{if or $failedStep $selector $url}}
+<div class="failure-context mb-3">
+    {{if $failedStep}}
+    <div class="failure-context-item">
+        <strong>Failed Step:</strong> <code>{{$failedStep}}</code>
+    </div>
+    {{end}}
+    {{if $selector}}
+    <div class="failure-context-item">
+        <strong>Selector:</strong> <code class="failure-selector">{{$selector}}</code>
+    </div>
+    {{end}}
+    {{if $url}}
+    <div class="failure-context-item">
+        <strong>Page URL:</strong>
+        {{if isHTTPURL $url}}
+        <a href="{{$url}}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="failure-url"
+           title="{{$url}}">{{truncateURL120 $url}}</a>
+    {{else}}
+        <span class="failure-url" title="{{$url}}">{{truncateURL120 $url}}</span>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}
+{{/* Screenshot at point of failure */}}
+{{if $screenshot}}
+<div class="failure-screenshot mb-3">
+    <div class="text-muted mb-1 small">
+        <strong>Screenshot at failure:</strong>
+    </div>
+    <div class="screenshot-container">
+        <img src="data:{{if $screenshotMime}}{{$screenshotMime}}{{else}}image/png{{end}};base64,{{$screenshot}}"
+             class="screenshot-thumbnail"
+             style="max-width:200px;
+                    max-height:150px;
+                    border:2px solid var(--color-danger, #dc3545);
+                    border-radius:4px;
+                    cursor:pointer"
+             alt="Screenshot at failure"
+             title="Click to view full size"
+             data-src="data:{{if $screenshotMime}}{{$screenshotMime}}{{else}}image/png{{end}};base64,{{$screenshot}}"
+             data-caption="Screenshot at failure: {{if $errorType}}{{$errorType}}{{else}}Error{{end}}"
+             data-onerror-fallback="true" />
+        <div class="text-muted small" hidden>Failed to load screenshot</div>
+    </div>
+</div>
+{{end}}
+{{/* Stack trace (collapsible) */}}
+{{if $stackTrace}}
+<details class="failure-stack-trace">
+    <summary class="failure-stack-trace-summary">
+        <i data-lucide="chevron-right"
+           class="disclosure-icon w-3 h-3"
+           aria-hidden="true"></i>
+        <i data-lucide="code" class="w-3 h-3" aria-hidden="true"></i>
+        Stack Trace
+    </summary>
+<pre class="failure-stack-trace-content"><code>{{$stackTrace}}</code></pre>
+</details>
+{{end}}
+</div>
+{{- end}}
+
+{{- define "job-failure-event" -}}
+{{template "job-failure-event-details" .}}
+{{- end}}

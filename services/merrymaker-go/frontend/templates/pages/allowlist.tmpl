@@ -1,0 +1,104 @@
+{{ define "allowlist-content" }}
+<div class="card">
+    <div class="card-header">
+        {{ if and .IsAuthenticated (eq .User.Role "admin") }}
+        <a href="/allowlist/new"
+           class="btn btn-primary"
+           hx-get="/allowlist/new"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="plus"></i>
+            <span>New Entry</span>
+        </a>
+        {{ end }}
+    </div>
+    <div class="card-body">
+        {{ if .Error }}
+        {{ template "error-banner" . }}
+        {{ end }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Type</th>
+                        <th>Scope</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Description</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ if .Allowlist }}
+                    {{ range .Allowlist }}
+                    <tr class="row-link {{ if not .Enabled }}row-resolved{{ end }}"
+                        hx-get="/allowlist/{{ .ID }}/edit"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-trigger="row-nav"
+                        role="link"
+                        tabindex="0">
+                        <td class="mono font-medium">{{ .Pattern }}</td>
+                        <td>
+                        <span class="badge badge-sm {{ if eq .PatternType "exact" }}badge-blue{{ else if eq .PatternType "wildcard" }}badge-green{{ else if eq .PatternType "glob" }}badge-yellow{{ else }}badge-purple{{ end }}">
+                        {{ if eq .PatternType "exact" }}Exact{{ else if eq .PatternType "wildcard" }}Wildcard{{ else if eq .PatternType "glob" }}Glob{{ else if eq .PatternType "etld_plus_one" }}eTLD+1{{ else }}{{.PatternType}}{{ end }}
+                        </span>
+                    </td>
+                    <td class="text-sm">
+                        {{ if eq .Scope "global" }}
+                        <span class="badge badge-sm badge-blue">Global</span>
+                    {{ else }}
+                        <span class="text-muted">{{ .Scope }}</span>
+                        {{ end }}
+                    </td>
+                    <td>
+                        {{ if .Enabled }}
+                        <span class="badge badge-sm badge-green">Enabled</span>
+                    {{ else }}
+                        <span class="badge badge-sm badge-gray">Disabled</span>
+                        {{ end }}
+                    </td>
+                    <td class="text-sm text-muted">{{ .Priority }}</td>
+                    <td class="text-sm text-muted max-w-xs truncate"
+                        title="{{ .Description }}">
+                        {{ if .Description }}{{ .Description }}{{ else }}<em>No description</em>{{ end }}
+                    </td>
+                    <td class="text-right">
+                        {{ if and $.IsAuthenticated (eq $.User.Role "admin") }}
+                        <div class="table-actions">
+                            <button class="btn-table-action btn-table-action--danger"
+                                    type="button"
+                                    hx-post="/allowlist/{{ .ID }}/delete"
+                                    hx-confirm="Delete this allowlist entry? This action cannot be undone."
+                                    hx-target="#main-content"
+                                    hx-swap="innerHTML swap:500ms"
+                                    hx-push-url="false"
+                                    data-row-delete
+                                    data-component="row-delete"
+                                    title="Delete allowlist entry"
+                                    aria-label="Delete allowlist entry"
+                                    data-stop-row-nav>
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                        {{ end }}
+                    </td>
+                </tr>
+                {{ end }}
+            {{ else }}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-8">
+                        <em>No allowlist entries found.</em>
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    {{ template "pagination" . }}
+</div>
+</div>
+{{ end }}

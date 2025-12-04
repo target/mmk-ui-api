@@ -1,0 +1,128 @@
+{{ define "alerts-filter-bar" }}
+<form class="filter-bar w-full"
+      hx-get="/alerts"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      role="search"
+      aria-label="Filter alerts">
+    <!-- Primary filters group -->
+    <div class="filter-group filter-group--primary"
+         role="group"
+         aria-label="Primary filters">
+        <!-- Site filter -->
+        <select name="site_id" class="filter-select" aria-label="Filter by site">
+            <option value="">All Sites</option>
+            {{ range .SiteOptions }}
+            <option value="{{.ID}}" {{ if eq $.SiteID .ID }}selected{{ end }}>{{.Name}}
+            </option>
+            {{ end }}
+        </select>
+        <!-- Severity filter pills - compact design -->
+        <div class="filter-pill-group filter-pill-group--compact"
+             data-component="filter-pills"
+             data-filter-name="severity"
+             role="group"
+             aria-label="Filter by severity">
+        <button type="button"
+                class="filter-pill filter-pill--compact {{ if eq $.Severity "" }}active{{ end }}"
+                data-filter-value=""
+                aria-pressed="{{ if eq $.Severity "" }}true{{ else }}false{{ end }}"
+                aria-label="Show all severities"
+                title="All severities">All</button>
+    <button type="button"
+            class="filter-pill filter-pill--compact {{ if eq $.Severity "critical" }}active{{ end }}"
+            data-filter-value="critical"
+            aria-pressed="{{ if eq $.Severity "critical" }}true{{ else }}false{{ end }}"
+            aria-label="Show critical alerts"
+            title="Critical severity">
+        <i data-lucide="alert-circle" aria-hidden="true"></i>
+        <span class="filter-pill-text">Crit</span>
+    </button>
+<button type="button"
+        class="filter-pill filter-pill--compact {{ if eq $.Severity "high" }}active{{ end }}"
+        data-filter-value="high"
+        aria-pressed="{{ if eq $.Severity "high" }}true{{ else }}false{{ end }}"
+        aria-label="Show high severity alerts"
+        title="High severity">
+    <i data-lucide="alert-triangle" aria-hidden="true"></i>
+    <span class="filter-pill-text">High</span>
+</button>
+<button type="button"
+        class="filter-pill filter-pill--compact filter-pill--icon-only {{ if eq $.Severity "medium" }}active{{ end }}"
+        data-filter-value="medium"
+        aria-pressed="{{ if eq $.Severity "medium" }}true{{ else }}false{{ end }}"
+        aria-label="Show medium severity alerts"
+        title="Medium severity">
+<i data-lucide="minus-circle" aria-hidden="true"></i>
+</button>
+<button type="button"
+        class="filter-pill filter-pill--compact filter-pill--icon-only {{ if eq $.Severity "low" }}active{{ end }}"
+        data-filter-value="low"
+        aria-pressed="{{ if eq $.Severity "low" }}true{{ else }}false{{ end }}"
+        aria-label="Show low severity alerts"
+        title="Low severity">
+<i data-lucide="info" aria-hidden="true"></i>
+</button>
+</div>
+<!-- Rule type filter - more compact -->
+<select name="rule_type"
+        class="filter-select filter-select--medium"
+        aria-label="Filter by rule type">
+    <option value="">All Rules</option>
+    {{ range .RuleTypeOptions }}
+    <option value="{{.}}" {{ if eq $.RuleType . }}selected{{ end }}>{{.}}
+    </option>
+    {{ end }}
+</select>
+<!-- Unresolved checkbox - compact -->
+<label class="filter-checkbox filter-checkbox--compact">
+    <input type="checkbox" name="unresolved" value="true" {{ if .Unresolved }} checked {{ end }} aria-label="Show only unresolved alerts">
+    <span>Unresolved</span>
+</label>
+</div>
+<!-- Secondary controls group -->
+<div class="filter-group filter-group--secondary"
+     role="group"
+     aria-label="Sort and display options">
+    <select name="sort" class="filter-select" aria-label="Sort alerts">
+        <option value="fired_at:desc" {{ if or (eq .Sort "") (and (eq .Sort "fired_at") (or (eq .Dir "") (eq .Dir "desc"))) }} selected {{ end }}>Newest First
+        </option>
+        <option value="fired_at:asc" {{ if and (eq .Sort "fired_at") (eq .Dir "asc") }} selected {{ end }}>Oldest First
+        </option>
+        <option value="severity:desc" {{ if and (eq .Sort "severity") (eq .Dir "desc") }} selected {{ end }}>Severity (High to Low)
+        </option>
+        <option value="severity:asc" {{ if and (eq .Sort "severity") (eq .Dir "asc") }} selected {{ end }}>Severity (Low to High)
+        </option>
+    </select>
+    <select name="page_size"
+            class="filter-select filter-select--compact"
+            aria-label="Items per page">
+        <option value="10" {{ if eq .PageSize 10 }}selected{{ end }}>10 per page
+        </option>
+        <option value="25" {{ if or (eq .PageSize 25) (eq .PageSize 0) }} selected {{ end }}>25 per page
+        </option>
+        <option value="50" {{ if eq .PageSize 50 }}selected{{ end }}>50 per page
+        </option>
+    </select>
+    <button type="submit"
+            class="filter-action filter-action--secondary"
+            aria-label="Apply current filter settings">
+        <i data-lucide="search" aria-hidden="true"></i>
+        Apply
+    </button>
+    <a class="filter-action filter-action--tertiary"
+       href="/alerts"
+       hx-get="/alerts"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="true"
+       aria-label="Clear all filters and reset to default view">Clear</a>
+</div>
+<!-- Hidden input to track severity filter state (managed by filter-pills component) -->
+<input type="hidden"
+       name="severity"
+       value="{{.Severity}}"
+       class="severity-filter-input" />
+</form>
+{{ end }}

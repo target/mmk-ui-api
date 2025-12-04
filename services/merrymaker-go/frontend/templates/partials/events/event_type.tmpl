@@ -1,0 +1,75 @@
+{{define "network-event-type"}}
+{{$subtype := .EventType | networkEventSubtype}}
+<span class="event__summary-type event__summary-type--network"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--{{$subtype}}">
+        {{- if eq $subtype "requestWillBeSent" -}}req{{else if eq $subtype "responseReceived"}}resp{{else if eq $subtype "loadingFailed"}}fail{{else}}net{{end -}}
+    </span>
+</span>
+{{end}}
+
+{{define "job-failure-event-type"}}
+<span class="event__summary-type event__summary-type--job_failure"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--job">fail</span>
+</span>
+{{end}}
+
+{{define "screenshot-event-type"}}
+<span class="event__summary-type event__summary-type--screenshot"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--screenshot">shot</span>
+</span>
+{{end}}
+
+{{define "worker-log-event-type"}}
+<span class="event__summary-type event__summary-type--worker_log"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--worker">log</span>
+</span>
+{{end}}
+
+{{define "console-event-type"}}
+<span class="event__summary-type event__summary-type--console"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--console">log</span>
+</span>
+{{end}}
+
+{{define "security-event-type"}}
+<span class="event__summary-type event__summary-type--security"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--security">sec</span>
+</span>
+{{end}}
+
+{{define "error-event-type"}}
+<span class="event__summary-type event__summary-type--error"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--error">err</span>
+</span>
+{{end}}
+
+{{define "page-event-type"}}
+<span class="event__summary-type event__summary-type--page"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag event__summary-tag--page">nav</span>
+</span>
+{{end}}
+
+{{define "other-event-type"}}
+{{$category := .EventType | eventTypeCategory}}
+<span class="event__summary-type event__summary-type--{{$category}}"
+      aria-label="{{.EventType}}"
+      title="{{.EventType}}">
+    <span class="event__summary-tag">other</span>
+</span>
+{{end}}

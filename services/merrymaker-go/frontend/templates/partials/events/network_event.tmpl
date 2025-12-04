@@ -1,0 +1,102 @@
+{{- define "network-event-summary" -}}
+{{$subtype := .EventType | networkEventSubtype}}
+{{$parsedData := .EventData | parseEventData}}
+{{$url := $parsedData | extractNetworkURLFromMap}}
+{{$method := getMapValue $parsedData "request.method"}}
+{{$status := getMapValue $parsedData "response.status"}}
+{{$mimeType := getMapValue $parsedData "response.mimeType"}}
+{{$type := getMapValue $parsedData "type"}}
+{{$errorText := getMapValue $parsedData "errorText"}}
+    {{if eq $subtype "requestWillBeSent"}}
+        {{if $method}}<code class="event__badge">{{$method}}</code>{{end}}
+        {{if $type}}<code class="event__badge event__badge--muted">{{$type}}</code>{{end}}
+    {{else if eq $subtype "responseReceived"}}
+        {{if $status}}
+            {{$statusClass := $status | httpStatusClass}}
+            {{if $statusClass}}
+                <code class="event__badge event__badge--status-{{$statusClass}}">{{$status}}</code>
+            {{else}}
+                <code class="event__badge">{{$status}}</code>
+            {{end}}
+        {{end}}
+        {{if $mimeType}}<code class="event__badge event__badge--muted">{{$mimeType}}</code>{{end}}
+    {{else if eq $subtype "loadingFailed"}}
+        <code class="event__badge event__badge--status-server-error">Failed</code>
+    {{end}}
+    {{if $url}}
+        <span class="event__summary-text" title="{{$url}}">{{$url | truncateURL120}}</span>
+    {{end}}
+    {{if and (eq $subtype "loadingFailed") $errorText}}
+        <span class="event__summary-text event__summary-text--muted" title="{{$errorText}}">{{truncateText $errorText 48}}</span>
+    {{end}}
+{{- end}}
+
+{{- define "network-event-details" -}}
+{{$subtype := .EventType | networkEventSubtype}}
+{{$parsedData := .EventData | parseEventData}}
+{{$url := $parsedData | extractNetworkURLFromMap}}
+{{$urlLen := $url | strLen}}
+<div class="event__body">
+    {{if $url}}
+    <!-- Display URL prominently inline -->
+    <div class="event__network-url" title="{{$url}}">
+        <span class="event__url-text"
+              data-full-url="{{$url}}"
+              data-truncated-url="{{$url | truncateURL120}}">{{$url | truncateURL120}}</span>
+        {{if gt $urlLen 120}}
+        <button class="event__url-expand-btn"
+                data-action="toggle-url"
+                data-expanded="false"
+                type="button"
+                aria-pressed="false">Show full</button>
+        {{end}}
+    </div>
+    {{end}}
+    <!-- Type-specific metadata inline -->
+    {{if eq $subtype "requestWillBeSent"}}
+    {{$method := getMapValue $parsedData "request.method"}}
+    {{$type := getMapValue $parsedData "type"}}
+    {{$requestId := getMapValue $parsedData "requestId"}}
+    {{if or $method $type}}
+    <div class="event__network-meta">
+        {{if $method}}<code class="event__badge">{{$method}}</code>{{end}}
+        {{if $type}}<code class="event__badge event__badge--muted">{{$type}}</code>{{end}}
+    </div>
+    {{end}}
+    {{else if eq $subtype "responseReceived"}}
+    {{$status := getMapValue $parsedData "response.status"}}
+    {{$mimeType := getMapValue $parsedData "response.mimeType"}}
+    {{$type := getMapValue $parsedData "type"}}
+    {{if or $status $mimeType $type}}
+    <div class="event__network-meta">
+        {{if $status}}
+        {{$statusClass := $status | httpStatusClass}}
+        {{if $statusClass}}
+        <code class="event__badge event__badge--status-{{$statusClass}}">{{$status}}</code>
+    {{else}}
+        <code class="event__badge">{{$status}}</code>
+        {{end}}
+        {{end}}
+        {{if $mimeType}}<code class="event__badge event__badge--muted">{{$mimeType}}</code>{{end}}
+        {{if $type}}<code class="event__badge event__badge--muted">{{$type}}</code>{{end}}
+    </div>
+    {{end}}
+    {{else if eq $subtype "loadingFailed"}}
+    {{$errorText := getMapValue $parsedData "errorText"}}
+    {{if $errorText}}
+    <div class="event__network-error">
+        <i data-lucide="alert-circle" class="w-3 h-3 inline v-middle"></i>
+        {{$errorText}}
+    </div>
+    {{end}}
+    {{end}}
+    <!-- Full event details (always visible when event is expanded) -->
+    <div class="event__network-json">
+        <pre class="input mono small">{{.EventData | formatEventData}}</pre>
+    </div>
+</div>
+{{- end}}
+
+{{- define "network-event" -}}
+{{template "network-event-details" .}}
+{{- end}}

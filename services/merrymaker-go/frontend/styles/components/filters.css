@@ -1,0 +1,464 @@
+/**
+ * FILTER SYSTEM - GitHub-inspired design
+ *
+ * This file contains all filter-related components including
+ * filter bars, pills, inputs, selects, and actions.
+ */
+
+/* Filter container with proper spacing and alignment */
+.filter-bar {
+	display: flex;
+	align-items: flex-end; /* bottom-align controls for consistent baselines */
+	gap: var(--space-2);
+	flex-wrap: wrap;
+	padding: 0; /* remove vertical padding for alignment */
+	width: 100%;
+}
+
+/* Filter groups */
+.filter-group {
+	display: flex;
+	align-items: flex-end; /* bottom-align items within group */
+	gap: var(--space-2);
+	flex-wrap: wrap;
+}
+
+.filter-group--primary {
+	flex: 1 1 auto;
+	min-width: 300px; /* Minimum width before wrapping */
+}
+
+.filter-group--secondary {
+	flex: 0 0 auto;
+	gap: var(--space-2);
+}
+
+/* Filter pills - GitHub-style toggle buttons */
+.filter-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: var(--space-2) var(--space-3);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	background-color: var(--color-surface);
+	color: var(--color-text-secondary);
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	height: 36px;
+	min-width: 70px;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+/* Compact filter pills - reduced padding and min-width */
+.filter-pill--compact {
+	padding: var(--space-1) var(--space-2);
+	min-width: 50px;
+	gap: 4px;
+}
+
+/* Icon-only filter pills - minimal width */
+.filter-pill--icon-only {
+	min-width: 36px;
+	padding: var(--space-1);
+}
+
+.filter-pill--icon-only .filter-pill-text {
+	display: none;
+}
+
+/* Show text on hover for icon-only pills */
+@media (min-width: 1024px) {
+	.filter-pill--icon-only:hover .filter-pill-text {
+		display: inline;
+	}
+}
+
+.filter-pill:hover {
+	border-color: var(--color-border-interactive);
+	color: var(--color-text-primary);
+	background-color: var(--color-background);
+}
+
+.filter-pill.active {
+	background-color: var(--color-brand-primary);
+	color: var(--color-surface);
+	border-color: var(--color-brand-primary);
+}
+
+.filter-pill.active:hover {
+	background-color: var(--color-brand-primary-hover);
+	border-color: var(--color-brand-primary-hover);
+}
+
+.filter-pill:focus {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+.filter-pill:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+
+/* Filter pill groups - connected pills */
+.filter-pill-group {
+	display: inline-flex;
+	border-radius: var(--border-radius-md);
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.filter-pill-group .filter-pill {
+	border-radius: 0;
+	border-right: none;
+}
+
+.filter-pill-group .filter-pill:first-child {
+	border-top-left-radius: var(--border-radius-md);
+	border-bottom-left-radius: var(--border-radius-md);
+}
+
+.filter-pill-group .filter-pill:last-child {
+	border-top-right-radius: var(--border-radius-md);
+	border-bottom-right-radius: var(--border-radius-md);
+	border-right: var(--border-width) solid var(--color-border);
+}
+
+.filter-pill-group .filter-pill.active:last-child {
+	border-right-color: var(--color-brand-primary);
+}
+
+/* Filter inputs - consistent with pill height */
+.filter-input {
+	height: 36px;
+	padding: 0 var(--space-3);
+	font-size: var(--font-size-sm);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	background-color: var(--color-surface);
+	color: var(--color-text-primary);
+	transition: border-color 0.2s ease;
+	box-sizing: border-box;
+	min-width: 100px;
+	max-width: 160px;
+	flex: 0 1 auto;
+	/* Prevent browser default focus styles */
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+.filter-input:focus {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+/* Match form input focus-visible style (no extra outline) */
+.filter-input:focus-visible {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+.filter-input::placeholder {
+	color: var(--color-text-muted);
+}
+
+/* Filter select - consistent styling */
+.filter-select {
+	height: 36px;
+	padding: 0 var(--space-3);
+	font-size: var(--font-size-sm);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--border-radius-md);
+	background-color: var(--color-surface);
+	color: var(--color-text-primary);
+	cursor: pointer;
+	transition: border-color 0.2s ease;
+	box-sizing: border-box;
+	min-width: 90px;
+	max-width: 150px;
+	flex: 0 0 auto;
+}
+
+/* Medium select - slightly wider for longer labels */
+.filter-select--medium {
+	min-width: 100px;
+	max-width: 140px;
+}
+
+/* Extra compact select for page size */
+.filter-select--compact {
+	min-width: 110px;
+	max-width: 130px;
+}
+
+/* Icon-only select for direction */
+.filter-select--icon {
+	min-width: 50px;
+	max-width: 50px;
+	text-align: center;
+	padding: 0 var(--space-1);
+}
+
+/* Use :focus-visible for keyboard-only focus indication */
+.filter-select:focus-visible {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+/* Filter checkbox - consistent with filter bar styling */
+.filter-checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	height: 36px; /* Match other filter controls */
+	padding: 0 var(--space-3);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-regular);
+	color: var(--color-text-primary);
+	cursor: pointer;
+	user-select: none;
+	white-space: nowrap;
+}
+
+/* Compact checkbox - reduced padding */
+.filter-checkbox--compact {
+	padding: 0 var(--space-2);
+	gap: var(--space-1);
+}
+
+.filter-checkbox input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	accent-color: var(--color-brand-primary);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.filter-checkbox:hover {
+	color: var(--color-text-primary);
+}
+
+.filter-checkbox input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+
+/* Filter actions - buttons with consistent height */
+.filter-action {
+	height: 36px;
+	padding: 0 var(--space-4);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-medium);
+	border: var(--border-width) solid transparent;
+	border-radius: var(--border-radius-md);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-decoration: none;
+	box-sizing: border-box;
+	min-width: 80px;
+}
+
+.filter-action--primary {
+	background-color: var(--color-brand-primary);
+	color: var(--color-surface);
+}
+
+.filter-action--primary:hover {
+	background-color: var(--color-brand-primary-hover);
+}
+
+.filter-action--secondary {
+	background-color: var(--color-surface);
+	color: var(--color-text-secondary);
+	border-color: var(--color-border);
+}
+
+.filter-action--secondary:hover {
+	border-color: var(--color-border-interactive);
+	color: var(--color-text-primary);
+	background-color: var(--color-background);
+}
+
+.filter-action:focus {
+	outline: none;
+	border-color: var(--color-brand-primary);
+	box-shadow: 0 0 0 3px var(--color-brand-primary-subtle);
+}
+
+.filter-action:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+}
+
+.filter-action--tertiary {
+	background-color: transparent;
+	color: var(--color-text-muted);
+}
+
+.filter-action--tertiary:hover {
+	color: var(--color-text-secondary);
+	background-color: var(--color-background);
+}
+
+/* Icon sizing in filter components */
+.filter-pill i[data-lucide],
+.filter-action i[data-lucide] {
+	width: 14px;
+	height: 14px;
+}
+
+/* Accessibility improvements */
+.filter-bar [aria-hidden="true"] {
+	pointer-events: none;
+}
+
+/* Ensure proper focus order and keyboard navigation */
+.filter-pill,
+.filter-action {
+	position: relative;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+	.filter-pill:focus,
+	.filter-input:focus,
+	.filter-select:focus,
+	.filter-action:focus {
+		outline: 3px solid var(--color-brand-primary);
+		outline-offset: 2px;
+	}
+}
+
+/* Responsive behavior - graceful wrapping */
+@media (max-width: 1200px) {
+	.filter-group--primary,
+	.filter-row-group--filters {
+		min-width: 250px;
+	}
+
+	.filter-input {
+		min-width: 120px;
+	}
+
+	.filter-select {
+		min-width: 80px;
+	}
+}
+
+@media (max-width: 900px) {
+	.filter-bar {
+		gap: var(--space-2);
+	}
+
+	.filter-group--primary,
+	.filter-row-group--filters {
+		min-width: 200px;
+	}
+
+	.filter-input {
+		min-width: 100px;
+	}
+
+	.filter-row--secondary {
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-2);
+	}
+
+	.filter-row-group--filters,
+	.filter-row-group--controls {
+		width: 100%;
+		min-width: 0;
+	}
+}
+
+@media (max-width: 768px) {
+	.filter-bar:not(.filter-bar--stacked) {
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-3);
+	}
+
+	.filter-group--primary {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.filter-group--secondary {
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.filter-row--primary {
+		justify-content: center;
+	}
+}
+
+@media (max-width: 600px) {
+	.filter-group--primary {
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-3);
+	}
+
+	.filter-pill-group {
+		width: 100%;
+	}
+
+	.filter-pill-group .filter-pill {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.filter-input,
+	.filter-select {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.filter-group--secondary,
+	.filter-row-group--controls {
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.filter-action {
+		flex: 1;
+		min-width: 80px;
+	}
+
+	.filter-row-group--filters {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
+@media (max-width: 480px) {
+	.filter-group--secondary,
+	.filter-row-group--controls {
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-2);
+	}
+
+	.filter-action {
+		width: 100%;
+		min-width: 0;
+	}
+}

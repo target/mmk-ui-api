@@ -1,0 +1,7 @@
+{{define "job-event-details-fragment"}}
+{{$category := .Event.EventType | eventTypeCategory}}
+{{$detailsTpl := eventTemplateName $category "details"}}
+<div class="event__details-body">
+    {{renderEventPartial $detailsTpl .Event}}
+</div>
+{{end}}

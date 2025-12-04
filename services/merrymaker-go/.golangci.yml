@@ -1,0 +1,475 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+  skip-files:
+    - "_test\\.go$"
+    - "_bench_test\\.go$"
+    - "_profile\\.go$"
+
+issues:
+  max-same-issues: 50
+  exclude-rules:
+    # Exclude funlen, gocognit, and nestif for test files
+    - path: "_test\\.go$"
+      linters:
+        - funlen
+        - gocognit
+        - nestif
+        - forbidigo
+        - exhaustive
+        - staticcheck
+        - govet
+        - reassign
+    # Exclude funlen, gocognit, and nestif for benchmark files
+    - path: "_bench_test\\.go$"
+      linters:
+        - funlen
+        - gocognit
+        - nestif
+        - forbidigo
+        - exhaustive
+        - staticcheck
+        - govet
+        - reassign
+    # Allow pragmatic constructs in profiling helpers
+    - path: "_profile\\.go$"
+      linters:
+        - forbidigo
+    # Ignore revive unused-parameter in test files only
+    - path: ".*_test\\.go$"
+      linters:
+        - revive
+      text: "unused-parameter"
+
+    # Allow returning interfaces in the example workflow harness test
+    - path: "internal/http/workflow_harness_example_test\\.go$"
+      linters:
+        - ireturn
+      text: "returns interface"
+formatters:
+  enable:
+    - goimports
+    - golines
+    - gofmt
+    - gofumpt
+    - gci
+  settings:
+    golines:
+      max-len: 120
+    gofumpt:
+      extra-rules: true
+    gci:
+      custom-order: true
+      sections:
+        - standard
+        - default
+        # Add your module path for a local group, e.g.:
+        # - prefix(github.com/yourorg/merrymaker)
+      no-inline-comments: true
+
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - copyloopvar
+    - cyclop
+    # - depguard - crazy config here, way too much effort configure correctly
+    - dupl
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    # - exhaustruct
+    - fatcontext
+    - forbidigo
+    - funlen
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - govet
+    - iface
+    - intrange
+    - ireturn
+    - loggercheck
+    - makezero
+    - mirror
+    # - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - perfsprint
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - testableexamples
+    - testifylint
+    #- testpackage
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+  exclusions:
+    rules:
+      - source: "^// Code generated .* DO NOT EDIT\\.$"
+        linters:
+          - all
+      - path: "(^|/)mocks?(/|$)"
+        linters:
+          - dupl
+          - gocyclo
+          - gocognit
+          - funlen
+          - goconst
+      - source: "TODO"
+        linters:
+          - godot
+      - text: "should have a package comment"
+        linters:
+          - revive
+      - text: 'exported \S+ \S+ should have comment( \(or a comment on this block\))? or be unexported'
+        linters:
+          - revive
+      - text: 'package comment should be of the form ".+"'
+        source: "// ?(nolint|TODO)"
+        linters:
+          - revive
+      - text: 'comment on exported \S+ \S+ should be of the form ".+"'
+        source: "// ?(nolint|TODO)"
+        linters:
+          - revive
+          - staticcheck
+      - path: "_test\\.go"
+        linters:
+          - bodyclose
+          - dupl
+          - errcheck
+          - funlen
+          - gocognit
+          - goconst
+          - gosec
+          - noctx
+          - wrapcheck
+          - unparam
+          - forbidigo
+          - exhaustive
+          - staticcheck
+          - govet
+          - reassign
+      - path: ".*_test\\.go$"
+        linters:
+          - funlen
+          - gocognit
+          - forbidigo
+          - exhaustive
+          - staticcheck
+          - govet
+          - reassign
+      - text: "Function.*is too long"
+        path: "_test\\.go"
+        linters:
+          - funlen
+      - text: "cognitive complexity.*is high"
+        path: "_test\\.go"
+        linters:
+          - gocognit
+      - path: ".*_test\\.go$"
+        text: "unused-parameter"
+        linters:
+          - revive
+
+  settings:
+    cyclop:
+      max-complexity: 30
+      package-average: 10.0
+
+    depguard:
+      rules:
+        deprecated:
+          files: ["$all"]
+          deny:
+            - pkg: github.com/golang/protobuf
+              desc: Use google.golang.org/protobuf instead
+            - pkg: github.com/satori/go.uuid
+              desc: Use github.com/google/uuid instead
+            - pkg: github.com/gofrs/uuid$
+              desc: Use github.com/gofrs/uuid/v5 or later
+            - pkg: golang.org/x/exp($|/)
+              desc: Prefer stdlib where possible
+        non-test files:
+          files: ["!$test"]
+          deny:
+            - pkg: math/rand$
+              desc: Use math/rand/v2 instead
+        non-main files:
+          files: ["!**/main.go"]
+          deny:
+            - pkg: log$
+              desc: Use log/slog instead
+
+        # Hexagonal layering (matches import paths)
+        domain purity:
+          files:
+            - "internal/domain/**/*.go"
+          deny:
+            - pkg: .+/internal/(ports|service|adapters)($|/)
+              desc: Domain must not depend on ports/service/adapters
+            - pkg: net/http$
+              desc: Domain must not depend on transport
+            - pkg: database/sql$
+              desc: Domain must not depend on persistence
+            - pkg: github.com/jmoiron/sqlx$
+              desc: Domain must not depend on persistence
+            - pkg: log$
+              desc: log forbidden everywhere
+            - pkg: log/slog$
+              desc: Domain must not depend on logging
+
+        ports purity:
+          files:
+            - "internal/ports/**/*.go"
+          deny:
+            - pkg: .+/internal/(service|adapters)($|/)
+              desc: Ports must not depend on service/adapters
+            - pkg: net/http$
+              desc: Ports must not depend on transport
+            - pkg: database/sql$
+              desc: Ports must not depend on persistence
+            - pkg: github.com/jmoiron/sqlx$
+              desc: Ports must not depend on persistence
+            - pkg: log$
+              desc: log forbidden
+            - pkg: log/slog$
+              desc: Ports must not depend on logging
+
+        service layering:
+          files:
+            - "internal/service/**/*.go"
+          deny:
+            - pkg: .+/internal/adapters($|/).+
+              desc: Service must not depend on adapters
+            - pkg: database/sql$
+              desc: Service must use ports for persistence
+            - pkg: github.com/jmoiron/sqlx$
+              desc: Service must use ports for persistence
+
+        adapters-browser isolation:
+          files:
+            - "internal/adapters/browser/**/*.go"
+          allow:
+            - $gostd
+            - github.com/chromedp/chromedp
+            # NOTE: Assuming the module path below is correct. Please adjust if not.
+            - github.com/yourorg/merrymaker/internal/domain
+            - github.com/yourorg/merrymaker/internal/ports
+            - github.com/yourorg/merrymaker/internal/service
+          deny:
+            - pkg: .+/internal/adapters/(database|http|jobrunner|rulesworker)($|/)
+              desc: Browser adapter must not import other adapters
+
+        adapters-db isolation:
+          files:
+            - "internal/adapters/database/**/*.go"
+          deny:
+            - pkg: .+/internal/adapters/(browser|http|jobrunner|rulesworker)($|/)
+              desc: Database adapter must not import other adapters
+
+        adapters-http isolation:
+          files:
+            - "internal/adapters/http/**/*.go"
+          deny:
+            - pkg: .+/internal/adapters/(browser|database|jobrunner|rulesworker)($|/)
+              desc: HTTP adapter must not import other adapters
+
+        adapters-jobrunner isolation:
+          files:
+            - "internal/adapters/jobrunner/**/*.go"
+          deny:
+            - pkg: .+/internal/adapters/(browser|database|http|rulesworker)($|/)
+              desc: Jobrunner adapter must not import other adapters
+
+        adapters-rulesworker isolation:
+          files:
+            - "internal/adapters/rulesworker/**/*.go"
+          deny:
+            - pkg: .+/internal/adapters/(browser|database|http|jobrunner)($|/)
+              desc: Rulesworker adapter must not import other adapters
+
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+    exhaustive:
+      check:
+        - switch
+        - map
+
+    exhaustruct:
+      exclude:
+        - ^net/http.Client$
+        - ^net/http.Cookie$
+        - ^net/http.Request$
+        - ^net/http.Response$
+        - ^net/http.Server$
+        - ^net/http.Transport$
+        - ^net/url.URL$
+        - ^os/exec.Cmd$
+        - ^reflect.StructField$
+        - ^github.com/Shopify/sarama.Config$
+        - ^github.com/Shopify/sarama.ProducerMessage$
+        - ^github.com/mitchellh/mapstructure.DecoderConfig$
+        - ^github.com/prometheus/client_golang/.+Opts$
+        - ^github.com/spf13/cobra.Command$
+        - ^github.com/spf13/cobra.CompletionOptions$
+        - ^github.com/stretchr/testify/mock.Mock$
+        - ^github.com/testcontainers/testcontainers-go.+Request$
+        - ^github.com/testcontainers/testcontainers-go.FromDockerfile$
+        - ^golang.org/x/tools/go/analysis.Analyzer$
+        - ^google.golang.org/protobuf/.+Options$
+        - ^gopkg.in/yaml.v3.Node$
+
+    funlen:
+      lines: 60
+      statements: 50
+      ignore-comments: true
+
+    gochecksumtype:
+      default-signifies-exhaustive: false
+
+    gocognit:
+      min-complexity: 30
+
+    gocritic:
+      settings:
+        captLocal:
+          paramsOnly: false
+        underef:
+          skipRecvDeref: false
+        hugeParam:
+          sizeThreshold: 512
+      enabled-checks:
+        - preferFprint
+        - hugeParam
+        - rangeValCopy
+        - truncateCmp
+        - appendCombine
+        - boolExprSimplify
+
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+      settings:
+        shadow:
+          strict: true
+
+    mnd:
+      ignored-functions:
+        - args.Error
+        - flag.Arg
+        - flag.Duration.*
+        - flag.Float.*
+        - flag.Int.*
+        - flag.Uint.*
+        - os.Chmod
+        - os.Mkdir.*
+        - os.OpenFile
+        - os.WriteFile
+        - prometheus.ExponentialBuckets.*
+        - prometheus.LinearBuckets
+
+    nakedret:
+      max-func-lines: 0
+
+    nestif:
+      min-complexity: 3
+
+    nolintlint:
+      allow-no-explanation:
+        - funlen
+        - gocognit
+        - golines
+      require-explanation: true
+      require-specific: true
+
+    perfsprint:
+      strconcat: false
+
+    reassign:
+      patterns:
+        - ".*"
+
+    revive:
+      config: revive.toml
+
+    rowserrcheck:
+      packages:
+        - github.com/jmoiron/sqlx
+
+    sloglint:
+      no-global: all
+      context: scope
+
+    forbidigo:
+      # Exclude godoc examples from checks. Default is true; flip if you want to lint examples.
+      exclude-godoc-examples: true
+      # Use type info so patterns survive import aliasing and can target methods/fields.
+      analyze-types: true
+      forbid:
+        # Built-in bootstrap prints
+        - pattern: "^print(ln)?$"
+          msg: Do not commit print/println.
+
+        # fmt prints
+        - pattern: '^fmt\.Print.*$'
+          msg: Do not commit print statements.
+
+        # Optional alternative with an inline message (doc-style)
+        # - pattern: 'fmt\.Print.*(# Do not commit print statements\.)?'
+
+        # Panic and hard exits
+        - pattern: "^panic$"
+          msg: Do not panic in application code; return errors instead.
+        - pattern: '^os\.Exit$'
+          msg: Prefer returning errors; allow only in cmd/ if needed.
+
+        # Sleep and default HTTP globals
+        - pattern: '^time\.Sleep$'
+          msg: Prefer context-aware timers or tickers.
+        - pattern: '^http\.Default(Client|Transport|ServeMux)$'
+          msg: Avoid http defaults; construct explicitly.
+
+        # Context TODO
+        - pattern: '^context\.TODO$'
+          msg: Use context.Background() or a real parent ctx.

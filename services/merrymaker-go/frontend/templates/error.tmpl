@@ -1,0 +1,46 @@
+{{ define "error-layout" }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{{.Title}}</title>
+        <!-- Critical CSS loaded at runtime via Go template function -->
+        <style>{{criticalCSS}}</style>
+        <!-- CSP-safe async CSS loading: preload hint + regular stylesheet -->
+        <!-- Modern browsers reuse the preloaded response without double download -->
+        <link rel="preload" href="{{ asset "css/styles.css" }}" as="style" />
+        <link rel="stylesheet" href="{{ asset "css/styles.css" }}" />
+        <!-- JS libraries (defer to avoid blocking parse; order preserved) -->
+        <script defer src="{{ asset "js/vendor.ui-libs.js" }}"></script>
+        <!-- App initializer (CSP-friendly, no inline) -->
+        <script defer src="{{ asset "js/app.js" }}"></script>
+    </head>
+    <body>
+        <main id="main">
+            <div class="error-page">
+                <div class="error-content">
+                    <h1>{{.Code}}</h1>
+                    <h2>{{.Title}}</h2>
+                    <p>{{.Message}}</p>
+                    {{ if .ShowLogin }}
+                    <div class="error-actions">
+                        <a href="/auth/login?redirect_uri={{ .RedirectURI | urlquery }}"
+                           class="btn btn-primary">Sign In</a>
+                        <a href="/" class="btn btn-secondary">Go Home</a>
+                    </div>
+                {{ else }}
+                    <div class="error-actions">
+                        <a href="/" class="btn btn-primary">Go Home</a>
+                        {{ if .IsAuthenticated }}
+                        <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+                        {{ end }}
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
+{{ end }}

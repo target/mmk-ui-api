@@ -1,0 +1,146 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": ["build.ts", "vendor/**/*.ts", "public/js/**/*.js", "styles/**/*.css"],
+		"maxSize": 1048576
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100,
+		"lineEnding": "lf"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noExcessiveCognitiveComplexity": {
+					"level": "warn",
+					"options": {
+						"maxAllowedComplexity": 25
+					}
+				},
+				"noForEach": "off",
+				"noUselessTernary": "error",
+				"useSimplifiedLogicExpression": "warn"
+			},
+			"correctness": {
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error",
+				"useExhaustiveDependencies": "warn"
+			},
+			"performance": {
+				"noDelete": "warn"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "warn",
+				"noGlobalEval": "error"
+			},
+			"style": {
+				"noNegationElse": "off",
+				"noParameterAssign": "warn",
+				"useBlockStatements": "off",
+				"useCollapsedElseIf": "warn",
+				"useConsistentArrayType": "error",
+				"useExponentiationOperator": "error",
+				"useNodejsImportProtocol": "off",
+				"useNumberNamespace": "error",
+				"useSelfClosingElements": "error",
+				"useShorthandAssign": "error",
+				"useTemplate": "warn"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "warn",
+				"noAssignInExpressions": "error",
+				"noCommentText": "error",
+				"noConsole": "off",
+				"noDoubleEquals": "error",
+				"noExplicitAny": "warn",
+				"noSelfCompare": "error"
+			},
+			"a11y": {
+				"noAccessKey": "error",
+				"noAutofocus": "warn",
+				"noDistractingElements": "error",
+				"noAriaUnsupportedElements": "error",
+				"noAriaHiddenOnFocusable": "error",
+				"noInteractiveElementToNoninteractiveRole": "error",
+				"noNoninteractiveElementToInteractiveRole": "error",
+				"noNoninteractiveTabindex": "error",
+				"noRedundantAlt": "error",
+				"noRedundantRoles": "error",
+				"useAltText": "error",
+				"useAnchorContent": "error",
+				"useAriaPropsForRole": "error",
+				"useButtonType": "error",
+				"useHeadingContent": "error",
+				"useHtmlLang": "error",
+				"useIframeTitle": "error",
+				"useKeyWithClickEvents": "warn",
+				"useKeyWithMouseEvents": "warn",
+				"useMediaCaption": "warn",
+				"useValidAnchor": "error",
+				"useValidAriaProps": "error",
+				"useValidAriaValues": "error",
+				"useValidLang": "error"
+			},
+			"nursery": {
+				"useSortedClasses": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"jsxQuoteStyle": "double",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSpacing": true,
+			"bracketSameLine": false
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"css": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 2,
+			"lineWidth": 100,
+			"quoteStyle": "double"
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["public/js/**/*.js"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	]
+}

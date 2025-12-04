@@ -1,0 +1,88 @@
+{{ define "job-events-filter-bar" }}
+<form class="filter-bar w-full"
+      hx-get="/jobs/{{ .JobID }}/events"
+      hx-trigger="submit, change from:select, input changed delay:400ms from:input[name='q'], search from:input[name='q']"
+      hx-sync="closest form:replace"
+      hx-target="#job-events-{{ .JobID }}"
+      hx-swap="outerHTML"
+      data-hx-push-url-on-submit
+      role="search"
+      aria-label="Filter job events">
+    <!-- Primary filters group -->
+    <div class="filter-group filter-group--primary"
+         role="group"
+         aria-label="Primary filters">
+        <input type="search"
+               name="q"
+               value="{{if .Filters.SearchQuery}}{{.Filters.SearchQuery | safeDeref}}{{end}}"
+               placeholder="Search events..."
+               class="filter-input"
+               aria-label="Search events by content"
+               autocomplete="off" />
+        <!-- Event category filter - compact -->
+        <select name="category"
+                class="filter-select filter-select--medium"
+                aria-label="Filter by event category">
+            <option value="">All Events</option>
+            <option value="job_failure" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "job_failure")}}selected{{end}}>Job Failure
+            </option>
+            <option value="screenshot" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "screenshot")}}selected{{end}}>Screenshot
+            </option>
+            <option value="worker_log" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "worker_log")}}selected{{end}}>Worker Log
+            </option>
+            <option value="network" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "network")}}selected{{end}}>Network
+            </option>
+            <option value="console" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "console")}}selected{{end}}>Console
+            </option>
+            <option value="security" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "security")}}selected{{end}}>Security
+            </option>
+            <option value="page" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "page")}}selected{{end}}>Page
+            </option>
+            <option value="action" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "action")}}selected{{end}}>Action
+            </option>
+            <option value="error" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "error")}}selected{{end}}>Error
+            </option>
+            <option value="other" {{if and .Filters.Category (eq (.Filters.Category | safeDeref) "other")}}selected{{end}}>Other
+            </option>
+        </select>
+    </div>
+    <!-- Secondary controls group -->
+    <div class="filter-group filter-group--secondary"
+         role="group"
+         aria-label="Sort and display options">
+        <select name="sort" class="filter-select" aria-label="Sort events">
+            <option value="timestamp:asc" {{ if or (not .Filters.SortBy) (and (eq (.Filters.SortBy | safeDeref) "timestamp") (or (not .Filters.SortDir) (eq (.Filters.SortDir | safeDeref) "asc"))) }} selected {{ end }}>Oldest First
+            </option>
+            <option value="timestamp:desc" {{ if and .Filters.SortBy (eq (.Filters.SortBy | safeDeref) "timestamp") .Filters.SortDir (eq (.Filters.SortDir | safeDeref) "desc") }} selected {{ end }}>Newest First
+            </option>
+            <option value="event_type:asc" {{ if and .Filters.SortBy (eq (.Filters.SortBy | safeDeref) "event_type") (or (not .Filters.SortDir) (eq (.Filters.SortDir | safeDeref) "asc")) }} selected {{ end }}>Event Type (A-Z)
+            </option>
+            <option value="event_type:desc" {{ if and .Filters.SortBy (eq (.Filters.SortBy | safeDeref) "event_type") .Filters.SortDir (eq (.Filters.SortDir | safeDeref) "desc") }} selected {{ end }}>Event Type (Z-A)
+            </option>
+        </select>
+        <select name="page_size"
+                class="filter-select filter-select--compact"
+                aria-label="Events per page">
+            <option value="25" {{ if eq .PageSize 25 }}selected{{ end }}>25 per page
+            </option>
+            <option value="50" {{ if or (eq .PageSize 50) (eq .PageSize 0) }}selected{{ end }}>50 per page
+            </option>
+            <option value="100" {{ if eq .PageSize 100 }}selected{{ end }}>100 per page
+            </option>
+        </select>
+        <button type="submit"
+                class="filter-action filter-action--secondary"
+                aria-label="Apply current filter settings">
+            <i data-lucide="search" aria-hidden="true"></i>
+            Apply
+        </button>
+        <a class="filter-action filter-action--tertiary"
+           href="/jobs/{{ .JobID }}/events"
+           hx-get="/jobs/{{ .JobID }}/events"
+           hx-target="#job-events-{{ .JobID }}"
+           hx-swap="outerHTML"
+           hx-push-url="true"
+           aria-label="Clear all filters and reset to default view">Clear</a>
+    </div>
+</form>
+{{end}}

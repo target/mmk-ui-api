@@ -1,0 +1,59 @@
+{{define "source-test-status"}}
+{{/* Compact job status indicator for source test panel - uses utility classes */}}
+{{$status := .Job.Status}}
+{{$isTerminal := or (eq $status "completed") (eq $status "failed")}}
+<div id="test-status" class="mb-3" {{if not $isTerminal}} hx-get="/sources/test/{{.Job.ID}}/status" hx-trigger="every 2s" hx-swap="outerHTML" {{end}} data-event-count="{{.EventCount}}">
+    <div class="flex-center gap-2" style="flex-wrap:wrap;">
+        {{if eq $status "pending"}}
+        <span class="status-badge status-badge--pending">
+            <i data-lucide="clock" class="w-3 h-3"></i>
+            Pending
+        </span>
+        <span class="small text-muted">Waiting for worker</span>
+        {{else if eq $status "running"}}
+        <span class="status-badge status-badge--running">
+            <i data-lucide="play-circle" class="w-3 h-3"></i>
+            Running
+        </span>
+        <span class="small text-muted">{{.EventCount}} events</span>
+        {{else if eq $status "completed"}}
+        <span class="status-badge status-badge--completed">
+            <i data-lucide="check-circle" class="w-3 h-3"></i>
+            Completed
+        </span>
+        <span class="small text-muted">{{.EventCount}} events captured</span>
+        {{else if eq $status "failed"}}
+        <span class="status-badge status-badge--failed">
+            <i data-lucide="x-circle" class="w-3 h-3"></i>
+            Failed
+        </span>
+        <span class="small text-muted">{{.EventCount}} events</span>
+    {{else}}
+        <span class="status-badge status-badge--pending">
+            <i data-lucide="help-circle" class="w-3 h-3"></i>
+            {{$status}}
+        </span>
+        {{end}}
+        <span class="badge-secondary mono text-xs"
+              style="margin-left:auto;
+                     cursor:help"
+              title="Job ID: {{.Job.ID}}">{{truncateText .Job.ID 8}}</span>
+    </div>
+    {{if and (eq $status "failed") .Job.LastError}}
+    <div class="mt-2"
+         style="display:flex;
+                align-items:flex-start;
+                gap:var(--space-2);
+                padding:var(--space-2) var(--space-3);
+                background:var(--color-danger-bg);
+                border-left:3px solid var(--color-danger);
+                border-radius:var(--border-radius-sm)">
+        <i data-lucide="alert-circle"
+           class="w-3 h-3"
+           style="flex-shrink:0;
+                  margin-top:2px"></i>
+        <span class="small mono text-danger">{{.Job.LastError | safeDeref}}</span>
+    </div>
+    {{end}}
+</div>
+{{end}}

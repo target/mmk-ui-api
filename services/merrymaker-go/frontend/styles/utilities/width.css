@@ -1,0 +1,20 @@
+/* Utilities: Max width */
+
+.max-w-xs {
+	max-width: 120px;
+}
+.max-w-sm {
+	max-width: 200px;
+}
+.max-w-md {
+	max-width: 360px;
+}
+.max-w-lg {
+	max-width: 480px;
+}
+.max-w-xl {
+	max-width: 640px;
+}
+.max-w-2xs {
+	max-width: 140px;
+}

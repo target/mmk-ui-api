@@ -1,0 +1,42 @@
+# Example Worker Configuration
+# Copy this file to worker.yaml and customize for your environment
+
+# Basic Puppeteer settings
+headless: true
+timeout: 30000
+
+# Worker configuration for job processing
+worker:
+  apiBaseUrl: "http://localhost:8080"  # Base URL for the job queue API
+  jobType: "browser"                   # Type of jobs to process: browser or rules
+  leaseSeconds: 30                     # How long to lease jobs (seconds)
+  waitSeconds: 25                      # Long-poll timeout for job reservation (seconds)
+  heartbeatSeconds: 10                 # Interval for sending heartbeats (seconds)
+
+# File capture settings
+fileCapture:
+  enabled: true
+  types: [script, document, stylesheet]  # Valid types: script, document, stylesheet, other
+  maxFileSize: 1048576  # 1MB (note: property name is maxFileSize, not maxSize)
+  storage: memory  # Options: memory, redis, cloud
+  contentTypeMatchers: [
+    "application/javascript",
+    "application/json",
+    "application/xml"
+  ]
+
+# Event shipping configuration
+shipping:
+  endpoint: "http://localhost:8080/api/events/bulk"
+  batchSize: 100  # Default is 100, not 50
+  maxBatchAge: 5000
+
+# Client-side monitoring
+clientMonitoring:
+  enabled: true
+  events: [storage, dynamicCode]  # Valid events: storage, dynamicCode (network is not a valid option)
+
+# Puppeteer launch options
+launch:
+  args: ["--disable-web-security", "--no-sandbox", "--disable-dev-shm-usage"]
+  # executablePath: "/usr/bin/chromium"  # Uncomment to specify custom Chrome path

@@ -1,0 +1,53 @@
+/* Utilities: Text & Typography */
+
+.text-secondary {
+	color: var(--color-text-secondary);
+}
+.text-muted {
+	color: var(--color-text-muted);
+}
+.text-success {
+	color: var(--color-success);
+}
+.text-danger {
+	color: var(--color-danger);
+}
+.text-warning {
+	color: var(--color-warning);
+}
+
+.small {
+	font-size: var(--font-size-sm);
+}
+.mono {
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+		monospace;
+}
+.nowrap {
+	white-space: nowrap;
+}
+
+/* Backwards compatibility aliases */
+.text-sm {
+	font-size: var(--font-size-sm);
+}
+.fw-medium {
+	font-weight: var(--font-weight-medium);
+}
+
+.text-center {
+	text-align: center;
+}
+
+.fw-semibold {
+	font-weight: var(--font-weight-semibold);
+}
+
+.text-xs {
+	font-size: var(--font-size-xs);
+}
+
+.text-danger-conditional {
+	color: var(--color-danger);
+}

@@ -1,0 +1,42 @@
+/* Component: Pagination */
+
+.pagination-container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: var(--space-4);
+	gap: var(--space-4);
+}
+
+.pagination-info {
+	flex: 0 0 auto;
+}
+
+.pagination-text {
+	font-size: var(--font-size-sm);
+	color: var(--color-text-muted);
+	white-space: nowrap;
+}
+
+.pagination-controls {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+/* Responsive behavior */
+@media (max-width: 600px) {
+	.pagination-container {
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-3);
+	}
+
+	.pagination-info {
+		text-align: center;
+	}
+
+	.pagination-controls {
+		justify-content: center;
+	}
+}

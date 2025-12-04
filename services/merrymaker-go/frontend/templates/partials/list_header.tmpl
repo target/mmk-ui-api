@@ -1,0 +1,23 @@
+{{/*
+list-header renders a card header with optional New button and custom content.
+SECURITY NOTE: .CustomHeaderContent should contain safe HTML or use sub-templates.
+If passing raw HTML strings, ensure they are sanitized and typed as template.HTML.
+*/}}
+{{define "list-header"}}
+<div class="card-header{{if .HeaderClass}} {{.HeaderClass}}{{end}}">
+    {{if .NewButtonURL}}
+    <a class="btn btn-primary"
+       href="{{.NewButtonURL}}"
+       hx-get="{{.NewButtonURL}}"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="true">
+        <i data-lucide="plus"></i>
+        <span>{{if .NewButtonText}}{{.NewButtonText}}{{else}}New{{end}}</span>
+    </a>
+    {{end}}
+    {{if .CustomHeaderContent}}
+    {{.CustomHeaderContent}}
+    {{end}}
+</div>
+{{end}}

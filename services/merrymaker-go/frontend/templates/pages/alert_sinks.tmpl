@@ -1,0 +1,74 @@
+{{ define "alert-sinks-content" }}
+<div class="alerts-section">
+    <div class="card">
+        <div class="card-header">
+            <a class="btn btn-primary"
+               href="/alert-sinks/new"
+               hx-get="/alert-sinks/new"
+               hx-target="#main-content"
+               hx-push-url="true">
+                <i data-lucide="plus"></i>
+                <span>New Alert Sink</span>
+            </a>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+            {{ if not .Error }}
+            <div class="mt-3" id="alerts-table">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th align="left">Name</th>
+                            <th align="left">URI</th>
+                            <th align="left">Created</th>
+                            <th align="right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .AlertSinks }}
+                        <tr class="row-link"
+                            hx-get="/alert-sinks/{{.ID}}/edit"
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                            hx-push-url="true"
+                            hx-trigger="row-nav"
+                            role="link"
+                            tabindex="0">
+                            <td class="mono">{{.Name}}</td>
+                            <td class="text-muted truncate max-w-520">{{.Method}} {{.URI}}</td>
+                            <td class="text-muted nowrap">{{ timeTag .CreatedAt }}</td>
+                            <td align="right">
+                                <div class="table-actions">
+                                    <button class="btn-table-action btn-table-action--danger"
+                                            type="button"
+                                            hx-post="/alert-sinks/{{.ID}}/delete"
+                                            hx-confirm="Delete this alert sink? This action cannot be undone."
+                                            hx-target="#main-content"
+                                            hx-swap="innerHTML swap:500ms"
+                                            hx-push-url="false"
+                                            data-row-delete
+                                            data-component="row-delete"
+                                            title="Delete alert sink"
+                                            aria-label="Delete alert sink"
+                                            data-stop-row-nav>
+                                        <i data-lucide="trash-2"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {{ else }}
+                        <tr>
+                            <td colspan="4">
+                                <em>No alert sinks configured yet.</em>
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+            {{ template "pagination" . }}
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{ end }}

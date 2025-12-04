@@ -1,0 +1,15 @@
+{{define "source-test-events"}}
+{{/* Render new events for source test panel - include network events for debugging */}}
+{{/* This template is called repeatedly with only NEW events since last poll */}}
+{{range .Events}}
+{{$category := .EventType | eventTypeCategory}}
+{{/* Include all event types in test panel for better debugging */}}
+{{template "event-item" .}}
+{{end}}
+{{/* Update polling state after rendering events */}}
+<div style="display:none"
+     data-next-since="{{.NextSince}}"
+     data-terminal="{{.IsTerminal}}"
+     data-job-id="{{.JobID}}"
+     class="polling-state-update"></div>
+{{end}}

@@ -1,0 +1,452 @@
+{{ define "job-content" }}
+<div class="job-detail-section">
+    {{ if .Job }}
+    <div class="job-detail-compact-header">
+        <div class="job-detail-compact-nav">
+            <a class="job-detail-back-link"
+               href="/browser-jobs"
+               hx-get="/browser-jobs"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">
+                <i data-lucide="arrow-left"></i>
+                <span>Back to Jobs</span>
+            </a>
+        </div>
+        <div class="job-detail-compact-summary">
+            <div class="job-detail-compact-title-row">
+                <h2 class="job-detail-compact-title">Job Details</h2>
+                {{ if eq .Job.Status "completed" }}
+                <span class="badge badge-success">
+                    <i data-lucide="check-circle"></i>
+                    Completed
+                </span>
+                {{ else if eq .Job.Status "failed" }}
+                <span class="badge badge-danger">
+                    <i data-lucide="x-circle"></i>
+                    Failed
+                    {{ if gt .Job.RetryCount 0 }}
+                    {{ if gt .Job.MaxRetries 0 }}
+                    <span class="badge-detail">({{.Job.RetryCount}}/{{.Job.MaxRetries}} retries)</span>
+                {{ else }}
+                    <span class="badge-detail">({{.Job.RetryCount}} retries)</span>
+                    {{ end }}
+                    {{ end }}
+                </span>
+                {{ else if eq .Job.Status "running" }}
+                <span class="badge badge-warning">
+                    <i data-lucide="loader"></i>
+                    Running
+                </span>
+                {{ else if eq .Job.Status "pending" }}
+                {{ if gt .Job.RetryCount 0 }}
+                <span class="badge badge-warning">
+                    <i data-lucide="rotate-cw"></i>
+                    {{ if gt .Job.MaxRetries 0 }}
+                    Retrying ({{.Job.RetryCount}}/{{.Job.MaxRetries}})
+                {{ else }}
+                    Retrying ({{.Job.RetryCount}})
+                    {{ end }}
+                </span>
+            {{ else }}
+                <span class="badge badge-secondary">
+                    <i data-lucide="clock"></i>
+                    Pending
+                </span>
+                {{ end }}
+            {{ else }}
+                <span class="badge badge-secondary">
+                    <i data-lucide="clock"></i>
+                    {{ .Job.Status }}
+                </span>
+                {{ end }}
+            </div>
+            <div class="job-detail-compact-meta">
+                <span class="job-detail-compact-id mono">{{ .JobID }}</span>
+                <span class="job-detail-compact-separator">•</span>
+                <span class="job-detail-compact-info">{{ .Job.Type }}</span>
+                {{ if .Site }}
+                <span class="job-detail-compact-separator">•</span>
+                <a href="/sites/{{ .Site.ID }}" class="link job-detail-compact-info">{{ .Site.Name }}</a>
+                {{ end }}
+                {{ if .Source }}
+                <span class="job-detail-compact-separator">•</span>
+                <a href="/sources?highlight={{ .Source.ID | urlquery }}"
+                   class="link job-detail-compact-info">{{ .Source.Name }}</a>
+                {{ end }}
+                {{ if .Secret }}
+                <span class="job-detail-compact-separator">•</span>
+                <a href="/secrets/{{ .Secret.ID }}/edit"
+                   class="link job-detail-compact-info">{{ .Secret.Name }}</a>
+                {{ end }}
+                <span class="job-detail-compact-separator">•</span>
+                <span class="job-detail-compact-info">{{ .CreatedAtFormatted }}</span>
+            </div>
+        </div>
+        <details class="job-detail-compact-details">
+            <summary class="job-detail-compact-toggle">
+                <i data-lucide="chevron-down" class="job-detail-compact-toggle-icon"></i>
+                <span>Show full details</span>
+            </summary>
+            <div class="job-detail-compact-expanded">
+                <div class="job-detail-compact-grid">
+                    <div class="job-detail-compact-section">
+                        <h3 class="job-detail-compact-section-title">Job Information</h3>
+                        <dl class="job-detail-compact-list">
+                            <div class="job-detail-compact-item">
+                                <dt>Type</dt>
+                                <dd>
+                                    {{ .Job.Type }}
+                                </dd>
+                            </div>
+                            <div class="job-detail-compact-item">
+                                <dt>Priority</dt>
+                                <dd>
+                                    {{ .Job.Priority }}
+                                </dd>
+                            </div>
+                            <div class="job-detail-compact-item">
+                                <dt>Created</dt>
+                                <dd>
+                                    {{ .CreatedAtFormatted }}
+                                </dd>
+                            </div>
+                            {{ if .CompletedAtFormatted }}
+                            <div class="job-detail-compact-item">
+                                <dt>Completed</dt>
+                                <dd>
+                                    {{ .CompletedAtFormatted }}
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ if .Job.IsTest }}
+                            <div class="job-detail-compact-item">
+                                <dt>Test Run</dt>
+                                <dd>
+                                    <span class="badge badge-info"><i data-lucide="flask-conical"></i> Test</span>
+                                </dd>
+                            </div>
+                            {{ end }}
+                        </dl>
+                    </div>
+                    {{ if or .Site .Source .Secret }}
+                    <div class="job-detail-compact-section">
+                        <h3 class="job-detail-compact-section-title">Context</h3>
+                        <dl class="job-detail-compact-list">
+                            {{ if .Site }}
+                            <div class="job-detail-compact-item">
+                                <dt>Site</dt>
+                                <dd>
+                                    <a href="/sites/{{ .Site.ID }}" class="link">{{ .Site.Name }}</a>
+                                </dd>
+                            </div>
+                            {{ if .SiteScope }}
+                            <div class="job-detail-compact-item">
+                                <dt>Scope</dt>
+                                <dd>
+                                    <code class="small">{{ .SiteScope }}</code>
+                                </dd>
+                            </div>
+                            {{ end }}
+                            <div class="job-detail-compact-item">
+                                <dt>Site Status</dt>
+                                <dd>
+                                    {{ if .Site.Enabled }}
+                                    <span class="badge badge-success"><i data-lucide="check-circle"></i> Enabled</span>
+                                {{ else }}
+                                    <span class="badge badge-secondary"><i data-lucide="x-circle"></i> Disabled</span>
+                                    {{ end }}
+                                </dd>
+                            </div>
+                            <div class="job-detail-compact-item">
+                                <dt>Alert Mode</dt>
+                                <dd>
+                                    {{ if eq .Site.AlertModeStr "muted" }}
+                                    <span class="badge badge-warning"><i data-lucide="bell-off"></i> Muted</span>
+                                    {{ else }}
+                                    <span class="badge badge-success"><i data-lucide="bell-ring"></i> Active</span>
+                                    {{ end }}
+                                </dd>
+                            </div>
+                            <div class="job-detail-compact-item">
+                                <dt>Run Interval</dt>
+                                <dd>
+                                    {{ .Site.RunEveryMinutes }} minutes
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ if .Source }}
+                            <div class="job-detail-compact-item">
+                                <dt>Source</dt>
+                                <dd>
+                                    <a href="/sources?highlight={{ .Source.ID | urlquery }}" class="link">{{ .Source.Name }}</a>
+                                </dd>
+                            </div>
+                            {{ if .Source.Test }}
+                            <div class="job-detail-compact-item">
+                                <dt>Source Type</dt>
+                                <dd>
+                                    <span class="badge badge-info"><i data-lucide="flask-conical"></i> Test Source</span>
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ if .SourcePreview }}
+                            <div class="job-detail-compact-item job-detail-compact-item--full">
+                                <dt>Script Preview</dt>
+                                <dd>
+                                    <details class="mt-1">
+                                        <summary class="clickable-summary small">
+                                            <i data-lucide="chevron-right" class="summary-icon w-3 h-3"></i>
+                                            <span>Show script preview</span>
+                                        </summary>
+                                        <pre class="input mono small mt-2"
+                                             style="max-height: 200px;
+                                                    overflow-y: auto">{{ .SourcePreview }}</pre>
+                                    </details>
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ end }}
+                            {{ if .Secret }}
+                            <div class="job-detail-compact-item">
+                                <dt>Secret</dt>
+                                <dd>
+                                    <a href="/secrets/{{ .Secret.ID }}/edit" class="link">{{ .Secret.Name }}</a>
+                                </dd>
+                            </div>
+                            {{ if .Secret.LastRefreshStatus }}
+                            <div class="job-detail-compact-item">
+                                <dt>Last Refresh Status</dt>
+                                <dd>
+                                    {{ if eq (safeDeref .Secret.LastRefreshStatus) "success" }}
+                                    <span class="badge badge-success"><i data-lucide="check-circle"></i> Success</span>
+                                    {{ else if eq (safeDeref .Secret.LastRefreshStatus) "failed" }}
+                                    <span class="badge badge-danger"><i data-lucide="x-circle"></i> Failed</span>
+                                {{ else }}
+                                    <span class="badge badge-secondary">{{ safeDeref .Secret.LastRefreshStatus }}</span>
+                                    {{ end }}
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ if .Secret.LastRefreshedAt }}
+                            <div class="job-detail-compact-item">
+                                <dt>Last Refreshed</dt>
+                                <dd>
+                                    {{ .Secret.LastRefreshedAt | friendlyTime }}
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ if .Secret.LastRefreshError }}
+                            <div class="job-detail-compact-item">
+                                <dt>Last Error</dt>
+                                <dd>
+                                    <code class="small text-danger">{{ safeDeref .Secret.LastRefreshError }}</code>
+                                </dd>
+                            </div>
+                            {{ end }}
+                            {{ end }}
+                        </dl>
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
+        </details>
+        {{ if .Job.LastError }}
+        <div class="job-detail-compact-error">
+            <i data-lucide="alert-circle"></i>
+            <span>{{ .Job.LastError }}</span>
+        </div>
+        {{ end }}
+    </div>
+    {{ end }}
+    {{ if .Results }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Rules Processing Results</h3>
+            {{ $view := .RulesResultsView }}
+            {{ if $view }}
+            <div class="stats-grid mt-3">
+                {{ range $card := $view.Summary }}
+                <div class="stat-card">
+                    <div class="stat-card-row">
+                        <div class="stat-card-icon-title">
+                            <i data-lucide="{{ $card.Icon }}" class="stat-card-icon"></i>
+                            <span class="stat-card-title">{{ $card.Title }}</span>
+                        </div>
+                    </div>
+                    <p class="stat-card-value">
+                        {{ if $card.ValueText }}{{ $card.ValueText }}{{ else }}{{ formatNumber $card.Value }}{{ end }}
+                    </p>
+                    {{ if $card.Context }}
+                    <p class="stat-card-context">{{ $card.Context }}</p>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </div>
+            <div class="job-detail-compact-section job-detail-run-snapshot mt-4">
+                <h4 class="job-detail-compact-section-title">Run Snapshot</h4>
+                <div class="job-detail-metric-chips">
+                    <span class="job-detail-metric-chip">
+                        <i data-lucide="timer"></i>
+                        <span>Processing {{ $view.ProcessingTime }}</span>
+                    </span>
+                    <span class="{{ if gt $view.EventsSkipped 0 }}job-detail-metric-chip is-warning{{ else }}job-detail-metric-chip{{ end }}">
+                        <i data-lucide="skip-forward"></i>
+                        <span>{{ formatNumber $view.EventsSkipped }} skipped</span>
+                    </span>
+                    <span class="{{ if gt $.Results.ErrorsEncountered 0 }}job-detail-metric-chip is-alert{{ else }}job-detail-metric-chip{{ end }}">
+                        <i data-lucide="alert-triangle"></i>
+                        <span>{{ formatNumber $.Results.ErrorsEncountered }} errors</span>
+                    </span>
+                    <span class="job-detail-metric-chip {{ if eq $view.AlertModeStr "muted" }}is-warning{{ end }}">
+                        <i data-lucide="{{ if eq $view.AlertModeStr "muted" }}bell-off{{ else }}bell-ring{{ end }}"></i>
+                        <span>Alert mode: {{ if eq $view.AlertModeStr "muted" }}Muted{{ else }}Active{{ end }}</span>
+                    </span>
+                    {{ if $view.IsMutedMode }}
+                    <span class="{{ if gt $view.MutedAlerts 0 }}job-detail-metric-chip is-warning{{ else }}job-detail-metric-chip{{ end }}">
+                        <i data-lucide="volume-x"></i>
+                        <span>{{ formatNumber $view.MutedAlerts }} muted</span>
+                    </span>
+                    {{ end }}
+                </div>
+            </div>
+            <div class="job-detail-breakdown-grid mt-4">
+                <div class="job-detail-compact-section job-detail-breakdown-card">
+                    <h4 class="job-detail-compact-section-title">Unknown Domain Breakdown</h4>
+                    <dl class="job-detail-compact-list">
+                        {{ range $row := $view.UnknownMetrics }}
+                        <div class="job-detail-compact-item{{ if $row.Samples }} job-detail-compact-item--full{{ end }}">
+                            <dt>{{ $row.Label }}</dt>
+                            <dd>
+                                <span class="{{ $row.BadgeClass }}">{{ formatNumber $row.Count }}</span>
+                                {{ if $row.Description }}
+                                <span class="text-muted small ml-2">{{ $row.Description }}</span>
+                                {{ end }}
+                                {{ if $row.Samples }}
+                                <div class="job-detail-domains mt-2">
+                                    {{ range $row.Samples }}<code class="job-detail-domain-tag">{{ . }}</code>{{ end }}
+                                </div>
+                                {{ end }}
+                            </dd>
+                        </div>
+                        {{ end }}
+                    </dl>
+                </div>
+                {{ if $view.IOCMetrics }}
+                <div class="job-detail-compact-section job-detail-breakdown-card">
+                    <h4 class="job-detail-compact-section-title">IOC Domain Breakdown</h4>
+                    <dl class="job-detail-compact-list">
+                        {{ range $row := $view.IOCMetrics }}
+                        <div class="job-detail-compact-item{{ if $row.Samples }} job-detail-compact-item--full{{ end }}">
+                            <dt>{{ $row.Label }}</dt>
+                            <dd>
+                                <span class="{{ $row.BadgeClass }}">{{ formatNumber $row.Count }}</span>
+                                {{ if $row.Description }}
+                                <span class="text-muted small ml-2">{{ $row.Description }}</span>
+                                {{ end }}
+                                {{ if $row.Samples }}
+                                <div class="job-detail-domains mt-2">
+                                    {{ range $row.Samples }}<code class="job-detail-domain-tag">{{ . }}</code>{{ end }}
+                                </div>
+                                {{ end }}
+                            </dd>
+                        </div>
+                        {{ end }}
+                    </dl>
+                </div>
+                {{ end }}
+            </div>
+            {{ else }}
+            <p class="text-muted">Rules processing completed but no metrics are available.</p>
+            {{ end }}
+        </div>
+    </div>
+    {{ end }}
+    {{ if .AlertDelivery }}
+    {{ template "job-alert-delivery" .AlertDelivery }}
+    {{ end }}
+    {{ if and .Job (not .Results) (not .AlertDelivery) }}
+    {{ if eq .Job.Status "completed" }}
+    {{ if eq .Job.Type "browser" }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Browser Job Events</h3>
+            <div id="job-events-{{ .JobID }}"
+                 hx-get="/jobs/{{ .JobID }}/events"
+                 hx-trigger="load"
+                 hx-swap="innerHTML">
+                <div class="text-muted">Loading events...</div>
+            </div>
+        </div>
+    </div>
+    {{ else if eq .Job.Type "rules" }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Rules Processing Results</h3>
+            <p class="text-muted">Rules processing completed but no cached results are available.</p>
+        </div>
+    </div>
+    {{ else if eq .Job.Type "alert" }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Alert Delivery Result</h3>
+            <p class="text-muted">Alert completed successfully but no delivery details were recorded.</p>
+        </div>
+    </div>
+{{ else }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Job Results</h3>
+            <p class="text-muted">Job completed successfully.</p>
+        </div>
+    </div>
+    {{ end }}
+    {{ else if eq .Job.Status "running" }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Job Status</h3>
+            <p class="text-muted">Job is currently running. Please check back shortly for results.</p>
+            {{ if eq .Job.Type "browser" }}
+            <div id="job-events-{{ .JobID }}"
+                 hx-get="/jobs/{{ .JobID }}/events"
+                 hx-trigger="load delay:2s"
+                 hx-swap="innerHTML">
+                <div class="text-muted small mt-2">Events will appear here as they are generated...</div>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+{{ else if eq .Job.Status "failed" }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Job Status</h3>
+            <p class="text-muted">Job failed to complete. Check the error message above for details.</p>
+            {{ if eq .Job.Type "browser" }}
+            <div id="job-events-{{ .JobID }}"
+                 hx-get="/jobs/{{ .JobID }}/events"
+                 hx-trigger="load"
+                 hx-swap="innerHTML">
+                <div class="text-muted small mt-2">Loading any available events...</div>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+{{ else }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="job-detail-compact-section-title">Job Status</h3>
+            <p class="text-muted">Job is pending execution. Please check back shortly.</p>
+        </div>
+    </div>
+    {{ end }}
+{{ end }}
+{{ if not .Job }}
+    <div class="card mt-4">
+        <div class="card-body">
+            <p class="text-muted">Job not found or unable to load job information.</p>
+        </div>
+    </div>
+{{ end }}
+</div>
+<!-- Event rendering is now handled server-side via templates -->
+{{ end }}

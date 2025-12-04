@@ -1,0 +1,45 @@
+{{- define "screenshot-event-summary" -}}
+{{$data := .EventData | parseEventData}}
+{{$caption := index $data "caption"}}
+    {{if $caption}}
+        <span class="event__summary-text" title="{{$caption}}">{{truncateText $caption 48}}</span>
+    {{else}}
+        <span class="event__summary-text event__summary-text--muted">Screenshot captured</span>
+    {{end}}
+{{- end}}
+
+{{- define "screenshot-event-details" -}}
+{{$data := .EventData | parseEventData}}
+{{$image := index $data "image"}}
+{{$mime := index $data "mime"}}
+{{$caption := index $data "caption"}}
+<div class="event__body">
+    {{if $image}}
+{{/* Render screenshot thumbnail with modal functionality */}}
+<div class="screenshot-container">
+    {{if $caption}}
+    <div class="text-muted mb-1 small">{{$caption}}</div>
+    {{end}}
+    <img src="data:{{if $mime}}{{$mime}}{{else}}image/png{{end}};base64,{{$image}}"
+         class="screenshot-thumbnail"
+         style="max-width:200px;
+                max-height:150px;
+                border:1px solid var(--color-border, #ddd);
+                border-radius:4px;
+                cursor:pointer"
+         alt="Screenshot"
+         title="Click to view full size"
+         data-src="data:{{if $mime}}{{$mime}}{{else}}image/png{{end}};base64,{{$image}}"
+         data-caption="{{if $caption}}{{$caption}}{{end}}"
+         data-onerror-fallback="true" />
+    <div class="text-muted small" hidden>Failed to load screenshot</div>
+</div>
+{{else}}
+<div class="text-muted">Screenshot (no image data)</div>
+{{end}}
+</div>
+{{- end}}
+
+{{- define "screenshot-event" -}}
+{{template "screenshot-event-details" .}}
+{{- end}}

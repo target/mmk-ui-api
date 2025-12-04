@@ -1,0 +1,173 @@
+{{define "jobs-content"}}
+<div class="jobs-section">
+    <div class="card">
+        <div class="card-header">
+            <div class="sites-header-layout">
+                <div class="sites-filters">{{ template "jobs-filter-bar" . }}</div>
+            </div>
+        </div>
+        <div class="card-body">
+            {{ template "error-banner" . }}
+            {{ if not .Error }}
+            <div class="mt-3" id="jobs-table">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th align="left">Type</th>
+                            <th align="left">Status</th>
+                            <th align="left">Site</th>
+                            <th align="left">Events</th>
+                            <th align="left">Test</th>
+                            <th align="left">Created</th>
+                            <th align="right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Jobs}}
+                        <tr class="row-link"
+                            id="job-row-{{.ID}}"
+                            hx-get="/jobs/{{.ID}}"
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                            hx-push-url="true"
+                            hx-trigger="row-nav"
+                            role="link"
+                            tabindex="0">
+                            <td>
+                                {{if eq .Type "browser"}}
+                                <span class="badge badge-primary">
+                                    <i data-lucide="globe"></i>
+                                    Browser
+                                </span>
+                                {{else if eq .Type "rules"}}
+                                <span class="badge badge-info">
+                                    <i data-lucide="shield"></i>
+                                    Rules
+                                </span>
+                                {{else if eq .Type "alert"}}
+                                <span class="badge badge-warning">
+                                    <i data-lucide="bell"></i>
+                                    Alert
+                                </span>
+                                {{else if eq .Type "secret_refresh"}}
+                                <span class="badge badge-info">
+                                    <i data-lucide="key"></i>
+                                    Secret Refresh
+                                </span>
+                            {{else}}
+                                <span class="badge badge-secondary">{{.Type}}</span>
+                                {{end}}
+                            </td>
+                            <td>
+                                {{if eq .Status "completed"}}
+                                <span class="badge badge-success">
+                                    <i data-lucide="check-circle"></i>
+                                    Completed
+                                </span>
+                                {{else if eq .Status "failed"}}
+                                <span class="badge badge-danger">
+                                    <i data-lucide="x-circle"></i>
+                                    Failed
+                                    {{if gt .RetryCount 0}}
+                                    {{if gt .MaxRetries 0}}
+                                    <span class="badge-detail">({{.RetryCount}}/{{.MaxRetries}} retries)</span>
+                                {{else}}
+                                    <span class="badge-detail">({{.RetryCount}} retries)</span>
+                                    {{end}}
+                                    {{end}}
+                                </span>
+                                {{else if eq .Status "running"}}
+                                <span class="badge badge-warning">
+                                    <i data-lucide="loader"></i>
+                                    Running
+                                </span>
+                                {{else if eq .Status "pending"}}
+                                {{if gt .RetryCount 0}}
+                                <span class="badge badge-warning">
+                                    <i data-lucide="rotate-cw"></i>
+                                    {{if gt .MaxRetries 0}}
+                                    Retrying ({{.RetryCount}}/{{.MaxRetries}})
+                                {{else}}
+                                    Retrying ({{.RetryCount}})
+                                    {{end}}
+                                </span>
+                            {{else}}
+                                <span class="badge badge-secondary">
+                                    <i data-lucide="clock"></i>
+                                    Pending
+                                </span>
+                                {{end}}
+                            {{else}}
+                                <span class="badge badge-secondary">{{.Status}}</span>
+                                {{end}}
+                            </td>
+                            <td>
+                                {{if .SiteName}}
+                                {{if .SiteID}}
+                                <a href="/sites/{{.SiteID}}/edit"
+                                   hx-get="/sites/{{.SiteID}}/edit"
+                                   hx-target="#main-content"
+                                   hx-swap="innerHTML"
+                                   hx-push-url="true"
+                                   class="text-link"
+                                   data-stop-row-nav>{{.SiteName}}</a>
+                            {{else}}
+                                <span class="text-muted">{{.SiteName}}</span>
+                                {{end}}
+                            {{else}}
+                                <span class="text-muted">—</span>
+                                {{end}}
+                            </td>
+                            <td class="text-muted">{{.EventCount}}</td>
+                            <td>
+                                {{if .IsTest}}
+                                <span class="badge badge-info">
+                                    <i data-lucide="flask-conical"></i>
+                                    Test
+                                </span>
+                            {{else}}
+                                <span class="text-muted">—</span>
+                                {{end}}
+                            </td>
+                            <td class="text-muted nowrap">{{ timeTag .CreatedAt }}</td>
+                            <td align="right">
+                                <div class="table-actions">
+                                    {{if $.CanManageJobs}}
+                                    {{if or (eq .Status "pending") (eq .Status "completed") (eq .Status "failed")}}
+                                    {{if or (ne .Status "pending") (not .LeaseExpiresAt)}}
+                                    <button class="btn-table-action btn-table-action--danger"
+                                            type="button"
+                                            hx-post="/jobs/{{.ID}}/delete"
+                                            hx-confirm="Delete this job? Associated events will remain but their source_job_id will be set to NULL."
+                                            hx-target="#job-row-{{.ID}}"
+                                            hx-swap="outerHTML swap:500ms"
+                                            hx-push-url="false"
+                                            data-row-delete
+                                            data-component="row-delete"
+                                            title="Delete job"
+                                            aria-label="Delete job"
+                                            data-stop-row-nav>
+                                        <i data-lucide="trash-2"></i>
+                                    </button>
+                                    {{end}}
+                                    {{end}}
+                                    {{end}}
+                                </div>
+                            </td>
+                        </tr>
+                    {{else}}
+                        <tr>
+                            <td colspan="7">
+                                <em>No jobs found.</em>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+            {{template "pagination" .}}
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}

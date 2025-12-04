@@ -1,0 +1,355 @@
+{{ define "content" }}
+<div class="dashboard-layout">
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Merrymaker</h2>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/"
+                       class="nav-link {{ if eq .CurrentPage "home" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "home" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/alerts"
+                       class="nav-link {{ if eq .CurrentPage "alerts" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "alerts" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/alerts"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="bell"></i>
+                        <span>Alerts</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/alert-sinks"
+                       class="nav-link {{ if eq .CurrentPage "alert-sinks" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "alert-sinks" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/alert-sinks"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="webhook"></i>
+                        <span>Alert Sinks</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/sources"
+                       class="nav-link {{ if eq .CurrentPage "sources" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "sources" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/sources"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="code-2"></i>
+                        <span>Sources</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/sites"
+                       class="nav-link {{ if eq .CurrentPage "sites" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "sites" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/sites"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="globe"></i>
+                        <span>Sites</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/jobs"
+                       class="nav-link {{ if eq .CurrentPage "jobs" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "jobs" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/jobs"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="list-checks"></i>
+                        <span>Jobs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/secrets"
+                       class="nav-link {{ if eq .CurrentPage "secrets" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "secrets" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/secrets"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="key-round"></i>
+                        <span>Secrets</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/allowlist"
+                       class="nav-link {{ if eq .CurrentPage "allowlist" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "allowlist" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/allowlist"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="shield-check"></i>
+                        <span>Allow List</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/iocs"
+                       class="nav-link {{ if eq .CurrentPage "iocs" }}is-active{{ end }}"
+                       {{ if eq .CurrentPage "iocs" }}
+                       aria-current="page"
+                       {{ end }}
+                       hx-get="/iocs"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        <i data-lucide="shield-alert"></i>
+                        <span>IOCs</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <header class="header">
+        <div class="header-left">
+            <button class="btn btn-secondary sidebar-toggle"
+                    aria-label="Toggle sidebar"
+                    aria-controls="sidebar"
+                    aria-expanded="false"
+                    data-sidebar-toggle>
+                <i data-lucide="menu"></i>
+            </button>
+            <h1 id="header-title" class="header-title">{{ if .PageTitle }}{{.PageTitle}}{{ else }}Dashboard{{ end }}</h1>
+        </div>
+        {{ template "user-toggle" . }}
+    </header>
+    <div class="sidebar-overlay" data-sidebar-close></div>
+    <main class="main-content" id="main-content">
+        {{ template "error-banner" . }}
+        {{ renderSection .CurrentPage . }}
+    </main>
+</div>
+{{ end }}
+{{ define "dashboard-content" }}
+<div class="stats-grid">
+    <div id="recent-browser-jobs-panel"
+         class="card"
+         data-fragment-panel
+         hx-get="/dashboard/recent-browser-jobs"
+         hx-trigger="load, every 20s"
+         hx-swap="innerHTML">
+        {{ template "dashboard-recent-browser-jobs-fragment" . }}
+    </div>
+    <div id="recent-alerts-panel"
+         class="card"
+         data-fragment-panel
+         hx-get="/dashboard/recent-alerts"
+         hx-trigger="load, every 20s"
+         hx-swap="innerHTML">
+        {{ template "dashboard-recent-alerts-fragment" . }}
+    </div>
+</div>
+{{ end }}
+{{ define "dashboard-recent-browser-jobs-fragment" }}
+<div class="card-header">
+    <i data-lucide="monitor" class="card-header-icon"></i>
+    <h3 class="card-title">Recent Browser Jobs</h3>
+</div>
+<p class="card-subtitle">Last 5 non-test jobs</p>
+<div class="card-body">
+    {{ if .RecentBrowserJobsError }}
+    <p class="text-muted">{{ .RecentBrowserJobsError }}</p>
+    {{ else if .RecentBrowserJobs }}
+    <ul class="list list--dense recent-browser-jobs-list"
+        hx-boost="true"
+        hx-target="#main-content"
+        hx-swap="innerHTML"
+        hx-push-url="true">
+        {{ range .RecentBrowserJobs }}
+        <li class="list-item">
+            <a class="list-item-link list-item-link--dense"
+               href="/jobs/{{ .ID }}">
+                <div class="list-item-content">
+                    <div class="list-item-row">
+                        <span class="status-badge status-badge--{{ .Status }}">{{ .Status }}</span>
+                        <span class="list-item-title fw-medium">{{ if .SiteName }}{{ .SiteName }}{{ else }}Unknown Site{{ end }}</span>
+                    </div>
+                    {{ $failure := .FailureSummary }}
+                    <div class="list-item-meta text-xs">
+                        <span class="text-muted">{{ .StatusSummary }}</span>
+                        {{ if and (eq .Status "failed") $failure }}
+                        <span class="text-muted">&middot;</span>
+                        <span class="text-danger">{{ $failure }}</span>
+                        {{ end }}
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="icon-sm text-muted" aria-hidden="true"></i>
+            </a>
+        </li>
+        {{ end }}
+    </ul>
+    <div class="mt-4">
+        <a class="btn btn-secondary"
+           href="/jobs"
+           hx-get="/jobs"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="list" class="icon-md"></i>
+            View All Jobs
+        </a>
+    </div>
+    {{ else }}
+    <p class="text-muted">No recent browser jobs found.</p>
+    <div class="mt-4">
+        <a class="btn btn-primary"
+           href="/sites"
+           hx-get="/sites"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="plus" class="icon-md"></i>
+            Create a Site
+        </a>
+    </div>
+    {{ end }}
+    <p class="text-danger text-sm mt-3" data-fragment-error hidden>
+        Unable to refresh recent jobs. Check the server connection.
+    </p>
+</div>
+{{ end }}
+{{ define "dashboard-recent-alerts-fragment" }}
+<div class="card-header">
+    <i data-lucide="bell" class="card-header-icon"></i>
+    <h3 class="card-title">Alerts</h3>
+</div>
+<p class="card-subtitle">Latest fired alerts across your sites</p>
+<div class="card-body">
+    {{ if .RecentAlertsError }}
+    <p class="text-muted">{{ .RecentAlertsError }}</p>
+    <div class="btn-group mt-3">
+        <a class="btn btn-secondary"
+           href="/alert-sinks"
+           hx-get="/alert-sinks"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="webhook" class="icon-md"></i>
+            Manage Alert Sinks
+        </a>
+    </div>
+    {{ else if .RecentAlerts }}
+    <ul class="list list--dense alert-list"
+        hx-boost="true"
+        hx-target="#main-content"
+        hx-swap="innerHTML"
+        hx-push-url="true">
+        {{ range .RecentAlerts }}
+        <li class="list-item">
+            <a class="list-item-link list-item-link--dense alert-item-link alert-item-link--dense"
+               href="/alerts/{{ .ID }}">
+                <div class="alert-item-row">
+                    <div class="alert-item-main">
+                        <span class="badge {{ if eq .Severity "critical" }}badge-danger{{ else if eq .Severity "high" }}badge-warning{{ else if eq .Severity "medium" }}badge-info{{ else if eq .Severity "low" }}badge-secondary{{ else }}badge-light{{ end }}">
+                            {{ .Severity }}
+                        </span>
+                        <span class="alert-item-primary fw-medium">{{ .PrimaryLabel }}</span>
+                    </div>
+                    <div class="alert-item-meta text-xs">
+                        {{ if .IsResolved }}
+                        <span class="status-badge status-badge--completed">Resolved</span>
+                        {{ else }}
+                        <span class="status-badge status-badge--running">Active</span>
+                        {{ end }}
+                        {{ if .WasMutedOnFire }}
+                        <span class="badge badge-muted badge-icon-only ml-2"
+                              role="img"
+                              aria-label="{{ .MutedOnFireLabel }}"
+                              title="{{ .MutedOnFireLabel }}">
+                            <i data-lucide="bell-off" aria-hidden="true"></i>
+                        </span>
+                        {{ end }}
+                        <span class="text-muted">{{ .FriendlyFiredAt }}</span>
+                    </div>
+                </div>
+                <div class="alert-item-sub text-muted text-xs">
+                    <span>{{ .SiteName }}</span>
+                    <span class="text-muted">&middot;</span>
+                    <span class="alert-item-secondary">{{ .RuleTypeDisplay }}</span>
+                </div>
+                {{ if .JobDetails }}
+                <div class="alert-item-sub text-muted text-xs">
+                    {{ range $index, $detail := .JobDetails }}
+                    {{ if $index }}<span class="text-muted">&middot;</span>{{ end }}
+                    <span class="mono">{{ $detail.Label }}: {{ $detail.Value }}</span>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </a>
+        </li>
+        {{ end }}
+    </ul>
+    <div class="mt-4">
+        <a class="btn btn-secondary"
+           href="/alerts"
+           hx-get="/alerts"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="list" class="icon-md"></i>
+            View All Alerts
+        </a>
+    </div>
+    {{ else }}
+    <p class="text-muted">No alerts have fired recently.</p>
+    <div class="btn-group mt-4">
+        <a class="btn btn-secondary"
+           href="/alerts"
+           hx-get="/alerts"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="bell" class="icon-md"></i>
+            View Alerts
+        </a>
+        <a class="btn btn-secondary"
+           href="/alert-sinks"
+           hx-get="/alert-sinks"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            <i data-lucide="webhook" class="icon-md"></i>
+            Configure Sinks
+        </a>
+    </div>
+    {{ end }}
+    <p class="text-danger text-sm mt-3" data-fragment-error hidden>
+        Unable to refresh alerts. Check the server connection.
+    </p>
+</div>
+{{ end }}

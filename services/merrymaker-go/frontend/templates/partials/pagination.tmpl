@@ -1,0 +1,47 @@
+{{define "pagination"}}
+<div class="pagination-container">
+    <div class="pagination-info">
+        {{if and .StartIndex .EndIndex}}
+        <span class="pagination-text">Showing {{formatNumber .StartIndex}}–{{formatNumber .EndIndex}}{{if .TotalCount}} of {{formatNumber .TotalCount}}{{end}}</span>
+    {{else}}
+        <span class="pagination-text">&nbsp;</span>
+        {{end}}
+    </div>
+    <div class="pagination-controls">
+        {{if .HasPrev}}
+        <a class="btn btn-secondary btn-sm"
+           href="{{.PrevURL}}"
+           hx-get="{{.PrevURL}}"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           aria-label="Previous page">
+            <i data-lucide="chevron-left"></i>
+            <span>Prev</span>
+        </a>
+    {{else}}
+        <span class="btn btn-secondary btn-sm" aria-disabled="true" tabindex="-1">
+            <i data-lucide="chevron-left" aria-hidden="true"></i>
+            <span>Prev</span>
+        </span>
+        {{end}}
+        {{if .HasNext}}
+        <a class="btn btn-secondary btn-sm"
+           href="{{.NextURL}}"
+           hx-get="{{.NextURL}}"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           aria-label="Next page">
+            <span>Next</span>
+            <i data-lucide="chevron-right"></i>
+        </a>
+    {{else}}
+        <span class="btn btn-secondary btn-sm" aria-disabled="true" tabindex="-1">
+            <span>Next</span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+        </span>
+        {{end}}
+    </div>
+</div>
+{{end}}
