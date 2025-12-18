@@ -255,15 +255,28 @@ func (s *JobService) FailWithDetails(
 		s.logger.DebugContext(ctx, "job failed", "id", id, "error", errMsg)
 	}
 
-	if failed && s.failureNotifier != nil {
-		payload := buildJobFailurePayload(jobFailurePayloadInput{
-			ID:      id,
-			Job:     job,
-			ErrMsg:  errMsg,
-			Details: details,
-		})
-		s.failureNotifier.NotifyJobFailure(ctx, payload)
+	if !failed || s.failureNotifier == nil {
+		return failed, nil
 	}
+
+	if job == nil {
+		loadedJob, loadErr := s.repo.GetByID(ctx, id)
+		if loadErr == nil {
+			job = loadedJob
+		}
+	}
+
+	if !shouldNotifyFailure(job) {
+		return failed, nil
+	}
+
+	payload := buildJobFailurePayload(jobFailurePayloadInput{
+		ID:      id,
+		Job:     job,
+		ErrMsg:  errMsg,
+		Details: details,
+	})
+	s.failureNotifier.NotifyJobFailure(ctx, payload)
 
 	return failed, nil
 }
@@ -328,26 +341,55 @@ func applyJobContext(payload *notify.JobFailurePayload, job *model.Job) {
 		payload.SiteID = *job.SiteID
 	}
 
-	newRetryCount := job.RetryCount + 1
-	if newRetryCount < 0 {
-		newRetryCount = 0
+	retryCount := job.RetryCount
+	if retryCount < 0 {
+		retryCount = 0
 	}
 
-	finalStatus := model.JobStatusPending
+	status := job.Status
 	switch {
-	case job.MaxRetries == 0:
-		finalStatus = model.JobStatusFailed
-	case newRetryCount >= job.MaxRetries:
-		finalStatus = model.JobStatusFailed
+	case status == "" || status == model.JobStatusRunning:
+		retryCount++
+		status = inferFailureStatus(job, retryCount)
+	case status != model.JobStatusFailed && job.MaxRetries == 0:
+		status = model.JobStatusFailed
+	case status == model.JobStatusPending && job.MaxRetries > 0 && retryCount >= job.MaxRetries:
+		status = model.JobStatusFailed
 	}
 
 	metadata := map[string]string{
-		"retry_count": strconv.Itoa(newRetryCount),
+		"retry_count": strconv.Itoa(retryCount),
 		"max_retries": strconv.Itoa(job.MaxRetries),
 		"priority":    strconv.Itoa(job.Priority),
-		"status":      string(finalStatus),
+		"status":      string(status),
 	}
 	payload.Metadata = mergeMetadata(payload.Metadata, metadata)
+}
+
+func inferFailureStatus(job *model.Job, retryCount int) model.JobStatus {
+	if job.MaxRetries == 0 {
+		return model.JobStatusFailed
+	}
+	if retryCount >= job.MaxRetries {
+		return model.JobStatusFailed
+	}
+	return model.JobStatusPending
+}
+
+func shouldNotifyFailure(job *model.Job) bool {
+	if job == nil {
+		return false
+	}
+	if job.MaxRetries == 0 {
+		return true
+	}
+	if job.Status == model.JobStatusFailed {
+		return true
+	}
+	if job.Status == "" || job.Status == model.JobStatusRunning {
+		return job.RetryCount+1 >= job.MaxRetries
+	}
+	return job.RetryCount >= job.MaxRetries
 }
 
 func extractScopeFromJob(job *model.Job) string {

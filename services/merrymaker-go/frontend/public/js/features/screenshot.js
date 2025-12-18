@@ -4,8 +4,9 @@
  * Wires up thumbnail triggers and exposes the modal helper globally for areas
  * that still access it via `window.showScreenshotModal`.
  */
-import { Events } from "../core/events.js";
+
 import { showScreenshotModal } from "../components/screenshot-modal.js";
+import { Events } from "../core/events.js";
 
 let initialized = false;
 let observer;

@@ -128,6 +128,8 @@ class SourceFormComponent {
 	initialize() {
 		this.setupTokenButton();
 		this.setupFilterControls();
+		this.setupEventDetailsLoader();
+		this.prepareEventDetailPanels([this.testEventsContainer]);
 		this.syncFormDisabledState();
 		this.startPollingIfNeeded();
 	}
@@ -181,6 +183,128 @@ class SourceFormComponent {
 
 		this.syncFilterButtons();
 		this.applyCategoryFilters();
+	}
+
+	setupEventDetailsLoader() {
+		if (!this.testEventsContainer) return;
+
+		const loadDetails = async (panel) => {
+			if (!panel) {
+				return;
+			}
+
+			this.ensurePanelUrl(panel);
+
+			if (
+				panel.dataset.detailsLoaded === "true" ||
+				panel.dataset.detailsLoading === "true" ||
+				!panel.dataset.detailsUrl
+			) {
+				return;
+			}
+
+			const url = panel.dataset.detailsUrl;
+			panel.dataset.detailsLoading = "true";
+			const placeholder = panel.innerHTML.trim();
+
+			try {
+				const resp = await fetch(url, { headers: { "HX-Request": "true" } });
+				if (!resp.ok) {
+					throw new Error(`HTTP ${resp.status}`);
+				}
+				const html = await resp.text();
+				if (!html.trim()) {
+					panel.innerHTML = `<div class="text-muted small">No details available.</div>`;
+					panel.dataset.detailsLoaded = "empty";
+					panel.dataset.detailsLoading = "false";
+					return;
+				}
+				panel.innerHTML = html;
+				panel.dataset.detailsLoaded = "true";
+				panel.dataset.detailsLoading = "false";
+			} catch (error) {
+				panel.dataset.detailsLoading = "false";
+				panel.dataset.detailsLoaded = "error";
+				panel.innerHTML = `<div class="text-danger small">Unable to load event details (${error?.message || error}).</div>`;
+				// Restore placeholder so user can retry by toggling.
+				if (placeholder) {
+					panel.insertAdjacentHTML(
+						"beforeend",
+						`<div class="text-muted small mt-1">${placeholder}</div>`,
+					);
+				}
+			}
+		};
+
+		const handleToggle = (event) => {
+			const node = event.target;
+			if (!(node instanceof HTMLDetailsElement && node.open)) {
+				return;
+			}
+			const panel = node.querySelector(".event__details");
+			loadDetails(panel);
+		};
+
+		const handleSummaryClick = (event) => {
+			const summary = event.target instanceof Element ? event.target.closest("summary") : null;
+			if (!summary) return;
+			const details = summary.closest("details");
+			if (!details) return;
+			const panel = details.querySelector(".event__details");
+			loadDetails(panel);
+		};
+
+		this.testEventsContainer.addEventListener("toggle", handleToggle);
+		this.testEventsContainer.addEventListener("click", handleSummaryClick);
+		this.boundHandlers.push({
+			target: this.testEventsContainer,
+			type: "toggle",
+			listener: handleToggle,
+		});
+		this.boundHandlers.push({
+			target: this.testEventsContainer,
+			type: "click",
+			listener: handleSummaryClick,
+		});
+	}
+
+	ensurePanelUrl(panel) {
+		if (!(panel instanceof Element)) {
+			return null;
+		}
+
+		if (panel.dataset.detailsUrl) {
+			return panel.dataset.detailsUrl;
+		}
+
+		const hxUrl = panel.getAttribute("hx-get");
+		if (!hxUrl) {
+			return null;
+		}
+
+		panel.dataset.detailsUrl = hxUrl;
+		panel.removeAttribute("hx-get");
+		panel.removeAttribute("hx-trigger");
+		return hxUrl;
+	}
+
+	prepareEventDetailPanels(nodes) {
+		const panels = [];
+		nodes.forEach((node) => {
+			if (!(node instanceof Element)) {
+				return;
+			}
+			if (node.matches(".event__details")) {
+				panels.push(node);
+			}
+			if (typeof node.querySelectorAll === "function") {
+				panels.push(...node.querySelectorAll(".event__details"));
+			}
+		});
+
+		panels.forEach((panel) => {
+			this.ensurePanelUrl(panel);
+		});
 	}
 
 	handleTokenClick() {
@@ -619,10 +743,29 @@ class SourceFormComponent {
 		const newEventCards = tempDiv.querySelectorAll(".event-card");
 		const newEventCount = newEventCards.length;
 
-		const markup = tempDiv.innerHTML;
-		if (markup.trim().length > 0) {
-			this.testEventsContainer.insertAdjacentHTML("beforeend", markup);
+		const insertedNodes = [];
+		const hasMarkup = tempDiv.innerHTML.trim().length > 0;
+		if (hasMarkup) {
+			const fragment = document.createDocumentFragment();
+			while (tempDiv.firstChild) {
+				const node = tempDiv.firstChild;
+				insertedNodes.push(node);
+				fragment.appendChild(node);
+			}
+			this.testEventsContainer.appendChild(fragment);
 			this.invalidateEventCardCache();
+		}
+
+		if (window.htmx && typeof window.htmx.process === "function" && insertedNodes.length > 0) {
+			insertedNodes.forEach((node) => {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					window.htmx.process(node);
+				}
+			});
+		}
+
+		if (insertedNodes.length > 0) {
+			this.prepareEventDetailPanels(insertedNodes);
 		}
 
 		if (scriptDefinitions.length > 0) {

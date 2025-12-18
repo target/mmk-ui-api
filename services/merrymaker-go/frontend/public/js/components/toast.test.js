@@ -2,8 +2,8 @@
  * Tests for Toast Component
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { showToast, removeToast } from "./toast.js";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { removeToast, showToast } from "./toast.js";
 
 describe("Toast Component", () => {
 	let container;

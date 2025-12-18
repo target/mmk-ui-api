@@ -38,8 +38,8 @@
  */
 
 import { h, qs } from "../core/dom.js";
-import { Lifecycle } from "../core/lifecycle.js";
 import { Events } from "../core/events.js";
+import { Lifecycle } from "../core/lifecycle.js";
 
 /**
  * Modal class for creating and managing modal dialogs

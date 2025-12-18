@@ -318,7 +318,7 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 		Status:     model.JobStatusRunning,
 		Payload:    payloadBytes,
 		RetryCount: 2,
-		MaxRetries: 5,
+		MaxRetries: 3,
 		Priority:   10,
 		SiteID:     &payload.SiteID,
 	}
@@ -367,9 +367,57 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 	assert.Equal(t, notify.SeverityCritical, evt.Severity)
 	assert.Equal(t, "rules_runner", evt.Metadata["component"])
 	assert.Equal(t, "3", evt.Metadata["retry_count"])
-	assert.Equal(t, "5", evt.Metadata["max_retries"])
-	assert.Equal(t, "pending", evt.Metadata["status"])
+	assert.Equal(t, "3", evt.Metadata["max_retries"])
+	assert.Equal(t, "failed", evt.Metadata["status"])
 	assert.False(t, evt.IsTest)
+}
+
+func TestJobService_FailWithDetails_SkipsUntilRetriesExhausted(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockJobRepository(ctrl)
+
+	job := &model.Job{
+		ID:         "job-123",
+		Type:       model.JobTypeRules,
+		Status:     model.JobStatusRunning,
+		RetryCount: 0,
+		MaxRetries: 3,
+		Priority:   1,
+	}
+
+	repo.EXPECT().GetByID(gomock.Any(), job.ID).Return(job, nil)
+	repo.EXPECT().Fail(gomock.Any(), job.ID, "boom").Return(true, nil)
+
+	var notified bool
+	failureSvc := failurenotifier.NewService(failurenotifier.Options{
+		Sinks: []failurenotifier.SinkRegistration{
+			{
+				Name: "test",
+				Sink: notify.SinkFunc(func(ctx context.Context, payload notify.JobFailurePayload) error {
+					notified = true
+					return nil
+				}),
+			},
+		},
+	})
+
+	svc := MustNewJobService(JobServiceOptions{
+		Repo:            repo,
+		DefaultLease:    30 * time.Second,
+		FailureNotifier: failureSvc,
+		Notifier:        &stubJobNotifier{},
+	})
+
+	details := JobFailureDetails{
+		ErrorClass: "test_error",
+	}
+
+	failed, err := svc.FailWithDetails(context.Background(), job.ID, "boom", details)
+	require.NoError(t, err)
+	require.True(t, failed)
+	assert.False(t, notified, "notification should be deferred until retries are exhausted")
 }
 
 func TestJobService_GetByID(t *testing.T) {
