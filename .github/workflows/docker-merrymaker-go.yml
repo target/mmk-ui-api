@@ -7,7 +7,7 @@ on:
       - ".github/workflows/docker-*.yml"
   push:
     tags:
-      - "v*.*.*"
+      - "merrymaker-go-v*.*.*"
 
 permissions:
   contents: read
@@ -22,8 +22,8 @@ jobs:
     uses: ./.github/workflows/docker-build.yml
     secrets: inherit
     with:
-      image: target/merrymaker
-      tag_prefix: merrymaker-go-
+      image: target/merrymaker-go
+      tag_prefix: merrymaker-go
       context: services/merrymaker-go
       dockerfile: services/merrymaker-go/Dockerfile
       push: ${{ github.event_name == 'push' }}

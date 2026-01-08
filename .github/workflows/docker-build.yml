@@ -75,14 +75,37 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Compute release version
+        id: vars
+        shell: bash
+        run: |
+          is_release=false
+          version=""
+
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME}"
+            prefix="${{ inputs.tag_prefix }}"
+
+            if [[ -n "$prefix" && "$tag" == "$prefix"-v* ]]; then
+              version="${tag#"$prefix"-v}"
+              is_release=true
+            elif [[ -z "$prefix" && "$tag" == v* ]]; then
+              version="${tag#v}"
+              is_release=true
+            fi
+          fi
+
+          echo "is_release=$is_release" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.image }}
           tags: |
-            type=semver,pattern={{version}},prefix=${{ inputs.tag_prefix }}
-            type=sha,prefix=${{ inputs.tag_prefix }}
+            type=raw,value=${{ steps.vars.outputs.version }},enable=${{ steps.vars.outputs.is_release == 'true' }}
+            type=sha,prefix=sha-
 
       - name: Build${{ inputs.push && ' & push' || '' }}
         uses: docker/build-push-action@v6
@@ -94,7 +117,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ steps.meta.outputs.version || github.sha }}
+            VERSION=${{ steps.vars.outputs.version || github.sha }}
             VCS_REF=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
