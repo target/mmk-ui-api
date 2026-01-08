@@ -4,6 +4,7 @@
 	width: 100%;
 	border-collapse: collapse;
 	font-size: var(--font-size-sm);
+	overflow-x: auto;
 }
 .table th {
 	padding: var(--space-3) var(--space-4);
@@ -12,11 +13,34 @@
 	color: var(--color-text-secondary);
 	border-bottom: var(--border-width) solid var(--color-border);
 	background-color: var(--color-background);
+	white-space: nowrap;
 }
 .table td {
 	padding: var(--space-3) var(--space-4);
 	border-bottom: var(--border-width) solid var(--color-border);
 	vertical-align: middle;
+}
+
+/* Responsive: reduce padding and font size on tablets */
+@media (min-width: 641px) and (max-width: 1023px) {
+	.table {
+		font-size: calc(var(--font-size-sm) - 1px);
+	}
+	.table th,
+	.table td {
+		padding: var(--space-2) var(--space-3);
+	}
+}
+
+/* Responsive: further reduce on mobile */
+@media (max-width: 640px) {
+	.table {
+		font-size: calc(var(--font-size-sm) - 2px);
+	}
+	.table th,
+	.table td {
+		padding: var(--space-2) var(--space-2);
+	}
 }
 .table tbody tr {
 	transition:

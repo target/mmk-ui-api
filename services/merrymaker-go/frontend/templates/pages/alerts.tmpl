@@ -109,6 +109,7 @@
             {{ if not .Error }}
             <div class="mt-3" id="alerts-table">
                 {{ if .Alerts }}
+                <div class="table-scroll-wrapper">
                 <table class="table w-full">
                     <thead>
                         <tr>
@@ -127,6 +128,7 @@
                     {{ end }}
                 </tbody>
             </table>
+            </div>
         {{ else }}
             <div class="empty-state">
                 <i data-lucide="bell-off" class="empty-state-icon"></i>

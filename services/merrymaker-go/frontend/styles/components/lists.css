@@ -127,6 +127,7 @@
 	align-items: center;
 	flex: 1;
 	min-width: 0;
+	max-width: 100%;
 	overflow: visible; /* Changed from hidden to allow domain-wrapper buttons */
 	position: relative; /* For absolute positioned tooltips */
 }
@@ -142,6 +143,21 @@
 .alert-item-primary.has-domain-actions {
 	overflow: visible;
 	position: relative;
+}
+
+/* Responsive: constrain primary column width on tablets to prevent overflow */
+@media (min-width: 641px) and (max-width: 1023px) {
+	.alert-item-primary {
+		max-width: 55%;
+	}
+}
+
+/* Responsive: further constrain on mobile */
+@media (max-width: 640px) {
+	.alert-item-primary {
+		max-width: 100%;
+		margin-bottom: var(--space-1);
+	}
 }
 
 .alert-item-secondary {
