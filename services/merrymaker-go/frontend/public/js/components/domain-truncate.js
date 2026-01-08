@@ -21,6 +21,12 @@
  */
 
 import { Lifecycle } from "../core/lifecycle.js";
+import { showToast } from "./toast.js";
+
+/**
+ * Duration to show copy feedback before resetting button state (ms)
+ */
+const COPY_FEEDBACK_DURATION = 2000;
 
 /**
  * Copy text to clipboard with fallback for older browsers
@@ -148,7 +154,6 @@ function createExpandButton(domainElement) {
 
 /**
  * Show visual feedback for successful copy
- * Uses CSS class only - no icon swap needed
  * @param {HTMLButtonElement} button
  */
 function showCopySuccess(button) {
@@ -156,9 +161,9 @@ function showCopySuccess(button) {
 	button.setAttribute("aria-label", "Copied!");
 	button.title = "Copied!";
 
-	// Announce to screen readers
+	// Show toast notification
 	const domainValue = button.getAttribute("data-domain-value");
-	announceToScreenReaders(`${domainValue} copied to clipboard`);
+	showToast(`${domainValue} copied to clipboard`, "success", { duration: COPY_FEEDBACK_DURATION });
 
 	setTimeout(() => {
 		button.classList.remove("is-copied");
@@ -173,6 +178,8 @@ function showCopySuccess(button) {
  */
 function showCopyError(button) {
 	button.classList.add("is-error");
+	showToast("Failed to copy domain", "error", { duration: COPY_FEEDBACK_DURATION });
+
 	setTimeout(() => {
 		button.classList.remove("is-error");
 	}, COPY_FEEDBACK_DURATION);
@@ -223,20 +230,31 @@ function initDomainTruncate(container = document) {
 	const elements = container.querySelectorAll("[data-domain-truncate]");
 	elements.forEach(initDomainElement);
 
-	// Re-render Lucide icons after adding new buttons
-	try {
-		if (window.lucide?.createIcons) {
-			window.lucide.createIcons({ icons: window.lucide.icons });
+	// Re-render Lucide icons after adding new buttons - do this AFTER a short delay
+	// to allow DOM to settle, preventing Lucide from stripping dynamically added elements
+	requestAnimationFrame(() => {
+		try {
+			if (window.lucide?.createIcons) {
+				window.lucide.createIcons({ icons: window.lucide.icons });
+			}
+		} catch (_) {
+			/* noop */
 		}
-	} catch (_) {
-		/* noop */
-	}
+	});
 }
 
 // Add single delegated listener for all domain buttons
 document.addEventListener("click", handleDomainButtonClick, true);
 
-// Register with lifecycle system for htmx content swaps
+// Direct HTMX afterSwap handler - ensure domain truncate init runs before Lucide icons render
+if (typeof window !== "undefined" && window.htmx) {
+	document.addEventListener("htmx:afterSettle", (event) => {
+		// Re-initialize domain truncate on the swapped element
+		initDomainTruncate(event.detail.target);
+	});
+}
+
+// Register with lifecycle system as fallback
 Lifecycle.register(
 	"domain-truncate",
 	(element) => {
