@@ -13,7 +13,8 @@ import (
 // If the key is a hex string, it decodes it. Otherwise, it hashes the key to get a 32-byte key.
 // Returns a noop encryptor if the key is empty or invalid (with warning log).
 //
-//nolint:ireturn // Returning interface is intentional for encryptor abstraction
+
+//nolint:ireturn // return interface to allow noop vs AES-GCM implementations
 func CreateEncryptor(key string, logger *slog.Logger) cryptoutil.Encryptor {
 	if key == "" {
 		if logger != nil {

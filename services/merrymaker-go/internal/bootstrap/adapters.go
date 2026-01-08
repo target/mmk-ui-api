@@ -55,7 +55,7 @@ func RunRulesEngine(ctx context.Context, cfg RulesEngineConfig) error {
 	return runner.Run(ctx)
 }
 
-//nolint:ireturn // Returning Encryptor interface is required for runner injection.
+//nolint:ireturn // return interface to allow swapping encryptor implementations
 func resolveEncryptor(enc cryptoutil.Encryptor, logger *slog.Logger) cryptoutil.Encryptor {
 	if enc != nil {
 		return enc

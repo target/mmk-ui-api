@@ -102,7 +102,7 @@ func TestAlertOnceCacheRedis_ConcurrentAccess(t *testing.T) {
 	assert.Equal(t, numGoroutines-1, alreadySeenCount, "all other goroutines should see alert as already seen")
 
 	// Verify the key exists in Redis
-	exists, err := redisRepo.Exists(ctx, "rules:alertonce:site:site1:scope:test:key:concurrent-alert")
+	exists, err := redisRepo.Exists(ctx, "rules:alertonce:scope:test:key:concurrent-alert")
 	require.NoError(t, err)
 	assert.True(t, exists, "key should exist in Redis")
 }
@@ -173,7 +173,7 @@ func runStressTestIteration(
 			errors[index] = err
 
 			// For debugging, also test the direct Redis operation to see if it's working
-			redisKey := fmt.Sprintf("rules:alertonce:site:%s:scope:%s:key:%s", scope.SiteID, scope.Scope, dedupeKey)
+			redisKey := fmt.Sprintf("rules:alertonce:scope:%s:key:%s", scope.Scope, dedupeKey)
 			wasSet, redisErr := redisRepo.SetIfNotExists(ctx, redisKey+"_debug", []byte("1"), ttl)
 			redisResults[index] = wasSet
 			if redisErr != nil {

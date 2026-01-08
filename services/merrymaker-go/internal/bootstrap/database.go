@@ -73,7 +73,8 @@ func ConnectDB(cfg DatabaseConfig) (*sql.DB, error) {
 
 // ConnectRedis establishes a connection to Redis.
 //
-//nolint:ireturn // returning redis.UniversalClient lets us pick single, sentinel, or cluster clients at runtime.
+
+//nolint:ireturn // return interface because client type varies (cluster, sentinel, direct)
 func ConnectRedis(cfg DatabaseConfig) (redis.UniversalClient, error) {
 	var (
 		client   redis.UniversalClient
@@ -119,7 +120,7 @@ func ConnectRedis(cfg DatabaseConfig) (redis.UniversalClient, error) {
 	return client, nil
 }
 
-//nolint:ireturn // returning redis.UniversalClient keeps client selection flexible.
+//nolint:ireturn // return interface because client type varies (cluster, sentinel, direct)
 func newClusterClient(cfg config.RedisConfig) (redis.UniversalClient, string, error) {
 	addrs := normalizeAddrs(cfg.ClusterNodes)
 	password := cfg.Password
@@ -159,7 +160,7 @@ func newClusterClient(cfg config.RedisConfig) (redis.UniversalClient, string, er
 	return client, "cluster:" + strings.Join(addrs, ","), nil
 }
 
-//nolint:ireturn // returning redis.UniversalClient keeps client selection flexible.
+//nolint:ireturn // return interface because client type varies (cluster, sentinel, direct)
 func newSentinelClient(cfg config.RedisConfig) (redis.UniversalClient, string, error) {
 	if len(cfg.SentinelNodes) == 0 {
 		return nil, "", errors.New("redis sentinel configuration requires at least one sentinel node")
@@ -176,7 +177,7 @@ func newSentinelClient(cfg config.RedisConfig) (redis.UniversalClient, string, e
 	return client, "sentinel:" + cfg.SentinelMasterName, nil
 }
 
-//nolint:ireturn // returning redis.UniversalClient keeps client selection flexible.
+//nolint:ireturn // return interface because client type varies (cluster, sentinel, direct)
 func newDirectClient(cfg config.RedisConfig) (redis.UniversalClient, string, error) {
 	uri := strings.TrimSpace(cfg.URI)
 	if uri == "" {

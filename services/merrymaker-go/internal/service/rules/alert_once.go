@@ -14,6 +14,9 @@ import (
 
 const alertOnceLockStripeCount = 256
 
+// alertOnceScopeKeyPrefix is the Redis key prefix for alert-once deduplication.
+const alertOnceScopeKeyPrefix = "rules:alertonce:scope:"
+
 // alertOnceLockStripes provides striped synchronization across all AlertOnceCacheRedis instances
 // within the same process. This bounds memory usage while still preventing local race conditions.
 // Cross-process coordination continues to rely on Redis SET NX semantics.
@@ -83,7 +86,7 @@ func (a *AlertOnceCacheRedis) Seen(ctx context.Context, req AlertSeenRequest) (b
 	if k == "" {
 		return false, errors.New("dedupe key is required")
 	}
-	key := "rules:alertonce:site:" + req.Scope.SiteID + ":scope:" + req.Scope.Scope + ":key:" + k
+	key := alertOnceScopeKeyPrefix + req.Scope.Scope + ":key:" + k
 
 	// Synchronize access per key to prevent race conditions across instances in-process.
 	// We acquire the lock before any local or Redis checks to ensure exactly one goroutine
@@ -125,7 +128,7 @@ func (a *AlertOnceCacheRedis) Peek(ctx context.Context, req AlertSeenRequest) (b
 	if k == "" {
 		return false, errors.New("dedupe key is required")
 	}
-	key := "rules:alertonce:site:" + req.Scope.SiteID + ":scope:" + req.Scope.Scope + ":key:" + k
+	key := alertOnceScopeKeyPrefix + req.Scope.Scope + ":key:" + k
 
 	if a.localExists(key) {
 		return true, nil

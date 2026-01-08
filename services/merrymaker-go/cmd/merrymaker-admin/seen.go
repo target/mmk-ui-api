@@ -16,6 +16,8 @@ import (
 	"github.com/target/mmk-ui-api/internal/data/database"
 )
 
+const seenScopeKeyPrefix = "rules:seen:scope:"
+
 type deleteSeenDomainRequest struct {
 	Ctx     context.Context
 	DB      *sql.DB
@@ -111,30 +113,19 @@ func purgeSeenRedis(req *purgeSeenRedisRequest) error {
 }
 
 func buildSeenPatterns(opts clearOptions) []string {
-	base := "rules:seen:site:"
+	base := seenScopeKeyPrefix
 	switch {
 	case opts.All:
 		return []string{base + "*"}
-	case opts.SiteID == "":
+	case opts.Scope == "":
 		return nil
 	default:
-		pattern := base + opts.SiteID + ":scope:"
-		if opts.Scope == "" {
-			return []string{pattern + "*"}
-		}
-		pattern += opts.Scope + ":domain:"
+		pattern := base + opts.Scope + ":domain:"
 		if opts.Domain == "" {
 			return []string{pattern + "*"}
 		}
 		return []string{pattern + opts.Domain}
 	}
-}
-
-type querySeenDomainRequest struct {
-	Ctx     context.Context
-	DB      *sql.DB
-	Logger  *slog.Logger
-	Options *listOptions
 }
 
 type seenDomainRow struct {
@@ -144,6 +135,13 @@ type seenDomainRow struct {
 	HitCount    int
 	FirstSeenAt time.Time
 	LastSeenAt  time.Time
+}
+
+type querySeenDomainRequest struct {
+	Ctx     context.Context
+	DB      *sql.DB
+	Logger  *slog.Logger
+	Options *listOptions
 }
 
 type querySeenDomainResponse struct {
@@ -238,7 +236,6 @@ type inspectSeenRedisRequest struct {
 
 type redisEntry struct {
 	Key    string
-	SiteID string
 	Scope  string
 	Domain string
 	TTL    time.Duration
@@ -296,7 +293,7 @@ func (c *redisCollector) addKey(req *inspectSeenRedisRequest, key string) error 
 		return nil
 	}
 
-	siteID, scope, domain, err := parseSeenRedisKey(key)
+	scope, domain, err := parseSeenRedisKey(key)
 	if err != nil {
 		req.Logger.Warn("skipping redis key", "key", key, "error", err)
 		return nil
@@ -309,7 +306,6 @@ func (c *redisCollector) addKey(req *inspectSeenRedisRequest, key string) error 
 
 	c.entries = append(c.entries, redisEntry{
 		Key:    key,
-		SiteID: siteID,
 		Scope:  scope,
 		Domain: domain,
 		TTL:    ttl,
@@ -319,13 +315,10 @@ func (c *redisCollector) addKey(req *inspectSeenRedisRequest, key string) error 
 
 func (c *redisCollector) result() inspectSeenRedisResponse {
 	sort.Slice(c.entries, func(i, j int) bool {
-		if c.entries[i].SiteID == c.entries[j].SiteID {
-			if c.entries[i].Scope == c.entries[j].Scope {
-				return c.entries[i].Domain < c.entries[j].Domain
-			}
-			return c.entries[i].Scope < c.entries[j].Scope
+		if c.entries[i].Scope == c.entries[j].Scope {
+			return c.entries[i].Domain < c.entries[j].Domain
 		}
-		return c.entries[i].SiteID < c.entries[j].SiteID
+		return c.entries[i].Scope < c.entries[j].Scope
 	})
 
 	return inspectSeenRedisResponse{
@@ -335,15 +328,11 @@ func (c *redisCollector) result() inspectSeenRedisResponse {
 }
 
 func buildSeenQueryPatterns(opts *listOptions) []string {
-	if opts == nil || (!opts.All && opts.SiteID == "") {
+	if opts == nil || (!opts.All && opts.Scope == "") {
 		return nil
 	}
 
-	base := "rules:seen:site:"
-	sitePart := "*"
-	if opts.SiteID != "" {
-		sitePart = opts.SiteID
-	}
+	base := seenScopeKeyPrefix
 	scopePart := "*"
 	if opts.Scope != "" {
 		scopePart = opts.Scope
@@ -353,23 +342,24 @@ func buildSeenQueryPatterns(opts *listOptions) []string {
 		domainPart = "*" + opts.Domain + "*"
 	}
 
-	return []string{base + sitePart + ":scope:" + scopePart + ":domain:" + domainPart}
+	return []string{base + scopePart + ":domain:" + domainPart}
 }
 
 var errUnexpectedSeenRedisKeyFormat = errors.New("unexpected seen redis key format")
 
-func parseSeenRedisKey(key string) (string, string, string, error) {
-	parts := strings.Split(key, ":")
-	if len(parts) < 8 {
-		return "", "", "", errUnexpectedSeenRedisKeyFormat
+// parseSeenRedisKey parses "rules:seen:scope:<scope>:domain:<domain>" into (scope, domain).
+// Uses SplitN to minimize allocations when the domain contains colons.
+func parseSeenRedisKey(key string) (string, string, error) {
+	// Expected format: rules:seen:scope:<scope>:domain:<domain>
+	// Split into at most 6 parts to preserve colons in domain
+	parts := strings.SplitN(key, ":", 6)
+	if len(parts) < 6 {
+		return "", "", errUnexpectedSeenRedisKeyFormat
 	}
-	if parts[0] != "rules" || parts[1] != "seen" || parts[2] != "site" || parts[4] != "scope" || parts[6] != "domain" {
-		return "", "", "", errUnexpectedSeenRedisKeyFormat
+	if parts[0] != "rules" || parts[1] != "seen" || parts[2] != "scope" || parts[4] != "domain" {
+		return "", "", errUnexpectedSeenRedisKeyFormat
 	}
-	siteID := parts[3]
-	scope := parts[5]
-	domain := strings.Join(parts[7:], ":")
-	return siteID, scope, domain, nil
+	return parts[3], parts[5], nil
 }
 
 func printSeenDomainRows(resp querySeenDomainResponse, opts *listOptions) error {
@@ -508,15 +498,14 @@ func printRedisEntriesEmpty() error {
 
 func renderRedisEntriesTable(entries []redisEntry) error {
 	tw := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
-	if err := writeln(tw, "SITE ID\tSCOPE\tDOMAIN\tTTL\tKEY"); err != nil {
+	if err := writeln(tw, "SCOPE\tDOMAIN\tTTL\tKEY"); err != nil {
 		return fmt.Errorf("write redis entries header row: %w", err)
 	}
 
 	for _, entry := range entries {
 		if err := writef(
 			tw,
-			"%s\t%s\t%s\t%s\t%s\n",
-			entry.SiteID,
+			"%s\t%s\t%s\t%s\n",
 			entry.Scope,
 			entry.Domain,
 			formatRedisTTL(entry.TTL),

@@ -1096,7 +1096,7 @@ func shouldIncludeAlertOnceKey(req *alertOnceDeleteRequest, key string) bool {
 	if req.Options.Domain == "" {
 		return true
 	}
-	_, _, dedupe, err := parseAlertOnceRedisKey(key)
+	_, dedupe, err := parseAlertOnceRedisKey(key)
 	if err != nil {
 		if req.Logger != nil {
 			req.Logger.Warn("skipping alert-once key", "key", key, "error", err)
@@ -1196,20 +1196,20 @@ func parseAlertOnceClearFlags(args []string) (alertOnceClearOptions, error) {
 	fs.SetOutput(os.Stderr)
 
 	var opts alertOnceClearOptions
-	fs.StringVar(&opts.SiteID, "site-id", "", "Site ID to clear (required unless --all)")
+	fs.StringVar(&opts.SiteID, "site-id", "", "[Deprecated: Redis keys no longer include site_id]")
 	fs.StringVar(
 		&opts.Scope,
 		"scope",
 		"",
-		"Optional scope filter (requires --site-id unless --all)",
+		"Scope to clear (required unless --all)",
 	)
 	fs.StringVar(
 		&opts.Domain,
 		"domain",
 		"",
-		"Optional domain filter (requires --scope unless --all)",
+		"Optional domain/key filter",
 	)
-	fs.BoolVar(&opts.All, "all", false, "Clear alert-once keys for all sites")
+	fs.BoolVar(&opts.All, "all", false, "Clear alert-once keys for all scopes")
 	fs.BoolVar(&opts.DryRun, "dry-run", false, "Print actions without executing")
 	fs.BoolVar(&opts.Yes, "yes", false, "Skip confirmation prompt")
 
@@ -1230,14 +1230,19 @@ func parseListFlags(args []string) (listOptions, error) {
 	fs.SetOutput(os.Stderr)
 
 	var opts listOptions
-	fs.StringVar(&opts.SiteID, "site-id", "", "Filter by site ID (required unless --all)")
-	fs.StringVar(&opts.Scope, "scope", "", "Filter by scope")
+	fs.StringVar(
+		&opts.SiteID,
+		"site-id",
+		"",
+		"Filter by site ID (for DB queries; required unless --all or --redis-only)",
+	)
+	fs.StringVar(&opts.Scope, "scope", "", "Filter by scope (required for Redis queries unless --all)")
 	fs.StringVar(&opts.Domain, "domain", "", "Filter by domain substring (case-insensitive)")
 	fs.BoolVar(
 		&opts.All,
 		"all",
 		false,
-		"Include all sites (can be combined with --scope or --domain)",
+		"Include all entries (can be combined with --scope or --domain)",
 	)
 	fs.IntVar(&opts.Limit, "limit", 20, "Maximum rows/keys to display (0 for unlimited)")
 	fs.IntVar(&opts.Offset, "offset", 0, "Offset for database query results")
@@ -1760,16 +1765,13 @@ func validateClearOptions(opts clearOptions) error {
 
 func validateAlertOnceClearOptions(opts alertOnceClearOptions) error {
 	if opts.All {
-		if opts.SiteID != "" {
-			return errors.New("--all cannot be combined with --site-id")
+		if opts.Scope != "" {
+			return errors.New("--all cannot be combined with --scope")
 		}
 		return nil
 	}
-	if opts.SiteID == "" {
-		return errors.New("--site-id is required unless --all is provided")
-	}
-	if opts.Scope == "" && opts.Domain != "" {
-		return errors.New("--domain requires --scope to avoid clearing other scopes accidentally")
+	if opts.Scope == "" {
+		return errors.New("--scope is required unless --all is provided")
 	}
 	return nil
 }
@@ -1787,12 +1789,26 @@ func validateListOptions(opts *listOptions) error {
 	if opts.DBOnly && opts.RedisOnly {
 		return errors.New("--db-only and --redis-only cannot both be set")
 	}
+
+	// For --all queries, no site/scope filter required
 	if opts.All {
 		if opts.SiteID != "" {
 			return errors.New("--all cannot be combined with --site-id")
 		}
-	} else if opts.SiteID == "" {
-		return errors.New("--site-id is required unless --all is provided")
+		return nil
+	}
+
+	// For Redis-only queries, require --scope (Redis keys don't include site_id)
+	if opts.RedisOnly {
+		if opts.Scope == "" {
+			return errors.New("--scope is required for Redis queries (or use --all)")
+		}
+		return nil
+	}
+
+	// For DB queries (including combined DB+Redis), require --site-id
+	if opts.SiteID == "" {
+		return errors.New("--site-id is required for DB queries (or use --all or --redis-only with --scope)")
 	}
 	return nil
 }
@@ -1928,7 +1944,6 @@ type inspectAlertOnceRequest struct {
 
 type alertOnceEntry struct {
 	Key       string
-	SiteID    string
 	Scope     string
 	DedupeKey string
 	TTL       time.Duration
@@ -1990,7 +2005,7 @@ func (c *alertOnceCollector) addKey(req *inspectAlertOnceRequest, key string) er
 	if req == nil || req.Options == nil {
 		return nil
 	}
-	siteID, scope, dedupe, err := parseAlertOnceRedisKey(key)
+	scope, dedupe, err := parseAlertOnceRedisKey(key)
 	if err != nil {
 		if req.Logger != nil {
 			req.Logger.Warn("skipping alert-once key", "key", key, "error", err)
@@ -2016,7 +2031,6 @@ func (c *alertOnceCollector) addKey(req *inspectAlertOnceRequest, key string) er
 
 	c.entries = append(c.entries, alertOnceEntry{
 		Key:       key,
-		SiteID:    siteID,
 		Scope:     scope,
 		DedupeKey: dedupe,
 		TTL:       ttl,
@@ -2026,13 +2040,10 @@ func (c *alertOnceCollector) addKey(req *inspectAlertOnceRequest, key string) er
 
 func (c *alertOnceCollector) result() inspectAlertOnceResponse {
 	sort.Slice(c.entries, func(i, j int) bool {
-		if c.entries[i].SiteID == c.entries[j].SiteID {
-			if c.entries[i].Scope == c.entries[j].Scope {
-				return c.entries[i].DedupeKey < c.entries[j].DedupeKey
-			}
-			return c.entries[i].Scope < c.entries[j].Scope
+		if c.entries[i].Scope == c.entries[j].Scope {
+			return c.entries[i].DedupeKey < c.entries[j].DedupeKey
 		}
-		return c.entries[i].SiteID < c.entries[j].SiteID
+		return c.entries[i].Scope < c.entries[j].Scope
 	})
 	return inspectAlertOnceResponse{
 		Entries: c.entries,
@@ -2040,19 +2051,16 @@ func (c *alertOnceCollector) result() inspectAlertOnceResponse {
 	}
 }
 
+const alertOnceScopeKeyPrefix = "rules:alertonce:scope:"
+
 func buildAlertOncePatterns(opts *listOptions) []string {
 	if opts == nil {
 		return nil
 	}
-	if !opts.All && opts.SiteID == "" {
+	if !opts.All && opts.Scope == "" {
 		return nil
 	}
 
-	base := "rules:alertonce:site:"
-	sitePart := "*"
-	if opts.SiteID != "" {
-		sitePart = opts.SiteID
-	}
 	scopePart := "*"
 	if opts.Scope != "" {
 		scopePart = opts.Scope
@@ -2062,25 +2070,25 @@ func buildAlertOncePatterns(opts *listOptions) []string {
 		keyPart = "*" + opts.Domain + "*"
 	}
 
-	return []string{base + sitePart + ":scope:" + scopePart + ":key:" + keyPart}
+	return []string{alertOnceScopeKeyPrefix + scopePart + ":key:" + keyPart}
 }
 
 var errUnexpectedAlertOnceRedisKeyFormat = errors.New("unexpected alert-once redis key format")
 
-func parseAlertOnceRedisKey(key string) (string, string, string, error) {
-	parts := strings.Split(key, ":")
-	if len(parts) < 8 {
-		return "", "", "", errUnexpectedAlertOnceRedisKeyFormat
+// parseAlertOnceRedisKey parses "rules:alertonce:scope:<scope>:key:<dedupe>" into (scope, dedupe).
+// Uses SplitN to minimize allocations when the dedupe key contains colons.
+func parseAlertOnceRedisKey(key string) (string, string, error) {
+	// Expected format: rules:alertonce:scope:<scope>:key:<dedupe>
+	// Split into at most 6 parts to preserve colons in dedupe key
+	parts := strings.SplitN(key, ":", 6)
+	if len(parts) < 6 {
+		return "", "", errUnexpectedAlertOnceRedisKeyFormat
 	}
-	if parts[0] != "rules" || parts[1] != "alertonce" || parts[2] != "site" ||
-		parts[4] != "scope" ||
-		parts[6] != "key" {
-		return "", "", "", errUnexpectedAlertOnceRedisKeyFormat
+	if parts[0] != "rules" || parts[1] != "alertonce" || parts[2] != "scope" ||
+		parts[4] != "key" {
+		return "", "", errUnexpectedAlertOnceRedisKeyFormat
 	}
-	siteID := parts[3]
-	scope := parts[5]
-	dedupe := strings.Join(parts[7:], ":")
-	return siteID, scope, dedupe, nil
+	return parts[3], parts[5], nil
 }
 
 func splitAlertOnceDedupeKey(dedupe string) (string, string) {
@@ -2160,7 +2168,7 @@ func printNoAlertOnceEntries() error {
 
 func renderAlertOnceTable(entries []alertOnceEntry) error {
 	tw := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
-	if err := writeln(tw, "SITE ID\tSCOPE\tRULE\tSUBJECT\tTTL\tKEY"); err != nil {
+	if err := writeln(tw, "SCOPE\tRULE\tSUBJECT\tTTL\tKEY"); err != nil {
 		return fmt.Errorf("write alert-once header row: %w", err)
 	}
 
@@ -2171,8 +2179,7 @@ func renderAlertOnceTable(entries []alertOnceEntry) error {
 		}
 		if err := writef(
 			tw,
-			"%s\t%s\t%s\t%s\t%s\t%s\n",
-			entry.SiteID,
+			"%s\t%s\t%s\t%s\t%s\n",
 			entry.Scope,
 			prettyAlertOnceRule(rule),
 			subject,

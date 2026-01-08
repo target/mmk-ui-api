@@ -45,9 +45,9 @@ func buildUnknownEvaluator(
 	return &UnknownDomainEvaluator{Caches: caches, Alerter: alerter, AlertTTL: time.Minute}
 }
 
-// redis key helper (mirrors seenKeyRedis).
-func seenRedisKey(siteID, scope, domain string) string {
-	return "rules:seen:site:" + siteID + ":scope:" + scope + ":domain:" + strings.ToLower(strings.TrimSpace(domain))
+// seenRedisKey builds a Redis key for seen domains (mirrors seenKeyRedis in typed_caches.go).
+func seenRedisKey(scope, domain string) string {
+	return "rules:seen:scope:" + scope + ":domain:" + strings.ToLower(strings.TrimSpace(domain))
 }
 
 // assert alert exists for site and rule type.
@@ -100,7 +100,7 @@ func TestUnknownDomain_Integration_FirstTimeCreatesAlertAndPersists(t *testing.T
 		assert.Equal(t, 1, sd.HitCount)
 
 		// Assert: redis key exists
-		exists, err := redisRepo.Exists(ctx, seenRedisKey(site.ID, "default", "new-domain.test"))
+		exists, err := redisRepo.Exists(ctx, seenRedisKey("default", "new-domain.test"))
 		require.NoError(t, err)
 		assert.True(t, exists)
 	})
@@ -118,7 +118,7 @@ func TestUnknownDomain_Integration_NoAlertWhenSeenInRedis(t *testing.T) {
 		eval := buildUnknownEvaluator(t, redisRepo, seenRepo, alertRepo)
 
 		// Prepopulate redis seen key
-		key := seenRedisKey(site.ID, "default", "cached-domain.test")
+		key := seenRedisKey("default", "cached-domain.test")
 		require.NoError(t, redisRepo.Set(ctx, key, []byte("1"), DefaultCacheTTL().SeenDomainsRedis))
 
 		alerted, err := eval.Evaluate(
@@ -165,7 +165,7 @@ func TestUnknownDomain_Integration_NoAlertWhenSeenInDBAndCachesWarm(t *testing.T
 		require.NoError(t, err)
 
 		// Ensure redis does not have it yet
-		exists, err := redisRepo.Exists(ctx, seenRedisKey(site.ID, "default", "db-seen.test"))
+		exists, err := redisRepo.Exists(ctx, seenRedisKey("default", "db-seen.test"))
 		require.NoError(t, err)
 		assert.False(t, exists)
 
@@ -182,7 +182,7 @@ func TestUnknownDomain_Integration_NoAlertWhenSeenInDBAndCachesWarm(t *testing.T
 		assert.False(t, alerted)
 
 		// Redis should be warmed now
-		exists2, err := redisRepo.Exists(ctx, seenRedisKey(site.ID, "default", "db-seen.test"))
+		exists2, err := redisRepo.Exists(ctx, seenRedisKey("default", "db-seen.test"))
 		require.NoError(t, err)
 		assert.True(t, exists2)
 
@@ -243,8 +243,8 @@ func TestUnknownDomain_Integration_ScopeIsolation(t *testing.T) {
 		assert.NotEqual(t, a.ID, b.ID)
 
 		// Verify distinct redis keys exist
-		ex1, _ := redisRepo.Exists(ctx, seenRedisKey(site.ID, "default", "scopey.test"))
-		ex2, _ := redisRepo.Exists(ctx, seenRedisKey(site.ID, "blue", "scopey.test"))
+		ex1, _ := redisRepo.Exists(ctx, seenRedisKey("default", "scopey.test"))
+		ex2, _ := redisRepo.Exists(ctx, seenRedisKey("blue", "scopey.test"))
 		assert.True(t, ex1)
 		assert.True(t, ex2)
 	})

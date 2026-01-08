@@ -114,7 +114,7 @@ func TestAlertOnceCacheRedis_Seen(t *testing.T) {
 		cache := NewAlertOnceCache(local, mockRedis)
 
 		// Expect normalized key (lowercase, trimmed)
-		expectedKey := "rules:alertonce:site:site1:scope:test:key:alert123"
+		expectedKey := "rules:alertonce:scope:test:key:alert123"
 		mockRedis.EXPECT().SetIfNotExists(ctx, expectedKey, []byte("1"), ttl).Return(true, nil)
 
 		// Use mixed case and whitespace
@@ -132,7 +132,7 @@ func TestAlertOnceCacheRedis_Peek(t *testing.T) {
 	ctx := context.Background()
 	scope := ScopeKey{SiteID: "site1", Scope: "test"}
 	dedupeKey := "alert123"
-	key := "rules:alertonce:site:site1:scope:test:key:alert123"
+	key := "rules:alertonce:scope:test:key:alert123"
 
 	t.Run("local cache hit bypasses redis", func(t *testing.T) {
 		mockRedis := core.NewMockCacheRepository(ctrl)
