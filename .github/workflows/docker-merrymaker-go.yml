@@ -20,6 +20,7 @@ concurrency:
 jobs:
   docker:
     uses: ./.github/workflows/docker-build.yml
+    secrets: inherit
     with:
       image: target/merrymaker
       tag_prefix: merrymaker-go-
