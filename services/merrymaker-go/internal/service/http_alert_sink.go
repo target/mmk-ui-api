@@ -1,14 +1,19 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	jmespath "github.com/jmespath-community/go-jmespath"
 	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
@@ -119,7 +124,10 @@ func (s *AlertSinkService) ResolveSecrets(
 }
 
 // ValidateSinkConfiguration validates JMESPath (if present), resolves secrets, and validates the URI.
-func (s *AlertSinkService) ValidateSinkConfiguration(ctx context.Context, sink model.HTTPAlertSink) error {
+func (s *AlertSinkService) ValidateSinkConfiguration(
+	ctx context.Context,
+	sink model.HTTPAlertSink,
+) error {
 	if sink.Body != nil && strings.TrimSpace(*sink.Body) != "" {
 		if err := s.jems.Validate(*sink.Body); err != nil {
 			return fmt.Errorf("invalid body JMESPath: %w", err)
@@ -173,6 +181,19 @@ func (s *AlertSinkService) ProcessSinkConfiguration(
 	bodyBytes, err := s.deriveBody(resolved.Body, payload)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(bodyBytes) > 0 {
+		hasCT := false
+		for k := range headers {
+			if strings.EqualFold(k, "Content-Type") {
+				hasCT = true
+				break
+			}
+		}
+		if !hasCT {
+			headers["Content-Type"] = "application/json"
+		}
 	}
 
 	okStatus := resolved.OkStatus
@@ -340,6 +361,243 @@ func (s *AlertSinkService) ScheduleAlert(
 	return s.jobs.Create(ctx, req)
 }
 
+// TestFireResult contains the outcome of a test fire attempt.
+type TestFireResult struct {
+	Success      bool                        `json:"success"`
+	StatusCode   int                         `json:"status_code"`
+	ExpectedCode int                         `json:"expected_code"`
+	DurationMs   int64                       `json:"duration_ms"`
+	Request      AlertDeliveryRequestSummary `json:"request"`
+	Response     *AlertDeliveryResponse      `json:"response,omitempty"`
+	ErrorMessage string                      `json:"error_message,omitempty"`
+}
+
+// TestFire sends a sample alert payload to the sink and returns the result synchronously.
+// This allows users to validate their sink configuration (URI, headers, secrets, JMESPath)
+// without creating a real alert or queuing a job.
+func (s *AlertSinkService) TestFire(
+	ctx context.Context,
+	sink *model.HTTPAlertSink,
+	httpClient HTTPDoer,
+) (*TestFireResult, error) {
+	if err := validateTestFireInputs(sink, httpClient); err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	result := initTestFireResult()
+
+	// Process sink configuration (resolve secrets, build URL/body/headers)
+	preq, err := s.ProcessSinkConfiguration(ctx, *sink, buildTestFireSamplePayload())
+	if err != nil {
+		result.ErrorMessage = fmt.Sprintf("failed to prepare request: %v", err)
+		result.DurationMs = time.Since(start).Milliseconds()
+		return result, nil
+	}
+
+	// Use the prepared request's OkStatus as the single source of truth for expectations
+	result.ExpectedCode = preq.OkStatus
+	if result.ExpectedCode == 0 {
+		result.ExpectedCode = 200
+	}
+
+	// Record request details (with secrets redacted)
+	recordRedactedRequest(result, preq)
+
+	// Send the HTTP request and finalize result
+	response, reqErr := s.sendTestFireRequest(ctx, httpClient, preq)
+	result.DurationMs = time.Since(start).Milliseconds()
+	finalizeTestFireResult(result, response, reqErr)
+
+	return result, nil
+}
+
+func validateTestFireInputs(sink *model.HTTPAlertSink, httpClient HTTPDoer) error {
+	if sink == nil {
+		return errors.New("sink is required")
+	}
+	if httpClient == nil {
+		return errors.New("http client is required")
+	}
+	return nil
+}
+
+func initTestFireResult() *TestFireResult {
+	return &TestFireResult{}
+}
+
+func recordRedactedRequest(result *TestFireResult, preq *PreparedHTTPRequest) {
+	redactor := NewSecretRedactor(preq.Secrets)
+	result.Request = AlertDeliveryRequestSummary{
+		Method:   preq.Method,
+		URL:      redactor.RedactString(preq.URL),
+		Headers:  redactor.RedactHeaders(preq.Headers),
+		OkStatus: preq.OkStatus,
+	}
+	if len(preq.Body) > 0 {
+		bodyStr := redactor.RedactString(string(preq.Body))
+		if len(bodyStr) > maxTestFireBodyBytes {
+			bodyStr = bodyStr[:maxTestFireBodyBytes]
+			result.Request.BodyTruncated = true
+		}
+		result.Request.Body = bodyStr
+	}
+}
+
+func finalizeTestFireResult(result *TestFireResult, response *AlertDeliveryResponse, reqErr error) {
+	if response != nil {
+		result.Response = response
+		result.StatusCode = response.StatusCode
+	}
+	if reqErr != nil {
+		result.ErrorMessage = reqErr.Error()
+		return
+	}
+	if result.StatusCode == result.ExpectedCode {
+		result.Success = true
+	} else {
+		result.ErrorMessage = fmt.Sprintf("unexpected status: got %d, want %d", result.StatusCode, result.ExpectedCode)
+	}
+}
+
+// HTTPDoer abstracts http.Client for testing.
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+const maxTestFireBodyBytes = 4 * 1024 // 4KB limit for request/response bodies
+
+// sendTestFireRequest executes the HTTP request for test fire.
+func (s *AlertSinkService) sendTestFireRequest(
+	ctx context.Context,
+	client HTTPDoer,
+	preq *PreparedHTTPRequest,
+) (*AlertDeliveryResponse, error) {
+	var body io.Reader
+	if len(preq.Body) > 0 {
+		body = bytes.NewReader(preq.Body)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, preq.Method, preq.URL, body)
+	if err != nil {
+		return nil, fmt.Errorf("build request: %w", err)
+	}
+
+	for k, v := range preq.Headers {
+		req.Header.Set(k, v)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("send request: %w", err)
+	}
+
+	// Read response body (with size limit)
+	respBody, truncated, readErr := readLimitedBody(resp.Body, maxTestFireBodyBytes)
+	closeErr := resp.Body.Close()
+	if readErr != nil {
+		return nil, fmt.Errorf("read response: %w", readErr)
+	}
+
+	response := &AlertDeliveryResponse{
+		StatusCode:    resp.StatusCode,
+		Headers:       flattenHeaders(resp.Header),
+		Body:          string(respBody),
+		BodyTruncated: truncated,
+	}
+
+	if closeErr != nil {
+		return response, fmt.Errorf("close response body: %w", closeErr)
+	}
+
+	return response, nil
+}
+
+// readLimitedBody reads up to maxBytes from the reader, returning whether it was truncated.
+func readLimitedBody(r io.Reader, maxBytes int) ([]byte, bool, error) {
+	buf, err := io.ReadAll(io.LimitReader(r, int64(maxBytes+1)))
+	if err != nil {
+		return nil, false, err
+	}
+	truncated := len(buf) > maxBytes
+	if truncated {
+		buf = buf[:maxBytes]
+	}
+	return buf, truncated, nil
+}
+
+// flattenHeaders converts http.Header to a simple map (first value only).
+func flattenHeaders(h http.Header) map[string]string {
+	if len(h) == 0 {
+		return nil
+	}
+	out := make(map[string]string, len(h))
+	for k, v := range h {
+		if len(v) > 0 {
+			out[k] = v[0]
+		}
+	}
+	return out
+}
+
+// buildTestFireSamplePayload generates a sample alert payload for test firing.
+func buildTestFireSamplePayload() json.RawMessage {
+	sampleTime := time.Now().UTC()
+	alertID := uuid.NewString()
+	eventID := uuid.NewString()
+	ruleID := uuid.NewString()
+
+	eventContext := map[string]any{
+		"domain":      "test-domain.example.com",
+		"host":        "test-domain.example.com",
+		"scope":       "test",
+		"site_id":     "site-test",
+		"job_id":      "job-test-fire",
+		"event_id":    eventID,
+		"request_url": "https://test-domain.example.com/test.js",
+		"page_url":    "https://your-site.example.com/page",
+		"referrer":    "https://referrer.example.com",
+		"user_agent":  "MerrymakerTestFire/1.0",
+	}
+
+	sample := map[string]any{
+		"id":            alertID,
+		"alert_id":      alertID,
+		"site_id":       "site-test",
+		"rule_id":       ruleID,
+		"rule_type":     "unknown_domain",
+		"severity":      "medium",
+		"title":         "[TEST] Sample alert for sink validation",
+		"description":   "This is a test alert sent to validate the HTTP alert sink configuration.",
+		"event_context": eventContext,
+		"events": []map[string]any{
+			{
+				"context":     eventContext,
+				"description": "This is a test alert sent to validate the HTTP alert sink configuration.",
+				"rule_type":   "unknown_domain",
+				"site":        nil,
+				"timestamp":   sampleTime,
+			},
+		},
+		"hits":            1,
+		"source":          "manual",
+		"test":            true,
+		"metadata":        map[string]any{"test_fire": true},
+		"delivery_status": "pending",
+		"fired_at":        sampleTime,
+		"timestamp":       sampleTime,
+		"resolved_at":     nil,
+		"resolved_by":     nil,
+		"created_at":      sampleTime,
+	}
+	b, err := json.Marshal(sample)
+	if err != nil {
+		// Fallback to empty object on marshal error (should never happen with static data)
+		return json.RawMessage(`{}`)
+	}
+	return b
+}
+
 func ptrVal(p *string) string {
 	if p == nil {
 		return ""
@@ -407,7 +665,10 @@ func NewHTTPAlertSinkService(opts HTTPAlertSinkServiceOptions) (*HTTPAlertSinkSe
 func MustNewHTTPAlertSinkService(opts HTTPAlertSinkServiceOptions) *HTTPAlertSinkService {
 	service, err := NewHTTPAlertSinkService(opts)
 	if err != nil {
-		panic(err) //nolint:forbidigo // Must constructor fails fast when dependencies are invalid during startup
+		//nolint:forbidigo // Must constructor requires fail-fast on initialization errors
+		panic(
+			err,
+		)
 	}
 	return service
 }
@@ -435,7 +696,10 @@ func (s *HTTPAlertSinkService) Create(
 }
 
 // GetByID retrieves an HTTP alert sink by its ID.
-func (s *HTTPAlertSinkService) GetByID(ctx context.Context, id string) (*model.HTTPAlertSink, error) {
+func (s *HTTPAlertSinkService) GetByID(
+	ctx context.Context,
+	id string,
+) (*model.HTTPAlertSink, error) {
 	sink, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get HTTP alert sink by id: %w", err)
@@ -444,7 +708,10 @@ func (s *HTTPAlertSinkService) GetByID(ctx context.Context, id string) (*model.H
 }
 
 // GetByName retrieves an HTTP alert sink by its name.
-func (s *HTTPAlertSinkService) GetByName(ctx context.Context, name string) (*model.HTTPAlertSink, error) {
+func (s *HTTPAlertSinkService) GetByName(
+	ctx context.Context,
+	name string,
+) (*model.HTTPAlertSink, error) {
 	sink, err := s.repo.GetByName(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("get HTTP alert sink by name: %w", err)
@@ -453,7 +720,10 @@ func (s *HTTPAlertSinkService) GetByName(ctx context.Context, name string) (*mod
 }
 
 // List retrieves a list of HTTP alert sinks with pagination.
-func (s *HTTPAlertSinkService) List(ctx context.Context, limit, offset int) ([]*model.HTTPAlertSink, error) {
+func (s *HTTPAlertSinkService) List(
+	ctx context.Context,
+	limit, offset int,
+) ([]*model.HTTPAlertSink, error) {
 	sinks, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("list HTTP alert sinks: %w", err)

@@ -18,6 +18,11 @@ import (
 
 const errMsgFixBelow = "Please fix the errors below."
 
+// HTTPDoer is the minimal HTTP client contract required by UI handlers.
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // AlertSinksService is a minimal interface for UI needs.
 type AlertSinksService interface {
 	List(ctx context.Context, limit, offset int) ([]*model.HTTPAlertSink, error)
@@ -25,6 +30,15 @@ type AlertSinksService interface {
 	Create(ctx context.Context, req *model.CreateHTTPAlertSinkRequest) (*model.HTTPAlertSink, error)
 	Update(ctx context.Context, id string, req *model.UpdateHTTPAlertSinkRequest) (*model.HTTPAlertSink, error)
 	Delete(ctx context.Context, id string) (bool, error)
+}
+
+// AlertSinkTestFireService provides the ability to test fire an alert sink.
+type AlertSinkTestFireService interface {
+	TestFire(
+		ctx context.Context,
+		sink *model.HTTPAlertSink,
+		httpClient HTTPDoer,
+	) (*service.TestFireResult, error)
 }
 
 // AlertsService is a minimal interface for UI needs.
@@ -38,14 +52,15 @@ type AlertsService interface {
 
 // Compile-time interface assertions to ensure concrete services satisfy their UI interfaces.
 var (
-	_ AlertsService           = (*service.AlertService)(nil)
-	_ AlertSinksService       = (*service.HTTPAlertSinkService)(nil)
-	_ SecretsService          = (*service.SecretService)(nil)
-	_ JobReadService          = (*service.JobService)(nil)
-	_ EventsService           = (*service.EventService)(nil)
-	_ DomainAllowlistsService = (*service.DomainAllowlistService)(nil)
-	_ SourcesService          = (*service.SourceService)(nil)
-	_ SitesService            = (*service.SiteService)(nil)
+	_ AlertsService            = (*service.AlertService)(nil)
+	_ AlertSinksService        = (*service.HTTPAlertSinkService)(nil)
+	_ AlertSinkTestFireService = (*alertSinkTestFireAdapter)(nil)
+	_ SecretsService           = (*service.SecretService)(nil)
+	_ JobReadService           = (*service.JobService)(nil)
+	_ EventsService            = (*service.EventService)(nil)
+	_ DomainAllowlistsService  = (*service.DomainAllowlistService)(nil)
+	_ SourcesService           = (*service.SourceService)(nil)
+	_ SitesService             = (*service.SiteService)(nil)
 )
 
 // SecretsService is a minimal interface for UI needs.
@@ -120,6 +135,8 @@ type DomainAllowlistsService interface {
 type UIHandlers struct {
 	T            *TemplateRenderer
 	Sinks        AlertSinksService
+	SinkTestFire AlertSinkTestFireService // Optional: for test firing alert sinks
+	HTTPClient   *http.Client             // Optional: reused HTTP client for outbound calls
 	AlertsSvc    AlertsService
 	Jobs         JobReadService
 	JobResults   core.JobResultRepository

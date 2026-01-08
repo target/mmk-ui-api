@@ -1,7 +1,29 @@
 {{define "alert-sink-view-content"}}
 <div class="alert-detail-section">
     {{with .AlertSink}}
-    <h2>{{.Name}}</h2>
+    <div class="row-between mb-4">
+        <h2 class="mb-0">{{.Name}}</h2>
+        <div class="btn-group">
+            <a class="btn btn-secondary"
+               href="/alert-sinks/{{.ID}}/edit"
+               hx-get="/alert-sinks/{{.ID}}/edit"
+               hx-target="#main-content"
+               hx-swap="innerHTML"
+               hx-push-url="true">Edit</a>
+            <button type="button"
+                    class="btn btn-primary"
+                    hx-post="/alert-sinks/{{.ID}}/test"
+                    hx-target="#test-fire-container"
+                    hx-swap="innerHTML"
+                    hx-indicator="#test-fire-loading">
+                <i data-lucide="zap" style="width:16px;height:16px;margin-right:var(--space-1)"></i>
+                Test Fire
+            </button>
+            <span id="test-fire-loading" class="htmx-indicator ml-2">
+                <span class="spinner-small"></span> Testing...
+            </span>
+        </div>
+    </div>
     <div class="card">
         <div class="card-body">
             <dl class="data-list data-list--stacked">
@@ -28,6 +50,8 @@
             </dl>
         </div>
     </div>
+    <!-- Test Fire Result Container -->
+    <div id="test-fire-container"></div>
 {{else}}
     <p>Alert sink not found.</p>
     {{end}}

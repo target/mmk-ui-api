@@ -23,6 +23,8 @@ type RouterServices struct {
 	Events         *service.EventService
 	Secrets        *service.SecretService
 	HTTPAlertSinks *service.HTTPAlertSinkService
+	AlertSinkSvc   *service.AlertSinkService // For test fire functionality
+	HTTPClient     *http.Client
 	Alerts         AlertsService
 	Sources        *service.SourceService
 	Sites          *service.SiteService
@@ -196,9 +198,20 @@ func setupUIHandlers(services RouterServices) *UIHandlers {
 		return nil
 	}
 
+	if services.HTTPClient == nil {
+		services.HTTPClient = newDefaultTestFireHTTPClient()
+	}
+
+	var sinkTestFire AlertSinkTestFireService
+	if services.AlertSinkSvc != nil {
+		sinkTestFire = alertSinkTestFireAdapter{Svc: services.AlertSinkSvc}
+	}
+
 	return &UIHandlers{
 		T:            tr,
 		Sinks:        services.HTTPAlertSinks,
+		SinkTestFire: sinkTestFire,
+		HTTPClient:   services.HTTPClient,
 		AlertsSvc:    services.Alerts,
 		Jobs:         services.Jobs,
 		JobResults:   services.JobResults,
@@ -540,6 +553,7 @@ func registerUIAlertSinkRoutes(mux *http.ServeMux, h *UIHandlers, cfg uiRouteCon
 	mux.Handle("POST /alert-sinks", wrapAdmin(http.HandlerFunc(h.AlertSinkCreate)))
 	mux.Handle("POST /alert-sinks/{id}", wrapAdmin(http.HandlerFunc(h.AlertSinkUpdate)))
 	mux.Handle("POST /alert-sinks/{id}/delete", wrapAdmin(http.HandlerFunc(h.AlertSinkDelete)))
+	mux.Handle("POST /alert-sinks/{id}/test", wrapAdmin(http.HandlerFunc(h.AlertSinkTestFire)))
 }
 
 // registerUISecretsRoutes wires Secrets UI (admin-only) pages.

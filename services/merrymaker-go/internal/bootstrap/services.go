@@ -31,6 +31,7 @@ type ServiceContainer struct {
 	Events          *service.EventService
 	Secrets         *service.SecretService
 	HTTPAlertSinks  *service.HTTPAlertSinkService
+	AlertSinkSvc    *service.AlertSinkService // For test fire and dispatch logic
 	Alerts          *service.AlertService
 	Sources         *service.SourceService
 	Sites           *service.SiteService
@@ -208,8 +209,9 @@ func newSecretService(repos *serviceRepositories, cfg *config.AppConfig, logger 
 }
 
 type alertingBundle struct {
-	httpSink *service.HTTPAlertSinkService
-	alert    *service.AlertService
+	httpSink     *service.HTTPAlertSinkService
+	alertSinkSvc *service.AlertSinkService
+	alert        *service.AlertService
 }
 
 func newAlertingServices(repos *serviceRepositories, logger *slog.Logger) alertingBundle {
@@ -239,8 +241,9 @@ func newAlertingServices(repos *serviceRepositories, logger *slog.Logger) alerti
 	})
 
 	return alertingBundle{
-		httpSink: httpSink,
-		alert:    alert,
+		httpSink:     httpSink,
+		alertSinkSvc: alertSinkSvc,
+		alert:        alert,
 	}
 }
 
@@ -383,6 +386,7 @@ func buildDomainServices(opts *DomainServicesOptions) ServiceContainer {
 		Events:          eventService,
 		Secrets:         secretService,
 		HTTPAlertSinks:  alerting.httpSink,
+		AlertSinkSvc:    alerting.alertSinkSvc,
 		Alerts:          alerting.alert,
 		Sources:         sourceService,
 		Sites:           siteService,

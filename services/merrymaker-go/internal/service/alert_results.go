@@ -94,13 +94,91 @@ func (r SecretRedactor) RedactString(s string) string {
 }
 
 // RedactHeaders applies redaction for each header value.
+// Additionally masks values for sensitive header keys (Authorization, API-Key, Token, etc.).
 func (r SecretRedactor) RedactHeaders(headers map[string]string) map[string]string {
 	if len(headers) == 0 {
 		return nil
 	}
 	out := make(map[string]string, len(headers))
 	for k, v := range headers {
-		out[k] = r.RedactString(v)
+		redacted := r.RedactString(v)
+		// Mask sensitive header values regardless of secret redaction
+		if isSensitiveHeader(k) {
+			out[k] = maskHeaderValue(redacted)
+		} else {
+			out[k] = redacted
+		}
 	}
 	return out
+}
+
+// isSensitiveHeader checks if a header key contains sensitive information.
+func isSensitiveHeader(key string) bool {
+	lower := strings.ToLower(key)
+	sensitiveKeys := []string{
+		"authorization",
+		"api-key",
+		"apikey",
+		"x-api-key",
+		"x-apikey",
+		"token",
+		"x-token",
+		"auth-token",
+		"x-auth-token",
+		"access-token",
+		"x-access-token",
+		"secret",
+		"x-secret",
+		"password",
+		"passwd",
+		"credential",
+		"cookie",
+		"set-cookie",
+		"session",
+		"x-session",
+		"private-token",
+		"x-private-token",
+	}
+	for _, sensitive := range sensitiveKeys {
+		if strings.Contains(lower, sensitive) {
+			return true
+		}
+	}
+	return false
+}
+
+// maskHeaderValue masks a header value while showing a hint of its structure.
+// Examples: "Bearer ***" for "Bearer token123", "***" for short values.
+func maskHeaderValue(value string) string {
+	if value == "" {
+		return ""
+	}
+
+	// Already redacted with a placeholder (e.g., __SECRET_NAME__)
+	if strings.HasPrefix(value, "__") && strings.HasSuffix(value, "__") {
+		return value
+	}
+
+	// For Bearer tokens, preserve the "Bearer" prefix
+	if strings.HasPrefix(value, "Bearer ") || strings.HasPrefix(value, "bearer ") {
+		return value[:7] + "***"
+	}
+
+	// For Basic auth, preserve the "Basic" prefix
+	if strings.HasPrefix(value, "Basic ") || strings.HasPrefix(value, "basic ") {
+		return value[:6] + "***"
+	}
+
+	// For values with spaces, show prefix and mask the rest
+	if idx := strings.Index(value, " "); idx > 0 && idx < 20 {
+		return value[:idx+1] + "***"
+	}
+
+	// For short values (< 8 chars), completely mask
+	if len(value) <= 8 {
+		return "***"
+	}
+
+	// For longer values, show first few chars
+	return value[:3] + "***"
 }

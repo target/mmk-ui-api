@@ -40,6 +40,8 @@ func StartHTTPServer(cfg *HTTPServerConfig) *http.Server {
 		Events:           cfg.Services.Events,
 		Secrets:          cfg.Services.Secrets,
 		HTTPAlertSinks:   cfg.Services.HTTPAlertSinks,
+		AlertSinkSvc:     cfg.Services.AlertSinkSvc,
+		HTTPClient:       &http.Client{Timeout: 30 * time.Second},
 		Alerts:           cfg.Services.Alerts,
 		Sources:          cfg.Services.Sources,
 		Sites:            cfg.Services.Sites,

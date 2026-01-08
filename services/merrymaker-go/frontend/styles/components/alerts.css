@@ -140,3 +140,16 @@
 	white-space: pre-wrap;
 	word-break: break-word;
 }
+
+/* Details/Summary component for collapsible sections */
+details summary {
+	list-style: none;
+}
+
+details summary::-webkit-details-marker {
+	display: none;
+}
+
+details[open] summary i[data-lucide="chevron-right"] {
+	transform: rotate(90deg);
+}
