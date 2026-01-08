@@ -1,0 +1,32 @@
+name: Docker Image - merrymaker-go
+
+on:
+  pull_request:
+    paths:
+      - "services/merrymaker-go/**"
+      - ".github/workflows/docker-*.yml"
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-merrymaker-go-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      image: target/merrymaker
+      tag_prefix: merrymaker-go-
+      context: services/merrymaker-go
+      dockerfile: services/merrymaker-go/Dockerfile
+      push: ${{ github.event_name == 'push' }}
+      pre_build_workdir: services/merrymaker-go/frontend
+      pre_build_cmd: |
+        bun install --frozen-lockfile
+        bun run build
