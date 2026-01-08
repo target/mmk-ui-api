@@ -158,7 +158,8 @@
                       rows="8"
                       placeholder="e.g., { created: created_at, type: 'Alert', payload: @ }">{{if .FormBody}}{{.FormBody}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Body"}}{{end}}{{end}}</textarea>
             <label for="sample_data" class="mt-3">Sample Alert Data (for preview)</label>
-            <textarea id="sample_data" class="input mono" rows="8">{{or .SampleAlertJSON "{\n  \"type\": \"info\",\n  \"name\": \"rule-alert\",\n  \"scan_id\": \"8a497372-6b43-426c-a323-37706302589c\",\n  \"scope\": \"\",\n  \"site\": \"Site2\",\n  \"message\": \"unknown.domain - static.ericdraken.com unknown\",\n  \"details\": \"{\\\"url\\\":\\\"https://static.ericdraken.com/wp-content/plugins/smpl-shortcodes/assets/images/accept.png\\\",\\\"domain\\\":\\\"static.ericdraken.com\\\"}\",\n  \"body\": {\n    \"name\": \"unknown.domain\",\n    \"alert\": true,\n    \"level\": \"prod\",\n    \"context\": {\n      \"url\": \"https://static.ericdraken.com/wp-content/plugins/smpl-shortcodes/assets/images/accept.png\",\n      \"domain\": \"static.ericdraken.com\"\n    },\n    \"message\": \"static.ericdraken.com unknown\"\n  },\n  \"created_at\": \"2021-06-01T00:00:00Z\"\n}"}}</textarea>
+            <small class="text-muted">Note: <code>event_context</code> fields vary by <code>rule_type</code> (unknown_domain, ioc_domain, yara_rule, custom).</small>
+            <textarea id="sample_data" class="input mono" rows="8">{{.SampleAlertJSON}}</textarea>
         </div>
         <div class="w-full">
             <label>Query Result</label>
