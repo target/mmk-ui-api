@@ -53,6 +53,34 @@ func (m *mockAlertsService) ListWithSiteNames(
 	return alertsWithSiteNames, nil
 }
 
+func (m *mockAlertsService) ListWithSiteNamesAndCount(
+	_ context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	// Convert alerts to AlertWithSiteName for testing
+	alertsWithSiteNames := make([]*model.AlertWithSiteName, len(m.alerts))
+	for i, alert := range m.alerts {
+		alertsWithSiteNames[i] = &model.AlertWithSiteName{
+			Alert:    *alert,
+			SiteName: "Test Site", // Mock site name
+		}
+	}
+	return &model.AlertListResult{
+		Alerts: alertsWithSiteNames,
+		Total:  len(m.alerts),
+	}, nil
+}
+
+func (m *mockAlertsService) Count(_ context.Context, opts *model.AlertListOptions) (int, error) {
+	if m.err != nil {
+		return 0, m.err
+	}
+	return len(m.alerts), nil
+}
+
 func (m *mockAlertsService) GetByID(_ context.Context, id string) (*model.Alert, error) {
 	if m.err != nil {
 		return nil, m.err

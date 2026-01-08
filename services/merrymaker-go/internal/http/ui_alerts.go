@@ -96,12 +96,12 @@ func (h *UIHandlers) toAlertRowFromAlertWithSiteName(
 	}
 }
 
-// fetchAlertsWithFilters fetches alerts with filtering and converts them to AlertRows.
-func (h *UIHandlers) fetchAlertsWithFilters(
+// fetchAlertsWithFiltersAndCount fetches alerts with filtering and total count in a single query.
+func (h *UIHandlers) fetchAlertsWithFiltersAndCount(
 	ctx context.Context,
 	filters alertsFilter,
 	pg pageOpts,
-) ([]alertsvm.AlertRow, error) {
+) ([]alertsvm.AlertRow, int, error) {
 	limit, offset := pg.LimitAndOffset()
 
 	// Build AlertListOptions from filters
@@ -123,8 +123,8 @@ func (h *UIHandlers) fetchAlertsWithFilters(
 		opts.RuleType = &filters.RuleType
 	}
 
-	// Fetch alerts with site names using JOIN query to eliminate N+1 queries
-	alertsWithSiteNames, err := h.AlertsSvc.ListWithSiteNames(ctx, opts)
+	// Fetch alerts with site names and total count in single query using window function
+	result, err := h.AlertsSvc.ListWithSiteNamesAndCount(ctx, opts)
 	if err != nil {
 		h.logger().ErrorContext(ctx, "failed to load alerts for UI",
 			"error", err,
@@ -135,16 +135,16 @@ func (h *UIHandlers) fetchAlertsWithFilters(
 			"page", pg.Page,
 			"page_size", pg.PageSize,
 		)
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Convert to AlertRows (site names already included from JOIN)
-	rows := make([]alertsvm.AlertRow, 0, len(alertsWithSiteNames))
-	for _, alertWithSiteName := range alertsWithSiteNames {
+	rows := make([]alertsvm.AlertRow, 0, len(result.Alerts))
+	for _, alertWithSiteName := range result.Alerts {
 		rows = append(rows, h.toAlertRowFromAlertWithSiteName(alertWithSiteName))
 	}
 
-	return rows, nil
+	return rows, result.Total, nil
 }
 
 // fetchSitesForFilter fetches sites for the filter dropdown (limited to MaxSitesForFilter).

@@ -44,6 +44,17 @@ func (f *fakeAlertRepo) ListWithSiteNames(
 ) ([]*model.AlertWithSiteName, error) {
 	return nil, nil
 }
+
+func (f *fakeAlertRepo) ListWithSiteNamesAndCount(
+	ctx context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	return &model.AlertListResult{Alerts: nil, Total: 0}, nil
+}
+
+func (f *fakeAlertRepo) Count(ctx context.Context, opts *model.AlertListOptions) (int, error) {
+	return 0, nil
+}
 func (f *fakeAlertRepo) Delete(ctx context.Context, id string) (bool, error) { return false, nil }
 func (f *fakeAlertRepo) Stats(ctx context.Context, siteID *string) (*model.AlertStats, error) {
 	return nil, errStub

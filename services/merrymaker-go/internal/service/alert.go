@@ -183,6 +183,29 @@ func (s *AlertService) ListWithSiteNames(
 	return alerts, nil
 }
 
+// ListWithSiteNamesAndCount retrieves alerts with site names and total count in a single query.
+// This is more efficient than calling ListWithSiteNames and Count separately.
+func (s *AlertService) ListWithSiteNamesAndCount(
+	ctx context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	result, err := s.repo.ListWithSiteNamesAndCount(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("list alerts with site names and count: %w", err)
+	}
+	return result, nil
+}
+
+// Count returns the total number of alerts matching the given filter options.
+// This is useful for pagination to show accurate total alert count.
+func (s *AlertService) Count(ctx context.Context, opts *model.AlertListOptions) (int, error) {
+	count, err := s.repo.Count(ctx, opts)
+	if err != nil {
+		return 0, fmt.Errorf("count alerts: %w", err)
+	}
+	return count, nil
+}
+
 // Delete deletes an alert by its ID.
 //
 // Returns true if the alert was deleted, false if it didn't exist.

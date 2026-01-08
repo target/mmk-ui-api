@@ -45,6 +45,8 @@ type AlertSinkTestFireService interface {
 type AlertsService interface {
 	List(ctx context.Context, opts *model.AlertListOptions) ([]*model.Alert, error)
 	ListWithSiteNames(ctx context.Context, opts *model.AlertListOptions) ([]*model.AlertWithSiteName, error)
+	ListWithSiteNamesAndCount(ctx context.Context, opts *model.AlertListOptions) (*model.AlertListResult, error)
+	Count(ctx context.Context, opts *model.AlertListOptions) (int, error)
 	GetByID(ctx context.Context, id string) (*model.Alert, error)
 	Delete(ctx context.Context, id string) (bool, error)
 	Resolve(ctx context.Context, params core.ResolveAlertParams) (*model.Alert, error)

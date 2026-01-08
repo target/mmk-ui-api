@@ -254,7 +254,12 @@ func (h *UIHandlers) Alerts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := h.fetchAlertsWithFilters(r.Context(), filters, pageOpts{Page: pageNum, PageSize: pageSize})
+	// Fetch alerts and total count in a single query using window function
+	rows, totalCount, err := h.fetchAlertsWithFiltersAndCount(
+		r.Context(),
+		filters,
+		pageOpts{Page: pageNum, PageSize: pageSize},
+	)
 	if err != nil {
 		h.logger().Error("failed to load alerts for UI", "error", err)
 		page.Error = true
@@ -264,9 +269,10 @@ func (h *UIHandlers) Alerts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.hydrateAlertsPage(page, rows, alertsPageHydration{
-		PageNum:  pageNum,
-		PageSize: pageSize,
-		Query:    query,
+		PageNum:    pageNum,
+		PageSize:   pageSize,
+		Query:      query,
+		TotalCount: totalCount,
 	})
 
 	h.renderDashboardPage(w, r, page)
@@ -307,9 +313,10 @@ func (h *UIHandlers) newAlertsPage(r *http.Request, filters alertsFilter, pageNu
 }
 
 type alertsPageHydration struct {
-	PageNum  int
-	PageSize int
-	Query    url.Values
+	PageNum    int
+	PageSize   int
+	Query      url.Values
+	TotalCount int
 }
 
 func (h *UIHandlers) hydrateAlertsPage(
@@ -322,6 +329,7 @@ func (h *UIHandlers) hydrateAlertsPage(
 		rows = rows[:opts.PageSize]
 	}
 	page.Alerts = rows
+	page.TotalCount = opts.TotalCount
 
 	if len(rows) > 0 {
 		offset := (opts.PageNum - 1) * opts.PageSize
