@@ -20,16 +20,18 @@
         {{/* Name */}}
         <div class="form-group">
             <label for="name">Name</label>
-            <input id="name"
-                   name="name"
-                   type="text"
-                   class="input"
-                   value="{{if .FormName}}{{.FormName}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Name"}}{{end}}{{end}}"
-                   maxlength="512"
-                   required>
-            {{with index .Errors "name"}}
-            <div class="field-error">{{.}}</div>
-            {{end}}
+            <div class="max-w-md">
+                <input id="name"
+                       name="name"
+                       type="text"
+                       class="input"
+                       value="{{if .FormName}}{{.FormName}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Name"}}{{end}}{{end}}"
+                       maxlength="512"
+                       required>
+                {{with index .Errors "name"}}
+                <div class="field-error">{{.}}</div>
+                {{end}}
+            </div>
         </div>
     {{/* Method + OK Status + Retries (inline) */}}
     <div class="form-group">
@@ -63,7 +65,7 @@
                        min="100"
                        max="599"
                        value="{{if .FormOkStatus}}{{.FormOkStatus}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "OkStatus"}}{{else}}200{{end}}{{end}}">
-                <small>Default 200.</small>
+                <small class="text-muted">Default 200.</small>
                 {{with index .Errors "ok_status"}}
                 <div class="field-error">{{.}}</div>
                 {{end}}
@@ -76,7 +78,7 @@
                        type="number"
                        min="0"
                        value="{{if .FormRetry}}{{.FormRetry}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Retry"}}{{else}}3{{end}}{{end}}">
-                <small>Default 3.</small>
+                <small class="text-muted">Default 3.</small>
                 {{with index .Errors "retry"}}
                 <div class="field-error">{{.}}</div>
                 {{end}}
@@ -86,16 +88,18 @@
 {{/* URI */}}
 <div class="form-group">
     <label for="uri">URI</label>
-    <input id="uri"
-           name="uri"
-           type="url"
-           class="input"
-           value="{{if .FormURI}}{{.FormURI}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "URI"}}{{end}}{{end}}"
-           placeholder="https://example.com/alerts"
-           required>
-    {{with index .Errors "uri"}}
-    <div class="field-error">{{.}}</div>
-    {{end}}
+    <div class="max-w-xl">
+        <input id="uri"
+               name="uri"
+               type="url"
+               class="input"
+               value="{{if .FormURI}}{{.FormURI}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "URI"}}{{end}}{{end}}"
+               placeholder="https://example.com/alerts"
+               required>
+        {{with index .Errors "uri"}}
+        <div class="field-error">{{.}}</div>
+        {{end}}
+    </div>
 </div>
 {{/* Secrets (optional) */}}
 <div class="form-group">
@@ -108,7 +112,7 @@
         </option>
         {{end}}
     </select>
-    <small>Use placeholders like __SECRET_NAME__ in URI, headers, query, or body.</small>
+    <small class="text-muted">Use placeholders like __SECRET_NAME__ in URI, headers, query, or body.</small>
     {{with index .Errors "secrets"}}
     <div class="field-error">{{.}}</div>
     {{end}}
@@ -134,21 +138,30 @@
                       class="input mono"
                       rows="3"
                       placeholder='{"Content-Type": "application/json", "Authorization": "Bearer __TOKEN__"}'>{{if .FormHeaders}}{{.FormHeaders}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Headers"}}{{end}}{{end}}</textarea>
-            <small>JSON object of header key/values. Placeholders like __SECRET_NAME__ are supported.</small>
+            <small class="text-muted">JSON object of header key/values. Placeholders like __SECRET_NAME__ are supported.</small>
             {{with index .Errors "headers"}}
             <div class="field-error">{{.}}</div>
             {{end}}
         </div>
     </div>
 </div>
-<div class="form-group mt-6"
-     style="border-top: var(--border-width) solid var(--color-border);
-            padding-top: var(--space-4)">
-    <div class="row-between">
+<div class="form-group mt-6 border-top pt-6">
+    <div class="row-between mb-3">
         <h3>JMESPath Body Builder</h3>
-        <small id="jmes-validity">Ready</small>
+        <small id="jmes-validity" class="text-muted">Ready</small>
     </div>
-    <small class="text-muted">Build request body from alert JSON using JMESPath. Live preview updates as you type.</small>
+    <p class="text-muted">Build request body from alert JSON using JMESPath. Live preview updates as you type.</p>
+    <div class="alert alert-info mt-3">
+        <i data-lucide="info"></i>
+        <div>
+            <strong>Available fields</strong>
+            <ul class="mb-0 mt-2">
+                <li><code>alert</code> - Full alert object (access fields like <code>alert.title</code>, <code>alert.severity</code>)</li>
+                <li><code>site_name</code> - Name of the site that triggered the alert</li>
+                <li><code>alert_url</code> - URL to view the alert in the UI</li>
+            </ul>
+        </div>
+    </div>
     <div class="row gap-4">
         <div class="w-full">
             <label for="body">JMESPath Query</label>
@@ -156,9 +169,9 @@
                       name="body"
                       class="input mono"
                       rows="8"
-                      placeholder="e.g., { created: created_at, type: 'Alert', payload: @ }">{{if .FormBody}}{{.FormBody}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Body"}}{{end}}{{end}}</textarea>
-            <label for="sample_data" class="mt-3">Sample Alert Data (for preview)</label>
-            <small class="text-muted">Note: <code>event_context</code> fields vary by <code>rule_type</code> (unknown_domain, ioc_domain, yara_rule, custom).</small>
+                      placeholder="e.g., { title: alert.title, site: site_name, url: alert_url, severity: alert.severity }">{{if .FormBody}}{{.FormBody}}{{else}}{{if eq .Mode "edit"}}{{index .AlertSink "Body"}}{{end}}{{end}}</textarea>
+            <label for="sample_data" class="mt-4">Sample Alert Data (for preview)</label>
+            <p class="text-muted">The payload structure includes <code>alert</code> (full alert object), <code>site_name</code>, and <code>alert_url</code>. Use <code>alert.event_context</code> to access event details (fields vary by <code>alert.rule_type</code>).</p>
             <textarea id="sample_data" class="input mono" rows="8">{{.SampleAlertJSON}}</textarea>
         </div>
         <div class="w-full">

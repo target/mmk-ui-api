@@ -52,6 +52,15 @@ type PreparedHTTPRequest struct {
 	Secrets map[string]string
 }
 
+// AlertPayload wraps alert data with additional context for JMESPath processing.
+// This structure is available to JMESPath expressions in alert sink configurations,
+// enabling access to alert details, site information, and UI URLs.
+type AlertPayload struct {
+	Alert    json.RawMessage `json:"alert"`     // The complete alert object
+	SiteName string          `json:"site_name"` // Name of the site that triggered the alert
+	AlertURL string          `json:"alert_url"` // URL to view the alert in the UI
+}
+
 // AlertSinkServiceOptions groups dependencies for AlertSinkService.
 type AlertSinkServiceOptions struct {
 	JobRepo    core.JobRepository
@@ -335,16 +344,17 @@ func (s *AlertSinkService) deriveBody(expr *string, payload json.RawMessage) ([]
 	return b, nil
 }
 
-// ScheduleAlert enqueues an alert job for the given sink and payload.
+// ScheduleAlert enqueues an alert job for the given sink and enriched alert payload.
+// The alertPayload should be an AlertPayload struct containing alert data, site name, and alert URL.
 func (s *AlertSinkService) ScheduleAlert(
 	ctx context.Context,
 	sink *model.HTTPAlertSink,
-	eventPayload json.RawMessage,
+	alertPayload json.RawMessage,
 ) (*model.Job, error) {
 	jobPayload := struct {
 		SinkID  string          `json:"sink_id"`
 		Payload json.RawMessage `json:"payload"`
-	}{SinkID: sink.ID, Payload: eventPayload}
+	}{SinkID: sink.ID, Payload: alertPayload}
 	b, err := json.Marshal(jobPayload)
 	if err != nil {
 		return nil, fmt.Errorf("marshal job payload: %w", err)

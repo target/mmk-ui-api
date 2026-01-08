@@ -145,18 +145,24 @@ func TestAlertDispatchWorkflow_SingleSink(t *testing.T) {
 		err = json.Unmarshal(job.Payload, &jobPayload)
 		require.NoError(t, err)
 		assert.Equal(t, sink.ID, jobPayload.SinkID, "Job payload should contain sink ID")
-		assert.NotEmpty(t, jobPayload.Payload, "Job payload should contain alert data")
+		assert.NotEmpty(t, jobPayload.Payload, "Job payload should contain enriched alert data")
 
-		// Verify alert payload contains the complete alert
-		var alertPayload model.Alert
-		err = json.Unmarshal(jobPayload.Payload, &alertPayload)
+		// Verify enriched payload contains alert, site_name, and alert_url
+		var enrichedPayload struct {
+			Alert    model.Alert `json:"alert"`
+			SiteName string      `json:"site_name"`
+			AlertURL string      `json:"alert_url"`
+		}
+		err = json.Unmarshal(jobPayload.Payload, &enrichedPayload)
 		require.NoError(t, err)
-		assert.Equal(t, alert.ID, alertPayload.ID)
-		assert.Equal(t, alert.SiteID, alertPayload.SiteID)
-		assert.Equal(t, alert.RuleType, alertPayload.RuleType)
-		assert.Equal(t, alert.Severity, alertPayload.Severity)
-		assert.Equal(t, alert.Title, alertPayload.Title)
-		assert.Equal(t, alert.Description, alertPayload.Description)
+		assert.Equal(t, alert.ID, enrichedPayload.Alert.ID)
+		assert.Equal(t, alert.SiteID, enrichedPayload.Alert.SiteID)
+		assert.Equal(t, alert.RuleType, enrichedPayload.Alert.RuleType)
+		assert.Equal(t, alert.Severity, enrichedPayload.Alert.Severity)
+		assert.Equal(t, alert.Title, enrichedPayload.Alert.Title)
+		assert.Equal(t, alert.Description, enrichedPayload.Alert.Description)
+		assert.Equal(t, site.Name, enrichedPayload.SiteName, "Enriched payload should contain site name")
+		assert.Contains(t, enrichedPayload.AlertURL, alert.ID, "Alert URL should contain alert ID")
 	})
 }
 
@@ -292,9 +298,16 @@ func TestAlertDispatchWorkflow_MultipleSinks(t *testing.T) {
 		assert.NotEqual(t, sink3.ID, jobPayload.SinkID, "Job should ignore unconfigured sink3")
 		assert.Equal(t, retry2, job.MaxRetries, "Job max retries should match configured sink")
 
-		var alertPayload model.Alert
-		err = json.Unmarshal(jobPayload.Payload, &alertPayload)
+		// Verify enriched payload contains alert, site_name, and alert_url
+		var enrichedPayload struct {
+			Alert    model.Alert `json:"alert"`
+			SiteName string      `json:"site_name"`
+			AlertURL string      `json:"alert_url"`
+		}
+		err = json.Unmarshal(jobPayload.Payload, &enrichedPayload)
 		require.NoError(t, err)
-		assert.Equal(t, alert.ID, alertPayload.ID)
+		assert.Equal(t, alert.ID, enrichedPayload.Alert.ID)
+		assert.Equal(t, site.Name, enrichedPayload.SiteName)
+		assert.Contains(t, enrichedPayload.AlertURL, alert.ID)
 	})
 }

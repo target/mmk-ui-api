@@ -175,9 +175,13 @@ func TestAlertDispatch_EndToEnd(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sink.ID, jobPayload.SinkID)
 
-		// Verify alert payload
+		// Verify alert payload (wrapped in AlertPayload)
+		var enrichedPayload service.AlertPayload
+		err = json.Unmarshal(jobPayload.Payload, &enrichedPayload)
+		require.NoError(t, err)
+
 		var alertPayload model.Alert
-		err = json.Unmarshal(jobPayload.Payload, &alertPayload)
+		err = json.Unmarshal(enrichedPayload.Alert, &alertPayload)
 		require.NoError(t, err)
 		assert.Equal(t, alert.ID, alertPayload.ID)
 		assert.Equal(t, alert.Title, alertPayload.Title)
@@ -232,9 +236,13 @@ func TestAlertDispatch_EndToEnd(t *testing.T) {
 		assert.Equal(t, "application/json", req.Headers.Get("Content-Type"))
 		assert.Equal(t, "test-secret-value-123", req.Headers.Get("X-Api-Key"), "Header should have secret resolved")
 
-		// Verify body contains the alert
+		// Verify body contains the alert (within AlertPayload structure since no Body expression is configured)
+		var receivedPayload service.AlertPayload
+		err = json.Unmarshal(req.Body, &receivedPayload)
+		require.NoError(t, err)
+
 		var receivedAlert model.Alert
-		err = json.Unmarshal(req.Body, &receivedAlert)
+		err = json.Unmarshal(receivedPayload.Alert, &receivedAlert)
 		require.NoError(t, err)
 		assert.Equal(t, alert.ID, receivedAlert.ID)
 		assert.Equal(t, alert.Title, receivedAlert.Title)
@@ -445,8 +453,11 @@ func TestAlertDispatch_MultipleSinks(t *testing.T) {
 		// Verify request details
 		assert.Equal(t, "POST", req1.Method)
 		assert.Contains(t, req1.URL, "/alerts")
+
+		var payload1 service.AlertPayload
+		require.NoError(t, json.Unmarshal(req1.Body, &payload1))
 		var alert1 model.Alert
-		require.NoError(t, json.Unmarshal(req1.Body, &alert1))
+		require.NoError(t, json.Unmarshal(payload1.Alert, &alert1))
 		assert.Equal(t, alert.ID, alert1.ID)
 
 		// Verify sink IDs in job payloads

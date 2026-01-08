@@ -5,6 +5,10 @@ type HTTPConfig struct {
 	// Addr is the address to bind the HTTP server to.
 	Addr string `env:"HTTP_ADDR" envDefault:":8080"`
 
+	// BaseURL is the base URL of the application (e.g., "https://app.example.com").
+	// Used for generating absolute URLs in alert notifications and other external contexts.
+	BaseURL string `env:"APP_BASE_URL" envDefault:"http://localhost:8080"`
+
 	// CookieDomain is the domain for session cookies.
 	// Leave empty to use the request domain.
 	CookieDomain string `env:"APP_COOKIE_DOMAIN" envDefault:""`

@@ -110,11 +110,13 @@ func TestAlertDispatchService_Dispatch_Success(t *testing.T) {
 		URI:    "https://example.test",
 	}
 
+	siteName := "Test Site"
 	siteRepo := &mockSiteRepository{
 		getByIDFunc: func(ctx context.Context, id string) (*model.Site, error) {
 			require.Equal(t, alert.SiteID, id)
 			return &model.Site{
 				ID:              alert.SiteID,
+				Name:            siteName,
 				HTTPAlertSinkID: &sink.ID,
 			}, nil
 		},
@@ -130,9 +132,20 @@ func TestAlertDispatchService_Dispatch_Success(t *testing.T) {
 	alertSinkSvc := &mockAlertSinkService{
 		scheduleAlertFunc: func(ctx context.Context, s *model.HTTPAlertSink, payload json.RawMessage) (*model.Job, error) {
 			assert.Equal(t, sink.ID, s.ID)
-			var decoded model.Alert
-			require.NoError(t, json.Unmarshal(payload, &decoded))
-			assert.Equal(t, alert.ID, decoded.ID)
+
+			// Verify enriched payload structure
+			var enriched AlertPayload
+			require.NoError(t, json.Unmarshal(payload, &enriched))
+
+			// Verify alert data
+			var decodedAlert model.Alert
+			require.NoError(t, json.Unmarshal(enriched.Alert, &decodedAlert))
+			assert.Equal(t, alert.ID, decodedAlert.ID)
+
+			// Verify site name and alert URL
+			assert.Equal(t, siteName, enriched.SiteName)
+			assert.Equal(t, "http://localhost:8080/alerts/alert-1", enriched.AlertURL)
+
 			return &model.Job{ID: "job-1"}, nil
 		},
 	}
@@ -141,6 +154,7 @@ func TestAlertDispatchService_Dispatch_Success(t *testing.T) {
 		Sites:     siteRepo,
 		Sinks:     sinkRepo,
 		AlertSink: alertSinkSvc,
+		BaseURL:   "http://localhost:8080",
 		Logger:    slog.Default(),
 	})
 
@@ -209,6 +223,62 @@ func TestAlertDispatchService_Dispatch_MutedSiteSkips(t *testing.T) {
 		Sites:     siteRepo,
 		Sinks:     sinkRepo,
 		AlertSink: alertSinkSvc,
+		Logger:    slog.Default(),
+	})
+
+	err := dispatcher.Dispatch(context.Background(), alert)
+	require.NoError(t, err)
+}
+
+func TestAlertDispatchService_Dispatch_CustomBaseURL(t *testing.T) {
+	alert := &model.Alert{
+		ID:     "alert-123",
+		SiteID: "site-prod",
+		Title:  "Production alert",
+	}
+
+	sink := &model.HTTPAlertSink{
+		ID:     "sink-prod",
+		Name:   "prod-sink",
+		Method: "POST",
+		URI:    "https://alerts.example.com/webhook",
+	}
+
+	siteName := "Production Site"
+	siteRepo := &mockSiteRepository{
+		getByIDFunc: func(ctx context.Context, id string) (*model.Site, error) {
+			return &model.Site{
+				ID:              id,
+				Name:            siteName,
+				HTTPAlertSinkID: &sink.ID,
+			}, nil
+		},
+	}
+
+	sinkRepo := &mockHTTPAlertSinkRepository{
+		getByIDFunc: func(ctx context.Context, id string) (*model.HTTPAlertSink, error) {
+			return sink, nil
+		},
+	}
+
+	alertSinkSvc := &mockAlertSinkService{
+		scheduleAlertFunc: func(ctx context.Context, s *model.HTTPAlertSink, payload json.RawMessage) (*model.Job, error) {
+			var enriched AlertPayload
+			require.NoError(t, json.Unmarshal(payload, &enriched))
+
+			// Verify custom base URL is used
+			assert.Equal(t, "https://merrymaker.example.com/alerts/alert-123", enriched.AlertURL)
+			assert.Equal(t, siteName, enriched.SiteName)
+
+			return &model.Job{ID: "job-prod"}, nil
+		},
+	}
+
+	dispatcher := NewAlertDispatchService(AlertDispatchServiceOptions{
+		Sites:     siteRepo,
+		Sinks:     sinkRepo,
+		AlertSink: alertSinkSvc,
+		BaseURL:   "https://merrymaker.example.com",
 		Logger:    slog.Default(),
 	})
 

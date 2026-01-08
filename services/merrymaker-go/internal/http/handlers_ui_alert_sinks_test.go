@@ -2,7 +2,9 @@ package httpx
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -329,4 +331,138 @@ func TestUIHandlers_AlertSinkCreate(t *testing.T) {
 			assert.Equal(t, "/alert-sinks", res.Header.Get("Hx-Redirect"))
 		})
 	})
+}
+
+// TestBuildSampleAlertJSON verifies that the sample alert JSON includes the correct alert_url
+// based on the provided baseURL, ensuring consistency with runtime alert dispatching.
+func TestBuildSampleAlertJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		baseURL string
+		want    string // Expected alert_url in the sample payload
+	}{
+		{
+			name:    "default localhost",
+			baseURL: "",
+			want:    "http://localhost:8080/alerts/alert-8a497372-6b43-426c-a323-37706302589c",
+		},
+		{
+			name:    "custom https URL",
+			baseURL: "https://app.example.com",
+			want:    "https://app.example.com/alerts/alert-8a497372-6b43-426c-a323-37706302589c",
+		},
+		{
+			name:    "URL with trailing slash",
+			baseURL: "https://app.example.com/",
+			want:    "https://app.example.com/alerts/alert-8a497372-6b43-426c-a323-37706302589c",
+		},
+		{
+			name:    "localhost with port",
+			baseURL: "http://localhost:3000",
+			want:    "http://localhost:3000/alerts/alert-8a497372-6b43-426c-a323-37706302589c",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sampleJSON := buildSampleAlertJSON(tt.baseURL)
+
+			// Parse the returned JSON
+			var payload map[string]interface{}
+			err := json.Unmarshal([]byte(sampleJSON), &payload)
+			require.NoError(t, err, "sample JSON should be valid JSON")
+
+			// Verify alert_url field
+			alertURL, ok := payload["alert_url"].(string)
+			require.True(t, ok, "alert_url should be a string")
+			assert.Equal(t, tt.want, alertURL, "alert_url should match expected value")
+
+			// Verify alert field is present and valid
+			alertRaw, ok := payload["alert"]
+			require.True(t, ok, "alert field should be present")
+			var alert map[string]interface{}
+			alertBytes, err := json.Marshal(alertRaw)
+			require.NoError(t, err)
+			err = json.Unmarshal(alertBytes, &alert)
+			require.NoError(t, err, "alert should be valid JSON")
+
+			// Verify site_name field
+			siteName, ok := payload["site_name"].(string)
+			require.True(t, ok, "site_name should be a string")
+			assert.Equal(t, "My Production Site", siteName)
+		})
+	}
+}
+
+// TestGetRequestBaseURL verifies that the helper function correctly extracts the baseURL from HTTP requests.
+func TestGetRequestBaseURL(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupRequest    func(*http.Request)
+		expectedBaseURL string
+	}{
+		{
+			name: "simple HTTP request",
+			setupRequest: func(r *http.Request) {
+				r.URL.Scheme = "http"
+				r.Host = "localhost:8080"
+			},
+			expectedBaseURL: "http://localhost:8080",
+		},
+		{
+			name: "HTTPS request",
+			setupRequest: func(r *http.Request) {
+				r.URL.Scheme = "https"
+				r.Host = "app.example.com"
+				r.TLS = &tls.ConnectionState{} // Indicate TLS
+			},
+			expectedBaseURL: "https://app.example.com",
+		},
+		{
+			name: "request with X-Forwarded-Proto header",
+			setupRequest: func(r *http.Request) {
+				r.URL.Scheme = "http"
+				r.Host = "localhost:8080"
+				r.Header.Set("X-Forwarded-Proto", "https")
+			},
+			expectedBaseURL: "https://localhost:8080",
+		},
+		{
+			name: "request with X-Forwarded-Host header",
+			setupRequest: func(r *http.Request) {
+				r.URL.Scheme = "http"
+				r.Host = "localhost:8080"
+				r.Header.Set("X-Forwarded-Host", "app.example.com")
+			},
+			expectedBaseURL: "http://app.example.com",
+		},
+		{
+			name: "request with both X-Forwarded headers (reverse proxy)",
+			setupRequest: func(r *http.Request) {
+				r.URL.Scheme = "http"
+				r.Host = "localhost:8080"
+				r.Header.Set("X-Forwarded-Proto", "https")
+				r.Header.Set("X-Forwarded-Host", "app.example.com:443")
+			},
+			expectedBaseURL: "https://app.example.com:443",
+		},
+		{
+			name: "request with httptest default (host is set by NewRequest)",
+			setupRequest: func(r *http.Request) {
+				// httptest.NewRequest sets Host="example.com" and Scheme=""
+				// Our function should detect scheme from TLS or default to http
+			},
+			expectedBaseURL: "http://example.com",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			tt.setupRequest(r)
+
+			result := getRequestBaseURL(r)
+			assert.Equal(t, tt.expectedBaseURL, result, "baseURL should match expected value")
+		})
+	}
 }
