@@ -10,7 +10,8 @@
             {{ template "error-banner" . }}
             {{ if not .Error }}
             <div class="mt-3" id="jobs-table">
-                <table class="table w-full">
+                <div class="table-scroll-wrapper">
+                <table class="table jobs-table w-full">
                     <thead>
                         <tr>
                             <th align="left">Type</th>
@@ -164,6 +165,7 @@
                         {{end}}
                     </tbody>
                 </table>
+                </div>
             </div>
             {{template "pagination" .}}
             {{end}}

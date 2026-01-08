@@ -1,5 +1,12 @@
 /* Component: Tables */
 
+.table-scroll-wrapper {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	/* Enable container queries for tables within */
+	container-type: inline-size;
+}
+
 .table {
 	width: 100%;
 	border-collapse: collapse;
@@ -21,25 +28,133 @@
 	vertical-align: middle;
 }
 
-/* Responsive: reduce padding and font size on tablets */
-@media (min-width: 641px) and (max-width: 1023px) {
-	.table {
+/* Alerts table: scoped, modern, container-query based rules */
+.alerts-table {
+	/* Allow big tokens to wrap to avoid layout blowouts */
+}
+.alerts-table td {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+/* Base column constraints for the alerts table */
+.alerts-table :is(th, td):nth-child(1) {
+	/* Alert */
+	min-width: 180px;
+	max-width: 400px;
+}
+.alerts-table :is(th, td):nth-child(2) {
+	/* Status */
+	min-width: 140px;
+	width: 160px;
+}
+.alerts-table :is(th, td):nth-child(3) {
+	/* Site */
+	min-width: 120px;
+	max-width: 200px;
+}
+.alerts-table :is(th, td):nth-child(4) {
+	/* Rule Type */
+	min-width: 120px;
+	width: 150px;
+}
+.alerts-table :is(th, td):nth-child(5) {
+	/* Severity */
+	min-width: 90px;
+	width: 100px;
+}
+.alerts-table :is(th, td):nth-child(6) {
+	/* Fired At */
+	min-width: 140px;
+	width: 160px;
+}
+.alerts-table :is(th, td):nth-child(7) {
+	/* Actions */
+	min-width: 80px;
+	width: 100px;
+}
+
+/* Container queries based on the nearest container (set on .table-scroll-wrapper) */
+@container (width <= 1023px) {
+	.alerts-table {
 		font-size: calc(var(--font-size-sm) - 1px);
 	}
-	.table th,
-	.table td {
+	.alerts-table :is(th, td) {
 		padding: var(--space-2) var(--space-3);
+	}
+	/* Hide Rule Type and Severity on mid sizes */
+	.alerts-table :is(th, td):nth-child(4),
+	.alerts-table :is(th, td):nth-child(5) {
+		display: none;
 	}
 }
 
-/* Responsive: further reduce on mobile */
-@media (max-width: 640px) {
-	.table {
+@container (width <= 640px) {
+	.alerts-table {
 		font-size: calc(var(--font-size-sm) - 2px);
 	}
-	.table th,
-	.table td {
+	.alerts-table :is(th, td) {
 		padding: var(--space-2) var(--space-2);
+	}
+	/* Hide Rule Type, Severity, and Fired At on small */
+	.alerts-table :is(th, td):nth-child(4),
+	.alerts-table :is(th, td):nth-child(5),
+	.alerts-table :is(th, td):nth-child(6) {
+		display: none;
+	}
+	/* Adjust column widths for small */
+	.alerts-table :is(th, td):nth-child(1) {
+		min-width: 140px;
+		max-width: 250px;
+	}
+	.alerts-table :is(th, td):nth-child(2) {
+		min-width: 120px;
+		width: auto;
+	}
+	.alerts-table :is(th, td):nth-child(3) {
+		min-width: 100px;
+		max-width: 150px;
+	}
+}
+
+/* Fallback for browsers without container queries */
+@supports not (container-type: inline-size) {
+	@media (width <= 1023px) {
+		.alerts-table {
+			font-size: calc(var(--font-size-sm) - 1px);
+		}
+		.alerts-table :is(th, td) {
+			padding: var(--space-2) var(--space-3);
+		}
+		.alerts-table :is(th, td):nth-child(4),
+		.alerts-table :is(th, td):nth-child(5) {
+			display: none;
+		}
+	}
+	@media (width <= 640px) {
+		.alerts-table {
+			font-size: calc(var(--font-size-sm) - 2px);
+		}
+		.alerts-table :is(th, td) {
+			padding: var(--space-2) var(--space-2);
+		}
+		.alerts-table :is(th, td):nth-child(4),
+		.alerts-table :is(th, td):nth-child(5),
+		.alerts-table :is(th, td):nth-child(6) {
+			display: none;
+		}
+		.alerts-table :is(th, td):nth-child(1) {
+			min-width: 140px;
+			max-width: 250px;
+		}
+		.alerts-table :is(th, td):nth-child(2) {
+			min-width: 120px;
+			width: auto;
+		}
+		.alerts-table :is(th, td):nth-child(3) {
+			min-width: 100px;
+			max-width: 150px;
+		}
 	}
 }
 .table tbody tr {
@@ -162,4 +277,106 @@
 .table tbody tr.row-link .table-actions .btn-table-action {
 	position: relative;
 	z-index: 1;
+}
+
+/* ========================
+	 Page-specific table variants
+	 ======================== */
+
+/* Jobs table */
+.jobs-table td { overflow-wrap: anywhere; word-break: break-word; }
+.jobs-table :is(th, td):nth-child(1) { min-width: 140px; }
+.jobs-table :is(th, td):nth-child(2) { min-width: 140px; width: 160px; }
+.jobs-table :is(th, td):nth-child(3) { min-width: 160px; max-width: 260px; }
+.jobs-table :is(th, td):nth-child(4) { min-width: 90px; width: 100px; }
+.jobs-table :is(th, td):nth-child(5) { min-width: 100px; width: 110px; }
+.jobs-table :is(th, td):nth-child(6) { min-width: 140px; width: 160px; }
+.jobs-table :is(th, td):nth-child(7) { min-width: 80px; width: 100px; }
+
+@container (width <= 1023px) {
+	.jobs-table { font-size: calc(var(--font-size-sm) - 1px); }
+	.jobs-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+	/* Hide Test on tablet */
+	.jobs-table :is(th, td):nth-child(5) { display: none; }
+}
+@container (width <= 640px) {
+	.jobs-table { font-size: calc(var(--font-size-sm) - 2px); }
+	.jobs-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+	/* Hide Events and Test on mobile */
+	.jobs-table :is(th, td):nth-child(4),
+	.jobs-table :is(th, td):nth-child(5) { display: none; }
+}
+@supports not (container-type: inline-size) {
+	@media (width <= 1023px) {
+		.jobs-table { font-size: calc(var(--font-size-sm) - 1px); }
+		.jobs-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+		.jobs-table :is(th, td):nth-child(5) { display: none; }
+	}
+	@media (width <= 640px) {
+		.jobs-table { font-size: calc(var(--font-size-sm) - 2px); }
+		.jobs-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+		.jobs-table :is(th, td):nth-child(4),
+		.jobs-table :is(th, td):nth-child(5) { display: none; }
+	}
+}
+
+/* Sites table */
+.sites-table td { overflow-wrap: anywhere; word-break: break-word; }
+.sites-table :is(th, td):nth-child(1) { min-width: 200px; max-width: 420px; }
+.sites-table :is(th, td):nth-child(2) { min-width: 140px; max-width: 220px; }
+.sites-table :is(th, td):nth-child(3) { min-width: 110px; width: 120px; }
+.sites-table :is(th, td):nth-child(4) { min-width: 110px; width: 120px; }
+.sites-table :is(th, td):nth-child(5) { min-width: 80px; width: 100px; }
+
+@container (width <= 1023px) {
+	.sites-table { font-size: calc(var(--font-size-sm) - 1px); }
+	.sites-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+}
+@container (width <= 640px) {
+	.sites-table { font-size: calc(var(--font-size-sm) - 2px); }
+	.sites-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+	/* Hide Scope and Every (min) on mobile */
+	.sites-table :is(th, td):nth-child(2),
+	.sites-table :is(th, td):nth-child(4) { display: none; }
+}
+@supports not (container-type: inline-size) {
+	@media (width <= 1023px) {
+		.sites-table { font-size: calc(var(--font-size-sm) - 1px); }
+		.sites-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+	}
+	@media (width <= 640px) {
+		.sites-table { font-size: calc(var(--font-size-sm) - 2px); }
+		.sites-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+		.sites-table :is(th, td):nth-child(2),
+		.sites-table :is(th, td):nth-child(4) { display: none; }
+	}
+}
+
+/* Secrets table */
+.secrets-table td { overflow-wrap: anywhere; word-break: break-word; }
+.secrets-table :is(th, td):nth-child(1) { min-width: 220px; max-width: 480px; }
+.secrets-table :is(th, td):nth-child(2) { min-width: 140px; width: 160px; }
+.secrets-table :is(th, td):nth-child(3) { min-width: 140px; width: 160px; }
+.secrets-table :is(th, td):nth-child(4) { min-width: 80px; width: 100px; }
+
+@container (width <= 1023px) {
+	.secrets-table { font-size: calc(var(--font-size-sm) - 1px); }
+	.secrets-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+}
+@container (width <= 640px) {
+	.secrets-table { font-size: calc(var(--font-size-sm) - 2px); }
+	.secrets-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+	/* Hide Updated on mobile */
+	.secrets-table :is(th, td):nth-child(3) { display: none; }
+}
+@supports not (container-type: inline-size) {
+	@media (width <= 1023px) {
+		.secrets-table { font-size: calc(var(--font-size-sm) - 1px); }
+		.secrets-table :is(th, td) { padding: var(--space-2) var(--space-3); }
+	}
+	@media (width <= 640px) {
+		.secrets-table { font-size: calc(var(--font-size-sm) - 2px); }
+		.secrets-table :is(th, td) { padding: var(--space-2) var(--space-2); }
+		.secrets-table :is(th, td):nth-child(3) { display: none; }
+	}
 }

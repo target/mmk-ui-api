@@ -30,6 +30,8 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	word-break: break-all;
+	overflow-wrap: break-word;
 	position: relative;
 	transition: all 200ms ease;
 }
@@ -180,5 +182,6 @@
 	.domain-text {
 		white-space: normal;
 		word-break: break-all;
+		overflow-wrap: break-word;
 	}
 }
