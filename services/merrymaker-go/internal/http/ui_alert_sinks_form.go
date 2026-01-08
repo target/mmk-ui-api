@@ -2,16 +2,96 @@ package httpx
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/http/validation"
 )
+
+// sampleAlertEventContext represents the superset of fields that may appear in event_context
+// across different rule types (unknown_domain, ioc_domain, yara_rule, custom).
+type sampleAlertEventContext struct {
+	Domain     string `json:"domain,omitempty"`
+	Host       string `json:"host,omitempty"`
+	Scope      string `json:"scope"`
+	SiteID     string `json:"site_id"`
+	JobID      string `json:"job_id,omitempty"`
+	EventID    string `json:"event_id,omitempty"`
+	RequestURL string `json:"request_url,omitempty"`
+	PageURL    string `json:"page_url,omitempty"`
+	Referrer   string `json:"referrer,omitempty"`
+	UserAgent  string `json:"user_agent,omitempty"`
+	IOCID      string `json:"ioc_id,omitempty"`
+	IOCType    string `json:"ioc_type,omitempty"`
+	IOCValue   string `json:"ioc_value,omitempty"`
+}
+
+// sampleAlertPayload mirrors model.Alert structure for generating sample JSON.
+// This ensures the sample stays in sync with the actual payload sent to sinks.
+type sampleAlertPayload struct {
+	ID             string                    `json:"id"`
+	SiteID         string                    `json:"site_id"`
+	RuleID         *string                   `json:"rule_id"`
+	RuleType       string                    `json:"rule_type"`
+	Severity       string                    `json:"severity"`
+	Title          string                    `json:"title"`
+	Description    string                    `json:"description"`
+	EventContext   sampleAlertEventContext   `json:"event_context"`
+	Metadata       map[string]any            `json:"metadata"`
+	DeliveryStatus model.AlertDeliveryStatus `json:"delivery_status"`
+	FiredAt        time.Time                 `json:"fired_at"`
+	ResolvedAt     *time.Time                `json:"resolved_at"`
+	ResolvedBy     *string                   `json:"resolved_by"`
+	CreatedAt      time.Time                 `json:"created_at"`
+}
+
+// buildSampleAlertJSON generates a representative sample alert payload for the JMESPath preview.
+// It includes fields from multiple rule types so users can build transformations that work across all alerts.
+func buildSampleAlertJSON() string {
+	sampleTime := time.Date(2021, 6, 1, 0, 0, 0, 0, time.UTC)
+	sample := sampleAlertPayload{
+		ID:          "alert-8a497372-6b43-426c-a323-37706302589c",
+		SiteID:      "site-001",
+		RuleID:      nil,
+		RuleType:    string(model.AlertRuleTypeUnknownDomain),
+		Severity:    string(model.AlertSeverityMedium),
+		Title:       "Unknown domain observed",
+		Description: "First time seen domain: example.com (scope: production)",
+		EventContext: sampleAlertEventContext{
+			Domain:     "example.com",
+			Host:       "example.com",
+			Scope:      "production",
+			SiteID:     "site-001",
+			JobID:      "job-abc123",
+			EventID:    "evt-xyz789",
+			RequestURL: "https://example.com/resource.js",
+			PageURL:    "https://mysite.com/page",
+			Referrer:   "https://google.com",
+			UserAgent:  "Mozilla/5.0",
+			IOCID:      "ioc-001",
+			IOCType:    "domain",
+			IOCValue:   "example.com",
+		},
+		Metadata:       map[string]any{},
+		DeliveryStatus: model.AlertDeliveryStatusPending,
+		FiredAt:        sampleTime,
+		ResolvedAt:     nil,
+		ResolvedBy:     nil,
+		CreatedAt:      sampleTime,
+	}
+	b, err := json.MarshalIndent(sample, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
+}
 
 // buildSecretOptions returns a slice of {Name, Selected} maps for the secrets select.
 func (h *UIHandlers) buildSecretOptions(ctx context.Context, selected []string) []map[string]any {
@@ -371,6 +451,7 @@ func (h *UIHandlers) prepareAlertSinkFormData(r *http.Request, mode FormMode, da
 	}
 
 	data["SecretOptions"] = h.buildSecretOptions(r.Context(), selected)
+	data["SampleAlertJSON"] = buildSampleAlertJSON()
 }
 
 func extractAlertSinkSecrets(data map[string]any) []string {
