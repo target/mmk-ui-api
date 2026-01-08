@@ -13,7 +13,11 @@
     <td class="fw-medium">
         {{ if $primary }}
         <div{{ if $isDomainType }} class="mono"{{ end }}>
+            {{ if $isDomainType }}
+            <span class="domain-text" data-domain-truncate="{{ $primary }}">{{ $primary }}</span>
+            {{ else }}
             {{ $primary }}
+            {{ end }}
         </div>
         {{ else }}
         <div>{{ .Title }}</div>

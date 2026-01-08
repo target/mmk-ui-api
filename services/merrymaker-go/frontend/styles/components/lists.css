@@ -127,9 +127,21 @@
 	align-items: center;
 	flex: 1;
 	min-width: 0;
+	overflow: visible; /* Changed from hidden to allow domain-wrapper buttons */
+	position: relative; /* For absolute positioned tooltips */
+}
+
+/* Preserve truncation for non-domain content */
+.alert-item-primary:not(:has(.domain-wrapper)) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+/* Allow overflow and flexible layout when domain actions are present */
+.alert-item-primary.has-domain-actions {
+	overflow: visible;
+	position: relative;
 }
 
 .alert-item-secondary {

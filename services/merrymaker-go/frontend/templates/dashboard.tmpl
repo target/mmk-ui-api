@@ -278,7 +278,14 @@
                         <span class="badge {{ if eq .Severity "critical" }}badge-danger{{ else if eq .Severity "high" }}badge-warning{{ else if eq .Severity "medium" }}badge-info{{ else if eq .Severity "low" }}badge-secondary{{ else }}badge-light{{ end }}">
                             {{ .Severity }}
                         </span>
+                        {{ $isDomainAlert := or (eq .RuleType "unknown_domain") (eq .RuleType "ioc_domain") }}
+                        {{ if $isDomainAlert }}
+                        <span class="alert-item-primary fw-medium mono">
+                            <span class="domain-text" data-domain-truncate="{{ .PrimaryLabel }}">{{ .PrimaryLabel }}</span>
+                        </span>
+                        {{ else }}
                         <span class="alert-item-primary fw-medium">{{ .PrimaryLabel }}</span>
+                        {{ end }}
                     </div>
                     <div class="alert-item-meta text-xs">
                         {{ if .IsResolved }}

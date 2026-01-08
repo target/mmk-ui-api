@@ -9,6 +9,7 @@ import "./components/filter-pills.js";
 import "./components/toast.js";
 import "./components/row-delete.js";
 import "./components/ioc-form.js";
+import "./components/domain-truncate.js";
 import "./job_status.js";
 import "./source_form.js";
 import { bootFeatures } from "./features/index.js";
