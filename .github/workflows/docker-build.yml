@@ -2,6 +2,13 @@ name: Docker Build (Reusable)
 
 on:
   workflow_call:
+    secrets:
+      DOCKERHUB_USERNAME:
+        description: Docker Hub username for docker/login-action (required when inputs.push is true)
+        required: false
+      DOCKERHUB_TOKEN:
+        description: Docker Hub token/password for docker/login-action (required when inputs.push is true)
+        required: false
     inputs:
       image:
         description: Fully qualified image name, e.g. ghcr.io/org/repo/service
@@ -80,8 +87,8 @@ jobs:
       - name: Build${{ inputs.push && ' & push' || '' }}
         uses: docker/build-push-action@v6
         with:
-          context: ${{ inputs.context }}
-          file: ${{ inputs.dockerfile }}
+          context: ${{ github.workspace }}/${{ inputs.context }}
+          file: ${{ github.workspace }}/${{ inputs.dockerfile }}
           platforms: linux/amd64
           push: ${{ inputs.push }}
           tags: ${{ steps.meta.outputs.tags }}

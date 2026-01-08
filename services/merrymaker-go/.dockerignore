@@ -12,6 +12,10 @@ bin
 /merrymaker
 /merrymaker-prod
 
+# Ensure the Go main package directory is never excluded
+!cmd/merrymaker/
+!cmd/merrymaker/**
+
 # Frontend dev-only deps
 frontend/node_modules
 frontend/vendor
