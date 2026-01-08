@@ -1,0 +1,149 @@
+/* Component: Domain Tooltip & Actions */
+
+/* Utility: Screen reader only */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Domain wrapper with actions */
+.domain-wrapper {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-width: 0;
+	flex: 1;
+}
+
+/* Expandable domain text */
+.domain-text {
+	display: inline-block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	position: relative;
+	transition: all 200ms ease;
+}
+
+.domain-text.is-expanded {
+	white-space: normal;
+	word-break: break-all;
+	overflow-wrap: anywhere;
+}
+
+/* Copy button */
+.btn-copy-domain {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-size-sm);
+	height: var(--icon-size-sm);
+	padding: 0;
+	border: none;
+	background: none;
+	color: var(--color-text-muted);
+	cursor: pointer;
+	border-radius: var(--border-radius-sm);
+	flex-shrink: 0;
+	transition: all 150ms ease;
+	opacity: 0;
+}
+
+.domain-wrapper:hover .btn-copy-domain,
+.domain-wrapper:focus-within .btn-copy-domain {
+	opacity: 1;
+}
+
+.btn-copy-domain:hover {
+	color: var(--color-brand-primary);
+	background-color: var(--color-background-hover);
+}
+
+.btn-copy-domain:active {
+	transform: scale(0.95);
+}
+
+.btn-copy-domain:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+	opacity: 1;
+}
+
+.btn-copy-domain i[data-lucide] {
+	width: 14px;
+	height: 14px;
+}
+
+.btn-copy-domain.is-copied {
+	color: var(--color-success);
+	opacity: 1;
+}
+
+.btn-copy-domain.is-error {
+	color: var(--color-danger);
+	opacity: 1;
+}
+
+/* Expand toggle button */
+.btn-expand-domain {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-size-sm);
+	height: var(--icon-size-sm);
+	padding: 0;
+	border: none;
+	background: none;
+	color: var(--color-text-muted);
+	cursor: pointer;
+	border-radius: var(--border-radius-sm);
+	flex-shrink: 0;
+	transition: all 150ms ease;
+	opacity: 0;
+}
+
+.domain-wrapper:hover .btn-expand-domain,
+.domain-wrapper:focus-within .btn-expand-domain {
+	opacity: 1;
+}
+
+.btn-expand-domain:hover {
+	color: var(--color-brand-primary);
+	background-color: var(--color-background-hover);
+}
+
+.btn-expand-domain:focus-visible {
+	outline: 2px solid var(--color-brand-primary);
+	outline-offset: 2px;
+	opacity: 1;
+}
+
+.btn-expand-domain i[data-lucide] {
+	width: 14px;
+	height: 14px;
+	transition: transform 200ms ease;
+}
+
+.btn-expand-domain.is-expanded i[data-lucide] {
+	transform: rotate(180deg);
+}
+
+/* Responsive: hide expand button on mobile, allow natural wrapping */
+@media (max-width: 640px) {
+	.btn-expand-domain {
+		display: none;
+	}
+
+	.domain-text {
+		white-space: normal;
+		word-break: break-all;
+	}
+}

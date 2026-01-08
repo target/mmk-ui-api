@@ -41,6 +41,7 @@
 @import "./components/spinner.css";
 @import "./components/lists.css";
 @import "./components/toolbar.css";
+@import "./components/domain-tooltip.css";
 @import "./components/events.css";
 @import "./components/failure-event.css";
 @import "./components/user-toggle.css";
