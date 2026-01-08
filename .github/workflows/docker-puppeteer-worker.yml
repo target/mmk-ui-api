@@ -1,0 +1,28 @@
+name: Docker Image - puppeteer-worker
+
+on:
+  pull_request:
+    paths:
+      - "services/puppeteer-worker/**"
+      - ".github/workflows/docker-*.yml"
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-puppeteer-worker-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      image: target/merrymaker
+      tag_prefix: puppeteer-worker-
+      context: services/puppeteer-worker
+      dockerfile: services/puppeteer-worker/Dockerfile
+      push: ${{ github.event_name == 'push' }}

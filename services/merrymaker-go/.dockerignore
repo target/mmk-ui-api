@@ -9,8 +9,8 @@
 
 # Binaries / local build outputs
 bin
-merrymaker
-merrymaker-prod
+/merrymaker
+/merrymaker-prod
 
 # Frontend dev-only deps
 frontend/node_modules
