@@ -7,7 +7,7 @@ on:
       - ".github/workflows/docker-*.yml"
   push:
     tags:
-      - "v*.*.*"
+      - "puppeteer-worker-v*.*.*"
 
 permissions:
   contents: read
@@ -22,8 +22,8 @@ jobs:
     uses: ./.github/workflows/docker-build.yml
     secrets: inherit
     with:
-      image: target/merrymaker
-      tag_prefix: puppeteer-worker-
+      image: target/puppeteer-worker
+      tag_prefix: puppeteer-worker
       context: services/puppeteer-worker
       dockerfile: services/puppeteer-worker/Dockerfile
       push: ${{ github.event_name == 'push' }}
