@@ -103,6 +103,7 @@ func NewRunner(opts RunnerOptions) (*Runner, error) {
 		Repo:            deps.jobsRepo,
 		DefaultLease:    resolveLease(opts.Lease),
 		FailureNotifier: opts.FailureNotifier,
+		Sites:           deps.siteRepo,
 	})
 
 	return &Runner{

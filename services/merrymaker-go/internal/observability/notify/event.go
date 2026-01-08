@@ -15,6 +15,7 @@ type JobFailurePayload struct {
 	JobID      string
 	JobType    string
 	SiteID     string
+	SiteName   string
 	Scope      string
 	IsTest     bool
 	Error      string

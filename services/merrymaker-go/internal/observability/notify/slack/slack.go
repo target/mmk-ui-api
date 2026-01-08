@@ -110,7 +110,7 @@ func (c *Client) formatMessage(payload notify.JobFailurePayload) map[string]any 
 	}
 	text := strings.Builder{}
 	writeSlackHeader(&text, payload)
-	siteDisplay := c.formatSiteValue(payload.SiteID)
+	siteDisplay := c.formatSiteValue(payload.SiteID, payload.SiteName)
 	appendSlackDetails(&text, payload, siteDisplay)
 	appendSlackMetadata(&text, payload.Metadata)
 	writeSlackTimestamp(&text, timestamp)
@@ -183,15 +183,44 @@ func appendSlackDetails(text *strings.Builder, payload notify.JobFailurePayload,
 	}
 }
 
-func (c *Client) formatSiteValue(siteID string) string {
-	if strings.TrimSpace(siteID) == "" {
+func (c *Client) formatSiteValue(siteID, siteName string) string {
+	rawID := strings.TrimSpace(siteID)
+	rawName := strings.TrimSpace(siteName)
+	id := escapeSlackText(rawID)
+	name := escapeSlackText(rawName)
+
+	if id == "" && name == "" {
 		return ""
 	}
-	link := c.buildSiteLink(siteID)
-	if link == "" {
-		return siteID
+
+	link := ""
+	if rawID != "" {
+		link = c.buildSiteLink(rawID)
 	}
-	return fmt.Sprintf("<%s|%s>", link, siteID)
+
+	switch {
+	case link != "" && name != "":
+		return fmt.Sprintf("<%s|%s> (%s)", link, name, id)
+	case link != "":
+		return fmt.Sprintf("<%s|%s>", link, id)
+	case name != "" && id != "":
+		return fmt.Sprintf("%s (%s)", name, id)
+	case name != "":
+		return name
+	default:
+		return id
+	}
+}
+
+func escapeSlackText(value string) string {
+	if value == "" {
+		return ""
+	}
+	return strings.NewReplacer(
+		"&", "&amp;",
+		"<", "&lt;",
+		">", "&gt;",
+	).Replace(value)
 }
 
 func (c *Client) buildSiteLink(siteID string) string {

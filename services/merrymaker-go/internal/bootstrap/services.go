@@ -172,6 +172,7 @@ func newJobService(repos *serviceRepositories, observability ObservabilityContai
 		Repo:            repos.JobRepo,
 		DefaultLease:    30 * time.Second,
 		FailureNotifier: observability.FailureNotifier,
+		Sites:           repos.SiteRepo,
 	})
 }
 

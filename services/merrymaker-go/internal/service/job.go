@@ -23,6 +23,7 @@ type JobServiceOptions struct {
 	DefaultLease    time.Duration             // Required: default lease duration for jobs
 	Logger          *slog.Logger              // Optional: structured logger
 	FailureNotifier *failurenotifier.Service  // Optional: failure notification fan-out
+	Sites           core.SiteRepository       // Optional: site repository for context enrichment
 	LeasePolicy     *domainjob.LeasePolicy    // Optional: override default lease policy
 	Notifier        domainjob.Notifier        // Optional: custom job availability notifier
 	NotifierOptions domainjob.NotifierOptions // Optional: configure default notifier behaviour
@@ -42,6 +43,7 @@ type JobService struct {
 	notifier        domainjob.Notifier
 	logger          *slog.Logger
 	failureNotifier *failurenotifier.Service
+	sites           core.SiteRepository
 }
 
 // NewJobService constructs a new JobService.
@@ -91,6 +93,7 @@ func NewJobService(opts JobServiceOptions) (*JobService, error) {
 		notifier:        notifier,
 		logger:          logger,
 		failureNotifier: opts.FailureNotifier,
+		sites:           opts.Sites,
 	}, nil
 }
 
@@ -270,11 +273,16 @@ func (s *JobService) FailWithDetails(
 		return failed, nil
 	}
 
+	siteID := extractSiteIDFromJob(job)
+	siteName := s.lookupSiteNameWithID(ctx, siteID)
+
 	payload := buildJobFailurePayload(jobFailurePayloadInput{
-		ID:      id,
-		Job:     job,
-		ErrMsg:  errMsg,
-		Details: details,
+		ID:       id,
+		Job:      job,
+		ErrMsg:   errMsg,
+		Details:  details,
+		SiteID:   siteID,
+		SiteName: siteName,
 	})
 	s.failureNotifier.NotifyJobFailure(ctx, payload)
 
@@ -282,17 +290,20 @@ func (s *JobService) FailWithDetails(
 }
 
 type jobFailurePayloadInput struct {
-	ID      string
-	Job     *model.Job
-	ErrMsg  string
-	Details JobFailureDetails
+	ID       string
+	Job      *model.Job
+	ErrMsg   string
+	Details  JobFailureDetails
+	SiteID   string
+	SiteName string
 }
 
 func buildJobFailurePayload(input jobFailurePayloadInput) notify.JobFailurePayload {
 	payload := baseFailurePayload(input.ID, input.ErrMsg, input.Details)
+	payload.SiteName = strings.TrimSpace(input.SiteName)
 	payload.Scope = deriveFailureScope(input.Details.Scope, input.Job)
 	if input.Job != nil {
-		applyJobContext(&payload, input.Job)
+		applyJobContext(&payload, input.Job, input.SiteID)
 	}
 	if payload.ErrorClass != "" {
 		payload.Metadata = mergeMetadata(payload.Metadata, map[string]string{
@@ -334,11 +345,11 @@ func deriveFailureScope(explicit string, job *model.Job) string {
 	return extractScopeFromJob(job)
 }
 
-func applyJobContext(payload *notify.JobFailurePayload, job *model.Job) {
+func applyJobContext(payload *notify.JobFailurePayload, job *model.Job, siteID string) {
 	payload.JobType = string(job.Type)
 	payload.IsTest = job.IsTest
-	if job.SiteID != nil {
-		payload.SiteID = *job.SiteID
+	if siteID != "" {
+		payload.SiteID = siteID
 	}
 
 	retryCount := job.RetryCount
@@ -405,6 +416,32 @@ func extractScopeFromJob(job *model.Job) string {
 	return ""
 }
 
+func extractSiteIDFromJob(job *model.Job) string {
+	if job == nil {
+		return ""
+	}
+	if job.SiteID != nil {
+		siteID := strings.TrimSpace(*job.SiteID)
+		if siteID != "" {
+			return siteID
+		}
+	}
+	return extractSiteIDFromPayload(job.Payload)
+}
+
+func extractSiteIDFromPayload(payload json.RawMessage) string {
+	if len(payload) == 0 {
+		return ""
+	}
+	var entry struct {
+		SiteID string `json:"site_id"`
+	}
+	if err := json.Unmarshal(payload, &entry); err != nil {
+		return ""
+	}
+	return strings.TrimSpace(entry.SiteID)
+}
+
 func copyMetadata(src map[string]string) map[string]string {
 	if len(src) == 0 {
 		return nil
@@ -439,6 +476,34 @@ func mergeMetadata(base, extra map[string]string) map[string]string {
 		out[key] = val
 	}
 	return out
+}
+
+func (s *JobService) lookupSiteNameWithID(ctx context.Context, siteID string) string {
+	if s.sites == nil || siteID == "" {
+		return ""
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer cancel()
+
+	site, err := s.sites.GetByID(timeoutCtx, siteID)
+	if err != nil {
+		if s.logger != nil {
+			s.logger.DebugContext(
+				ctx,
+				"failed to resolve site for job failure notification",
+				"site_id",
+				siteID,
+				"error",
+				err,
+			)
+		}
+		return ""
+	}
+	if site == nil {
+		return ""
+	}
+	return site.Name
 }
 
 // Stats returns statistics about jobs of the given type in different states.
