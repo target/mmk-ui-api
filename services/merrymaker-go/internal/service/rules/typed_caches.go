@@ -14,18 +14,24 @@ import (
 // ErrNotFound is a sentinel error used when cached items are absent.
 var ErrNotFound = errors.New("not found")
 
+// ---------- Redis Key Prefixes ----------
+
+// seenScopeKeyPrefix is the Redis key prefix for seen domain tracking.
+const seenScopeKeyPrefix = "rules:seen:scope:"
+
+// fileScopeKeyPrefix is the Redis key prefix for processed file tracking.
+const fileScopeKeyPrefix = "rules:file:scope:"
+
 // ---------- Common helpers ----------
 
 func seenKeyRedis(k SeenKey) string {
-	// rules:seen:site:<siteID>:scope:<scope>:domain:<domain>
-	return "rules:seen:site:" + k.Scope.SiteID + ":scope:" + k.Scope.Scope + ":domain:" + k.Domain
+	// rules:seen:scope:<scope>:domain:<domain> (scope-wide across sites)
+	return seenScopeKeyPrefix + k.Scope.Scope + ":domain:" + k.Domain
 }
 
 func fileKeyRedis(k FileKey) string {
-	// rules:file:site:<siteID>:scope:<scope>:sha:<sha256>
-	return "rules:file:site:" + k.Scope.SiteID + ":scope:" + k.Scope.Scope + ":sha:" + strings.ToLower(
-		k.FileHash,
-	)
+	// rules:file:scope:<scope>:sha:<sha256> (scope-wide across sites)
+	return fileScopeKeyPrefix + k.Scope.Scope + ":sha:" + strings.ToLower(k.FileHash)
 }
 
 // ---------- Seen Domains Cache ----------
