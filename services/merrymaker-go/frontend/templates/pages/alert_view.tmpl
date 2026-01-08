@@ -243,7 +243,14 @@
                                     <i data-lucide="webhook"></i>
                                     <div>
                                         <div class="fw-medium">
-                                            {{ if $delivery.SinkName }}
+                                            {{ if $delivery.SinkID }}
+                                            <a href="/alert-sinks/{{ $delivery.SinkID }}"
+                                               hx-get="/alert-sinks/{{ $delivery.SinkID }}"
+                                               hx-target="#main-content"
+                                               hx-swap="innerHTML"
+                                               hx-push-url="true"
+                                               class="text-link">{{ if $delivery.SinkName }}{{ $delivery.SinkName }}{{ else }}View sink{{ end }}</a>
+                                            {{ else if $delivery.SinkName }}
                                             {{ $delivery.SinkName }}
                                             {{ else }}
                                             Unknown sink

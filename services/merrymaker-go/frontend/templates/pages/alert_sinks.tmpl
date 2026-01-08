@@ -27,7 +27,7 @@
                     <tbody>
                         {{ range .AlertSinks }}
                         <tr class="row-link"
-                            hx-get="/alert-sinks/{{.ID}}/edit"
+                            hx-get="/alert-sinks/{{.ID}}"
                             hx-target="#main-content"
                             hx-swap="innerHTML"
                             hx-push-url="true"
@@ -39,6 +39,17 @@
                             <td class="text-muted nowrap">{{ timeTag .CreatedAt }}</td>
                             <td align="right">
                                 <div class="table-actions">
+                                    <a class="btn-table-action"
+                                       href="/alert-sinks/{{.ID}}"
+                                       hx-get="/alert-sinks/{{.ID}}"
+                                       hx-target="#main-content"
+                                       hx-swap="innerHTML"
+                                       hx-push-url="true"
+                                       title="View alert sink"
+                                       aria-label="View alert sink"
+                                       data-stop-row-nav>
+                                        <i data-lucide="eye"></i>
+                                    </a>
                                     <button class="btn-table-action btn-table-action--danger"
                                             type="button"
                                             hx-post="/alert-sinks/{{.ID}}/delete"

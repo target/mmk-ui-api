@@ -3,6 +3,10 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -126,6 +130,45 @@ func TestAlertSinkService_ProcessSinkConfiguration(t *testing.T) {
 	assert.Equal(t, "abc", prep.Headers["X-API"])
 	assert.Equal(t, map[string]string{"__T__": "abc"}, prep.Secrets)
 	// body derived from evaluator
+	assert.JSONEq(t, `{"k":"v"}`, string(prep.Body))
+}
+
+func TestAlertSinkService_ProcessSinkConfiguration_DefaultContentType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(
+		AlertSinkServiceOptions{
+			JobRepo:    jobRepo,
+			SecretRepo: secretRepo,
+			Evaluator:  evalStub{res: map[string]any{"k": "v"}},
+		},
+	)
+
+	// Headers do not include Content-Type; body will be derived
+	sink := model.HTTPAlertSink{
+		ID:          "sink-ct",
+		Name:        "test-default-ct",
+		URI:         "https://api.example.com/alert",
+		Method:      "POST",
+		Body:        ptr("some.expr"),
+		QueryParams: ptr("a=b"),
+		Headers:     ptr("X-Trace: abc123"),
+		OkStatus:    200,
+		Retry:       1,
+	}
+
+	payload := json.RawMessage(`{"foo":"bar"}`)
+	prep, err := svc.ProcessSinkConfiguration(context.Background(), sink, payload)
+	require.NoError(t, err)
+	// Default Content-Type should be added when body is present and header missing
+	assert.Equal(t, "application/json", prep.Headers["Content-Type"])
+	// Existing headers remain
+	assert.Equal(t, "abc123", prep.Headers["X-Trace"])
+	// Body derived from evaluator
 	assert.JSONEq(t, `{"k":"v"}`, string(prep.Body))
 }
 
@@ -346,4 +389,244 @@ func TestHTTPAlertSinkService_Delete(t *testing.T) {
 	result, err := svc.Delete(context.Background(), "sink-1")
 	require.NoError(t, err)
 	assert.True(t, result)
+}
+
+// mockHTTPDoer is a mock HTTP client for testing TestFire.
+type mockHTTPDoer struct {
+	doFunc func(req *http.Request) (*http.Response, error)
+}
+
+func (m *mockHTTPDoer) Do(req *http.Request) (*http.Response, error) {
+	return m.doFunc(req)
+}
+
+func TestAlertSinkService_TestFire_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	sink := &model.HTTPAlertSink{
+		ID:       "sink-1",
+		Name:     "test-sink",
+		URI:      "https://webhook.example.com/alert",
+		Method:   "POST",
+		OkStatus: 200,
+		Secrets:  []string{},
+	}
+
+	// Mock HTTP client that returns 200 OK
+	mockClient := &mockHTTPDoer{
+		doFunc: func(req *http.Request) (*http.Response, error) {
+			assert.Equal(t, "POST", req.Method)
+			assert.Equal(t, "https://webhook.example.com/alert", req.URL.String())
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				Body:       io.NopCloser(strings.NewReader(`{"status":"ok"}`)),
+			}, nil
+		},
+	}
+
+	result, err := svc.TestFire(context.Background(), sink, mockClient)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.True(t, result.Success)
+	assert.Equal(t, 200, result.StatusCode)
+	assert.Equal(t, 200, result.ExpectedCode)
+	assert.Empty(t, result.ErrorMessage)
+	assert.NotNil(t, result.Response)
+	assert.JSONEq(t, `{"status":"ok"}`, result.Response.Body)
+}
+
+func TestAlertSinkService_TestFire_WrongStatusCode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	sink := &model.HTTPAlertSink{
+		ID:       "sink-1",
+		Name:     "test-sink",
+		URI:      "https://webhook.example.com/alert",
+		Method:   "POST",
+		OkStatus: 200,
+		Secrets:  []string{},
+	}
+
+	// Mock HTTP client that returns 500
+	mockClient := &mockHTTPDoer{
+		doFunc: func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Header:     http.Header{},
+				Body:       io.NopCloser(strings.NewReader(`{"error":"internal server error"}`)),
+			}, nil
+		},
+	}
+
+	result, err := svc.TestFire(context.Background(), sink, mockClient)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.False(t, result.Success)
+	assert.Equal(t, 500, result.StatusCode)
+	assert.Equal(t, 200, result.ExpectedCode)
+	assert.Contains(t, result.ErrorMessage, "unexpected status")
+}
+
+func TestAlertSinkService_TestFire_NetworkError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	sink := &model.HTTPAlertSink{
+		ID:       "sink-1",
+		Name:     "test-sink",
+		URI:      "https://webhook.example.com/alert",
+		Method:   "POST",
+		OkStatus: 200,
+		Secrets:  []string{},
+	}
+
+	// Mock HTTP client that returns network error
+	mockClient := &mockHTTPDoer{
+		doFunc: func(req *http.Request) (*http.Response, error) {
+			return nil, errors.New("connection refused")
+		},
+	}
+
+	result, err := svc.TestFire(context.Background(), sink, mockClient)
+	require.NoError(t, err) // TestFire should not return error, but capture it in result
+	require.NotNil(t, result)
+
+	assert.False(t, result.Success)
+	assert.Contains(t, result.ErrorMessage, "connection refused")
+}
+
+func TestAlertSinkService_TestFire_WithSecrets(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	sink := &model.HTTPAlertSink{
+		ID:       "sink-1",
+		Name:     "test-sink",
+		URI:      "https://webhook.example.com/alert?token=__API_KEY__",
+		Method:   "POST",
+		Headers:  ptr(`{"Authorization": "Bearer __API_KEY__"}`),
+		OkStatus: 200,
+		Secrets:  []string{"API_KEY"},
+	}
+
+	// Mock secret lookup
+	secretRepo.EXPECT().GetByName(gomock.Any(), "API_KEY").Return(&model.Secret{
+		Name:  "API_KEY",
+		Value: "secret-token-123",
+	}, nil)
+
+	// Mock HTTP client that validates secret was resolved
+	mockClient := &mockHTTPDoer{
+		doFunc: func(req *http.Request) (*http.Response, error) {
+			// Verify secret was resolved in URL
+			assert.Contains(t, req.URL.String(), "token=secret-token-123")
+			// Verify secret was resolved in headers
+			assert.Equal(t, "Bearer secret-token-123", req.Header.Get("Authorization"))
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{},
+				Body:       io.NopCloser(strings.NewReader(`{"ok":true}`)),
+			}, nil
+		},
+	}
+
+	result, err := svc.TestFire(context.Background(), sink, mockClient)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.True(t, result.Success)
+	// Verify secrets are redacted in the request summary
+	assert.Contains(t, result.Request.URL, "__API_KEY__")
+	assert.NotContains(t, result.Request.URL, "secret-token-123")
+	// Verify Authorization header is masked (sensitive header masking)
+	assert.Equal(t, "Bearer ***", result.Request.Headers["Authorization"])
+	assert.NotContains(t, result.Request.Headers["Authorization"], "secret-token-123")
+	assert.NotContains(t, result.Request.Headers["Authorization"], "__API_KEY__")
+}
+
+func TestAlertSinkService_TestFire_NilSink(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	mockClient := &mockHTTPDoer{}
+
+	_, err := svc.TestFire(context.Background(), nil, mockClient)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "sink is required")
+}
+
+func TestAlertSinkService_TestFire_NilClient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	secretRepo := mocks.NewMockSecretRepository(ctrl)
+	jobRepo := mocks.NewMockJobRepository(ctrl)
+
+	svc := NewAlertSinkService(AlertSinkServiceOptions{
+		JobRepo:    jobRepo,
+		SecretRepo: secretRepo,
+		Evaluator:  evalStub{},
+	})
+
+	sink := &model.HTTPAlertSink{
+		ID:   "sink-1",
+		Name: "test-sink",
+		URI:  "https://webhook.example.com/alert",
+	}
+
+	_, err := svc.TestFire(context.Background(), sink, nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "http client is required")
 }
