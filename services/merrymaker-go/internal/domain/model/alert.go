@@ -183,6 +183,13 @@ type AlertWithSiteName struct {
 	SiteAlertMode SiteAlertMode `json:"site_alert_mode" db:"site_alert_mode"`
 }
 
+// AlertListResult contains both the list of alerts and the total count.
+// This allows efficient pagination by returning both values in a single query.
+type AlertListResult struct {
+	Alerts []*AlertWithSiteName
+	Total  int
+}
+
 // AlertStats represents statistics about alerts in the system.
 type AlertStats struct {
 	Total      int `json:"total"`

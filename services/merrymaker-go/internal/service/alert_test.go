@@ -16,14 +16,16 @@ import (
 
 // mockAlertRepo is a mock implementation of core.AlertRepository for testing.
 type mockAlertRepo struct {
-	createFunc               func(ctx context.Context, req *model.CreateAlertRequest) (*model.Alert, error)
-	getByIDFunc              func(ctx context.Context, id string) (*model.Alert, error)
-	listFunc                 func(ctx context.Context, opts *model.AlertListOptions) ([]*model.Alert, error)
-	listWithSiteNamesFunc    func(ctx context.Context, opts *model.AlertListOptions) ([]*model.AlertWithSiteName, error)
-	deleteFunc               func(ctx context.Context, id string) (bool, error)
-	statsFunc                func(ctx context.Context, siteID *string) (*model.AlertStats, error)
-	resolveFunc              func(ctx context.Context, params core.ResolveAlertParams) (*model.Alert, error)
-	updateDeliveryStatusFunc func(ctx context.Context, params core.UpdateAlertDeliveryStatusParams) (*model.Alert, error)
+	createFunc                    func(ctx context.Context, req *model.CreateAlertRequest) (*model.Alert, error)
+	getByIDFunc                   func(ctx context.Context, id string) (*model.Alert, error)
+	listFunc                      func(ctx context.Context, opts *model.AlertListOptions) ([]*model.Alert, error)
+	listWithSiteNamesFunc         func(ctx context.Context, opts *model.AlertListOptions) ([]*model.AlertWithSiteName, error)
+	listWithSiteNamesAndCountFunc func(ctx context.Context, opts *model.AlertListOptions) (*model.AlertListResult, error)
+	countFunc                     func(ctx context.Context, opts *model.AlertListOptions) (int, error)
+	deleteFunc                    func(ctx context.Context, id string) (bool, error)
+	statsFunc                     func(ctx context.Context, siteID *string) (*model.AlertStats, error)
+	resolveFunc                   func(ctx context.Context, params core.ResolveAlertParams) (*model.Alert, error)
+	updateDeliveryStatusFunc      func(ctx context.Context, params core.UpdateAlertDeliveryStatusParams) (*model.Alert, error)
 }
 
 func (m *mockAlertRepo) Create(ctx context.Context, req *model.CreateAlertRequest) (*model.Alert, error) {
@@ -55,6 +57,23 @@ func (m *mockAlertRepo) ListWithSiteNames(
 		return m.listWithSiteNamesFunc(ctx, opts)
 	}
 	return nil, errors.New("not implemented")
+}
+
+func (m *mockAlertRepo) ListWithSiteNamesAndCount(
+	ctx context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	if m.listWithSiteNamesAndCountFunc != nil {
+		return m.listWithSiteNamesAndCountFunc(ctx, opts)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockAlertRepo) Count(ctx context.Context, opts *model.AlertListOptions) (int, error) {
+	if m.countFunc != nil {
+		return m.countFunc(ctx, opts)
+	}
+	return 0, errors.New("not implemented")
 }
 
 func (m *mockAlertRepo) Delete(ctx context.Context, id string) (bool, error) {

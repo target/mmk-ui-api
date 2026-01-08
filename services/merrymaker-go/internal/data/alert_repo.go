@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -390,6 +391,101 @@ func (r *AlertRepo) ListWithSiteNames(
 	}
 
 	return alerts, nil
+}
+
+// alertWithCountRow is a helper struct for scanning alert rows with total_count from window function.
+type alertWithCountRow struct {
+	model.AlertWithSiteName
+	TotalCount int64 `db:"total_count"`
+}
+
+// ListWithSiteNamesAndCount retrieves alerts with site names and total count in a single query.
+// Uses COUNT(*) OVER() window function to eliminate the need for a separate count query.
+func (r *AlertRepo) ListWithSiteNamesAndCount(
+	ctx context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	if opts == nil {
+		opts = &model.AlertListOptions{}
+	}
+
+	limit, offset := r.normalizePagination(opts.Limit, opts.Offset)
+	sortCol, sortDir := r.validateSortOptions(opts.Sort, opts.Dir)
+	whereClause, args, argIndex := r.buildListWhereClauseWithAlias(opts)
+
+	// Build query with COUNT(*) OVER() to get total in same query
+	var queryBuilder strings.Builder
+	queryBuilder.WriteString("SELECT ")
+	queryBuilder.WriteString(alertColumnsWithSiteName)
+	queryBuilder.WriteString(", COUNT(*) OVER() AS total_count")
+	queryBuilder.WriteString(" FROM alerts a LEFT JOIN sites s ON a.site_id = s.id ")
+	queryBuilder.WriteString(whereClause)
+	queryBuilder.WriteString(fmt.Sprintf(" ORDER BY a.%s %s, a.id DESC", sortCol, sortDir))
+	queryBuilder.WriteString(" LIMIT $")
+	queryBuilder.WriteString(strconv.Itoa(argIndex))
+	queryBuilder.WriteString(" OFFSET $")
+	queryBuilder.WriteString(strconv.Itoa(argIndex + 1))
+	query := queryBuilder.String()
+	args = append(args, limit, offset)
+
+	result := &model.AlertListResult{Alerts: make([]*model.AlertWithSiteName, 0), Total: 0}
+
+	var rowsWithCount []*alertWithCountRow
+	err := pgxutil.WithPgxConn(ctx, r.DB, func(pgxConn *pgx.Conn) error {
+		rows, err := pgxConn.Query(ctx, query, args...)
+		if err != nil {
+			return err
+		}
+		rowsWithCount, err = pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[alertWithCountRow])
+		return err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list alerts with site names and count: %w", err)
+	}
+
+	// Extract alerts and total count
+	for _, row := range rowsWithCount {
+		result.Alerts = append(result.Alerts, &row.AlertWithSiteName)
+		// All rows have the same total_count from the window function
+		if result.Total == 0 && row.TotalCount > 0 {
+			if row.TotalCount > math.MaxInt {
+				return nil, fmt.Errorf("count exceeds int range: %d", row.TotalCount)
+			}
+			result.Total = int(row.TotalCount)
+		}
+	}
+
+	return result, nil
+}
+
+// Count returns the total number of alerts matching the given filter options.
+// Note: For paginated queries, prefer ListWithSiteNamesAndCount which uses COUNT(*) OVER()
+// to get both results and total in a single query.
+func (r *AlertRepo) Count(ctx context.Context, opts *model.AlertListOptions) (int, error) {
+	if opts == nil {
+		opts = &model.AlertListOptions{}
+	}
+
+	// Build WHERE clause and arguments - no JOIN needed for counting
+	whereClause, args, _ := r.buildListWhereClauseWithAlias(opts)
+
+	// Build the count query - COUNT only needs the alerts table
+	query := "SELECT COUNT(*) FROM alerts a " + whereClause
+
+	var count64 int64
+	err := pgxutil.WithPgxConn(ctx, r.DB, func(pgxConn *pgx.Conn) error {
+		return pgxConn.QueryRow(ctx, query, args...).Scan(&count64)
+	})
+	if err != nil {
+		return 0, fmt.Errorf("count alerts: %w", err)
+	}
+
+	// Safely convert int64 to int, checking for overflow
+	if count64 > math.MaxInt {
+		return 0, fmt.Errorf("count exceeds int range: %d", count64)
+	}
+
+	return int(count64), nil
 }
 
 // Delete deletes an alert by its ID.

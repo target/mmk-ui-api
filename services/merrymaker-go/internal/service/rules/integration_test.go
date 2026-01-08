@@ -56,6 +56,27 @@ func (m *mockAlertRepo) ListWithSiteNames(
 	return alertsWithSiteNames, nil
 }
 
+func (m *mockAlertRepo) ListWithSiteNamesAndCount(
+	ctx context.Context,
+	opts *model.AlertListOptions,
+) (*model.AlertListResult, error) {
+	alertsWithSiteNames := make([]*model.AlertWithSiteName, len(m.alerts))
+	for i, alert := range m.alerts {
+		alertsWithSiteNames[i] = &model.AlertWithSiteName{
+			Alert:    *alert,
+			SiteName: "Test Site",
+		}
+	}
+	return &model.AlertListResult{
+		Alerts: alertsWithSiteNames,
+		Total:  len(m.alerts),
+	}, nil
+}
+
+func (m *mockAlertRepo) Count(ctx context.Context, opts *model.AlertListOptions) (int, error) {
+	return len(m.alerts), nil
+}
+
 func (m *mockAlertRepo) Delete(ctx context.Context, id string) (bool, error) {
 	return false, errors.New("not implemented in mock")
 }

@@ -144,6 +144,11 @@ type AlertRepository interface {
 		ctx context.Context,
 		opts *model.AlertListOptions,
 	) ([]*model.AlertWithSiteName, error)
+	ListWithSiteNamesAndCount(
+		ctx context.Context,
+		opts *model.AlertListOptions,
+	) (*model.AlertListResult, error)
+	Count(ctx context.Context, opts *model.AlertListOptions) (int, error)
 	Delete(ctx context.Context, id string) (bool, error)
 	Stats(ctx context.Context, siteID *string) (*model.AlertStats, error)
 	Resolve(ctx context.Context, params ResolveAlertParams) (*model.Alert, error)
