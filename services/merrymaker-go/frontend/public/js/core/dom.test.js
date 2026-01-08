@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { h, qs, qsa, htmlToFragment, htmlToElement, clearElement } from "./dom.js";
+import { beforeEach, describe, expect, it } from "bun:test";
+import { clearElement, h, htmlToElement, htmlToFragment, qs, qsa } from "./dom.js";
 
 describe("DOM Utilities", () => {
 	describe("h() - Element Creation", () => {

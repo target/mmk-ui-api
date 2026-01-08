@@ -2,7 +2,7 @@
  * Tests for Modal Component
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { Modal } from "./modal.js";
 
 describe("Modal Component", () => {
