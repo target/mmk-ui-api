@@ -303,6 +303,7 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockJobRepository(ctrl)
+	siteRepo := mocks.NewMockSiteRepository(ctrl)
 
 	payload := RulesJobPayload{
 		EventIDs: []string{"1"},
@@ -325,6 +326,14 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 
 	repo.EXPECT().GetByID(gomock.Any(), job.ID).Return(job, nil)
 	repo.EXPECT().Fail(gomock.Any(), job.ID, "boom").Return(true, nil)
+	siteRepo.EXPECT().GetByID(gomock.Any(), payload.SiteID).DoAndReturn(
+		func(ctx context.Context, id string) (*model.Site, error) {
+			deadline, ok := ctx.Deadline()
+			require.True(t, ok, "expected deadline on site lookup")
+			require.LessOrEqual(t, time.Until(deadline), 600*time.Millisecond)
+			return &model.Site{ID: id, Name: "Friendly"}, nil
+		},
+	)
 
 	var captured []notify.JobFailurePayload
 	failureSvc := failurenotifier.NewService(failurenotifier.Options{
@@ -344,6 +353,7 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 		DefaultLease:    30 * time.Second,
 		FailureNotifier: failureSvc,
 		Notifier:        &stubJobNotifier{},
+		Sites:           siteRepo,
 	})
 
 	details := JobFailureDetails{
@@ -362,6 +372,7 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 	assert.Equal(t, string(job.Type), evt.JobType)
 	assert.Equal(t, payload.SiteID, evt.SiteID)
 	assert.Equal(t, payload.Scope, evt.Scope)
+	assert.Equal(t, "Friendly", evt.SiteName)
 	assert.Equal(t, "boom", evt.Error)
 	assert.Equal(t, "test_error", evt.ErrorClass)
 	assert.Equal(t, notify.SeverityCritical, evt.Severity)
@@ -370,6 +381,70 @@ func TestJobService_FailWithDetails_Notifies(t *testing.T) {
 	assert.Equal(t, "3", evt.Metadata["max_retries"])
 	assert.Equal(t, "failed", evt.Metadata["status"])
 	assert.False(t, evt.IsTest)
+}
+
+func TestJobService_FailWithDetails_UsesPayloadSiteID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockJobRepository(ctrl)
+	siteRepo := mocks.NewMockSiteRepository(ctrl)
+
+	payload := struct {
+		SiteID string `json:"site_id"`
+	}{
+		SiteID: "site-1",
+	}
+	payloadBytes, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	job := &model.Job{
+		ID:         "job-123",
+		Type:       model.JobTypeBrowser,
+		Status:     model.JobStatusRunning,
+		Payload:    payloadBytes,
+		RetryCount: 0,
+		MaxRetries: 0,
+		Priority:   10,
+	}
+
+	repo.EXPECT().GetByID(gomock.Any(), job.ID).Return(job, nil)
+	repo.EXPECT().Fail(gomock.Any(), job.ID, "boom").Return(true, nil)
+	siteRepo.EXPECT().GetByID(gomock.Any(), payload.SiteID).Return(
+		&model.Site{ID: payload.SiteID, Name: "Friendly"},
+		nil,
+	)
+
+	var captured []notify.JobFailurePayload
+	failureSvc := failurenotifier.NewService(failurenotifier.Options{
+		Sinks: []failurenotifier.SinkRegistration{
+			{
+				Name: "test",
+				Sink: notify.SinkFunc(func(ctx context.Context, payload notify.JobFailurePayload) error {
+					captured = append(captured, payload)
+					return nil
+				}),
+			},
+		},
+	})
+
+	svc := MustNewJobService(JobServiceOptions{
+		Repo:            repo,
+		DefaultLease:    30 * time.Second,
+		FailureNotifier: failureSvc,
+		Notifier:        &stubJobNotifier{},
+		Sites:           siteRepo,
+	})
+
+	failed, err := svc.FailWithDetails(context.Background(), job.ID, "boom", JobFailureDetails{})
+	require.NoError(t, err)
+	require.True(t, failed)
+
+	require.Len(t, captured, 1)
+	evt := captured[0]
+
+	assert.Equal(t, payload.SiteID, evt.SiteID)
+	assert.Equal(t, "Friendly", evt.SiteName)
 }
 
 func TestJobService_FailWithDetails_SkipsUntilRetriesExhausted(t *testing.T) {

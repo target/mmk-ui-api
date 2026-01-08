@@ -53,6 +53,7 @@ type RunnerOptions struct {
 
 	// Optional dependency injections (useful for tests/decoupling)
 	JobsRepo        core.JobRepository
+	SitesRepo       core.SiteRepository
 	SecretsRepo     core.SecretRepository
 	AlertSinkRepo   core.HTTPAlertSinkRepository
 	JobResultRepo   core.JobResultRepository
@@ -110,10 +111,17 @@ func buildRunnerDeps(opts RunnerOptions, lease time.Duration) runnerDeps {
 	} else {
 		deps.jobsRepo = data.NewJobRepo(opts.DB, data.RepoConfig{})
 	}
+	var siteRepo core.SiteRepository
+	if opts.SitesRepo != nil {
+		siteRepo = opts.SitesRepo
+	} else if opts.DB != nil {
+		siteRepo = data.NewSiteRepo(opts.DB)
+	}
 	deps.jobSvc = service.MustNewJobService(service.JobServiceOptions{
 		Repo:            deps.jobsRepo,
 		DefaultLease:    lease,
 		FailureNotifier: opts.FailureNotifier,
+		Sites:           siteRepo,
 	})
 
 	if opts.SecretsRepo != nil {
