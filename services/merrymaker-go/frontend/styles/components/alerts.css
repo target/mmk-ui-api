@@ -1,14 +1,48 @@
 /* Component: Alerts */
 
 .alert {
+	display: flex;
+	gap: var(--space-3);
+	align-items: flex-start;
 	padding: var(--space-4);
 	border-radius: var(--border-radius-md);
 	margin-bottom: var(--space-4);
 }
+
+.alert > i[data-lucide] {
+	flex-shrink: 0;
+	width: var(--icon-size-md);
+	height: var(--icon-size-md);
+	margin-top: 2px;
+}
+
+.alert > div {
+	flex: 1;
+	min-width: 0;
+}
+
 .alert-danger {
 	background-color: var(--color-danger-bg);
 	border: var(--border-width) solid var(--color-danger-border);
 	color: var(--color-danger-text);
+}
+
+.alert-info {
+	background-color: var(--color-info-soft-bg);
+	border: var(--border-width) solid var(--color-info-soft-border);
+	color: var(--color-info-soft-text);
+}
+
+.alert-success {
+	background-color: var(--color-success-soft-bg);
+	border: var(--border-width) solid var(--color-success-soft-border);
+	color: var(--color-success-soft-text);
+}
+
+.alert-warning {
+	background-color: var(--color-warning-soft-bg);
+	border: var(--border-width) solid var(--color-warning-soft-border);
+	color: var(--color-warning-soft-text);
 }
 
 .alert-detail {

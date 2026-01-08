@@ -70,12 +70,20 @@ type createManualAlertParams struct {
 }
 
 type fireAlertDispatchParams struct {
-	Ctx    context.Context
-	Deps   fireAlertDeps
-	Site   *model.Site
-	Alert  *model.Alert
-	Skip   bool
-	Logger *slog.Logger
+	Ctx     context.Context
+	Deps    fireAlertDeps
+	Site    *model.Site
+	Alert   *model.Alert
+	Skip    bool
+	BaseURL string
+	Logger  *slog.Logger
+}
+
+type createAndPrintAlertParams struct {
+	Ctx  context.Context
+	Deps fireAlertDeps
+	Site *model.Site
+	Opts fireAlertOptions
 }
 
 func (r *recordingAlertSinkScheduler) ScheduleAlert(
@@ -118,39 +126,54 @@ func runFireHTTPAlert(cmdCtx *commandContext, args []string) (err error) {
 		return sinkErr
 	}
 
-	eventContext, metadata, err := buildFireAlertPayloads(site, &opts)
+	alert, _, _, err := createAndPrintAlert(&createAndPrintAlertParams{
+		Ctx:  ctx,
+		Deps: deps,
+		Site: site,
+		Opts: opts,
+	})
 	if err != nil {
 		return err
 	}
 
+	return dispatchManualAlert(&fireAlertDispatchParams{
+		Ctx:     ctx,
+		Deps:    deps,
+		Site:    site,
+		Alert:   alert,
+		Skip:    opts.SkipDispatch,
+		BaseURL: cmdCtx.Config.HTTP.BaseURL,
+		Logger:  cmdCtx.Logger,
+	})
+}
+
+func createAndPrintAlert(params *createAndPrintAlertParams) (*model.Alert, json.RawMessage, json.RawMessage, error) {
+	eventContext, metadata, err := buildFireAlertPayloads(params.Site, &params.Opts)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	alertParams := &createManualAlertParams{
-		Ctx:          ctx,
-		Repo:         deps.AlertRepo,
-		Site:         site,
-		Opts:         opts,
+		Ctx:          params.Ctx,
+		Repo:         params.Deps.AlertRepo,
+		Site:         params.Site,
+		Opts:         params.Opts,
 		EventContext: eventContext,
 		Metadata:     metadata,
 	}
 	alert, err := createManualAlert(alertParams)
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
-	if summaryErr := printManualAlertSummary(alert, site, manualAlertSummary{
+	if summaryErr := printManualAlertSummary(alert, params.Site, manualAlertSummary{
 		EventContext: eventContext,
 		Metadata:     metadata,
 	}); summaryErr != nil {
-		return summaryErr
+		return nil, nil, nil, summaryErr
 	}
 
-	return dispatchManualAlert(&fireAlertDispatchParams{
-		Ctx:    ctx,
-		Deps:   deps,
-		Site:   site,
-		Alert:  alert,
-		Skip:   opts.SkipDispatch,
-		Logger: cmdCtx.Logger,
-	})
+	return alert, eventContext, metadata, nil
 }
 
 func openFireAlertDeps(cmdCtx *commandContext) (fireAlertDeps, error) {
@@ -268,6 +291,7 @@ func dispatchManualAlert(params *fireAlertDispatchParams) error {
 		Sites:     params.Deps.SiteRepo,
 		Sinks:     params.Deps.SinkRepo,
 		AlertSink: recorder,
+		BaseURL:   params.BaseURL,
 		Logger:    params.Logger,
 	})
 

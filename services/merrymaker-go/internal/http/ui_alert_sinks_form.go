@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -13,6 +14,12 @@ import (
 	"github.com/target/mmk-ui-api/internal/data"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 	"github.com/target/mmk-ui-api/internal/http/validation"
+)
+
+const (
+	defaultScheme       = "http"
+	defaultHostWithPort = "localhost:8080"
+	defaultBaseURL      = defaultScheme + "://" + defaultHostWithPort
 )
 
 // sampleAlertEventContext represents the superset of fields that may appear in event_context
@@ -53,11 +60,25 @@ type sampleAlertPayload struct {
 }
 
 // buildSampleAlertJSON generates a representative sample alert payload for the JMESPath preview.
-// It includes fields from multiple rule types so users can build transformations that work across all alerts.
-func buildSampleAlertJSON() string {
+// It includes the enriched payload structure with alert data, site name, and alert URL
+// that will be available to JMESPath expressions at runtime.
+// baseURL should be the configured application base URL to ensure the alert_url matches
+// what will be sent to alert sinks at runtime.
+func buildSampleAlertJSON(baseURL string) string {
 	sampleTime := time.Date(2021, 6, 1, 0, 0, 0, 0, time.UTC)
-	sample := sampleAlertPayload{
-		ID:          "alert-8a497372-6b43-426c-a323-37706302589c",
+
+	// Normalize baseURL to remove trailing slash for consistent URL construction
+	baseURL = strings.TrimRight(baseURL, "/")
+	if baseURL == "" {
+		baseURL = defaultBaseURL
+	}
+
+	// Build the alert URL using the same pattern as alert_dispatcher.go
+	alertID := "alert-8a497372-6b43-426c-a323-37706302589c"
+	alertURL := fmt.Sprintf("%s/alerts/%s", baseURL, alertID)
+
+	alert := sampleAlertPayload{
+		ID:          alertID,
 		SiteID:      "site-001",
 		RuleID:      nil,
 		RuleType:    string(model.AlertRuleTypeUnknownDomain),
@@ -86,7 +107,21 @@ func buildSampleAlertJSON() string {
 		ResolvedBy:     nil,
 		CreatedAt:      sampleTime,
 	}
-	b, err := json.MarshalIndent(sample, "", "  ")
+
+	// Marshal the alert to JSON to include in the enriched payload
+	alertJSON, err := json.Marshal(alert)
+	if err != nil {
+		return "{}"
+	}
+
+	// Create the enriched payload structure that matches what's sent to alert sinks
+	enrichedPayload := map[string]any{
+		"alert":     json.RawMessage(alertJSON),
+		"site_name": "My Production Site",
+		"alert_url": alertURL,
+	}
+
+	b, err := json.MarshalIndent(enrichedPayload, "", "  ")
 	if err != nil {
 		return "{}"
 	}
@@ -451,7 +486,34 @@ func (h *UIHandlers) prepareAlertSinkFormData(r *http.Request, mode FormMode, da
 	}
 
 	data["SecretOptions"] = h.buildSecretOptions(r.Context(), selected)
-	data["SampleAlertJSON"] = buildSampleAlertJSON()
+	data["SampleAlertJSON"] = buildSampleAlertJSON(getRequestBaseURL(r))
+}
+
+// getRequestBaseURL constructs the base URL from an HTTP request.
+// It uses the request scheme and host to build a URL that matches the actual
+// application's configured base URL. If the scheme is missing or appears to be
+// from a reverse proxy (e.g., X-Forwarded-Proto), prefer that.
+func getRequestBaseURL(r *http.Request) string {
+	scheme := r.Header.Get("X-Forwarded-Proto")
+	if scheme == "" {
+		scheme = r.URL.Scheme
+	}
+	if scheme == "" {
+		scheme = defaultScheme
+		if r.TLS != nil {
+			scheme = "https"
+		}
+	}
+
+	host := r.Header.Get("X-Forwarded-Host")
+	if host == "" {
+		host = r.Host
+	}
+	if host == "" {
+		host = defaultHostWithPort
+	}
+
+	return fmt.Sprintf("%s://%s", scheme, host)
 }
 
 func extractAlertSinkSecrets(data map[string]any) []string {

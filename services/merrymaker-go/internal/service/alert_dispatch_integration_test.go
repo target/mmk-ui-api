@@ -122,7 +122,7 @@ func TestAlertDispatchIntegration_EndToEnd(t *testing.T) {
 		assert.Equal(t, model.JobTypeAlert, job.Type)
 		assert.Equal(t, model.JobStatusPending, job.Status)
 
-		// Verify job payload contains sink ID and alert payload
+		// Verify job payload contains sink ID and enriched alert payload
 		var jobPayload struct {
 			SinkID  string          `json:"sink_id"`
 			Payload json.RawMessage `json:"payload"`
@@ -131,12 +131,18 @@ func TestAlertDispatchIntegration_EndToEnd(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sink.ID, jobPayload.SinkID)
 
-		// Verify alert payload contains the alert
-		var alertPayload model.Alert
-		err = json.Unmarshal(jobPayload.Payload, &alertPayload)
+		// Verify enriched payload contains alert, site_name, and alert_url
+		var enrichedPayload struct {
+			Alert    model.Alert `json:"alert"`
+			SiteName string      `json:"site_name"`
+			AlertURL string      `json:"alert_url"`
+		}
+		err = json.Unmarshal(jobPayload.Payload, &enrichedPayload)
 		require.NoError(t, err)
-		assert.Equal(t, alert.ID, alertPayload.ID)
-		assert.Equal(t, alert.Title, alertPayload.Title)
+		assert.Equal(t, alert.ID, enrichedPayload.Alert.ID)
+		assert.Equal(t, alert.Title, enrichedPayload.Alert.Title)
+		assert.Equal(t, site.Name, enrichedPayload.SiteName)
+		assert.Contains(t, enrichedPayload.AlertURL, alert.ID)
 	})
 }
 

@@ -26,6 +26,7 @@ type AlertDispatchService struct {
 	sinks     core.HTTPAlertSinkRepository
 	sites     core.SiteRepository
 	alertSink AlertSinkScheduler
+	baseURL   string
 	logger    *slog.Logger
 }
 
@@ -34,20 +35,29 @@ type AlertDispatchServiceOptions struct {
 	Sinks     core.HTTPAlertSinkRepository
 	Sites     core.SiteRepository
 	AlertSink AlertSinkScheduler
+	BaseURL   string
 	Logger    *slog.Logger
 }
 
 // NewAlertDispatchService creates a new alert dispatch service.
+// If BaseURL is empty, it defaults to "http://localhost:8080" to ensure
+// a consistent default with the HTTPConfig.
 func NewAlertDispatchService(opts AlertDispatchServiceOptions) *AlertDispatchService {
 	logger := opts.Logger
 	if logger == nil {
 		logger = slog.Default()
 	}
 
+	baseURL := opts.BaseURL
+	if baseURL == "" {
+		baseURL = "http://localhost:8080"
+	}
+
 	return &AlertDispatchService{
 		sinks:     opts.Sinks,
 		sites:     opts.Sites,
 		alertSink: opts.AlertSink,
+		baseURL:   baseURL,
 		logger:    logger,
 	}
 }
@@ -89,11 +99,6 @@ func (s *AlertDispatchService) prepareDispatchParams(
 	ctx context.Context,
 	alert *model.Alert,
 ) (dispatchParams, bool, error) {
-	payload, err := json.Marshal(alert)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to marshal alert payload", "alert_id", alert.ID, "error", err)
-		return dispatchParams{}, false, fmt.Errorf("alert dispatch: marshal payload: %w", err)
-	}
 	if s.alertSink == nil {
 		return dispatchParams{}, false, errAlertSinkSchedulerNotConfigured
 	}
@@ -123,12 +128,55 @@ func (s *AlertDispatchService) prepareDispatchParams(
 		return dispatchParams{}, false, nil
 	}
 
+	payload, err := s.buildEnrichedPayload(ctx, alert, site)
+	if err != nil {
+		return dispatchParams{}, false, err
+	}
+
 	return dispatchParams{
 		ctx:     ctx,
 		alert:   alert,
 		sinks:   []*model.HTTPAlertSink{targetSink},
 		payload: payload,
 	}, true, nil
+}
+
+func (s *AlertDispatchService) buildEnrichedPayload(
+	ctx context.Context,
+	alert *model.Alert,
+	site *model.Site,
+) (json.RawMessage, error) {
+	alertJSON, err := json.Marshal(alert)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to marshal alert data", "alert_id", alert.ID, "error", err)
+		return nil, fmt.Errorf("alert dispatch: marshal alert: %w", err)
+	}
+
+	siteName := ""
+	if site != nil {
+		siteName = site.Name
+	}
+
+	enrichedPayload := AlertPayload{
+		Alert:    alertJSON,
+		SiteName: siteName,
+		AlertURL: s.buildAlertURL(alert.ID),
+	}
+
+	payload, err := json.Marshal(enrichedPayload)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to marshal enriched payload", "alert_id", alert.ID, "error", err)
+		return nil, fmt.Errorf("alert dispatch: marshal enriched payload: %w", err)
+	}
+
+	return payload, nil
+}
+
+// buildAlertURL constructs the full URL to view an alert in the UI.
+// baseURL is guaranteed to be non-empty due to normalization in NewAlertDispatchService.
+func (s *AlertDispatchService) buildAlertURL(alertID string) string {
+	baseURL := strings.TrimRight(s.baseURL, "/")
+	return fmt.Sprintf("%s/alerts/%s", baseURL, alertID)
 }
 
 // dispatchParams groups parameters for dispatchToSinks to maintain ≤3 param constraint.

@@ -1,5 +1,8 @@
 /* Utilities: Spacing */
 
+.mt-1 {
+	margin-top: var(--space-1);
+}
 .mt-2 {
 	margin-top: var(--space-2);
 }
@@ -12,11 +15,9 @@
 .mt-6 {
 	margin-top: var(--space-6);
 }
-.mb-1 {
-	margin-bottom: var(--space-1);
-}
-.mt-1 {
-	margin-top: var(--space-1);
+
+.pt-6 {
+	padding-top: var(--space-6);
 }
 .ml-1 {
 	margin-left: var(--space-1);
@@ -32,6 +33,9 @@
 	gap: var(--space-4);
 }
 
+.mb-0 {
+	margin-bottom: 0;
+}
 .mb-2 {
 	margin-bottom: var(--space-2);
 }
@@ -40,4 +44,13 @@
 }
 .mb-4 {
 	margin-bottom: var(--space-4);
+}
+
+.gap-3 {
+	gap: var(--space-3);
+}
+
+/* Section divider */
+.border-top {
+	border-top: var(--border-width) solid var(--color-border);
 }

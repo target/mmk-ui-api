@@ -214,7 +214,7 @@ type alertingBundle struct {
 	alert        *service.AlertService
 }
 
-func newAlertingServices(repos *serviceRepositories, logger *slog.Logger) alertingBundle {
+func newAlertingServices(repos *serviceRepositories, baseURL string, logger *slog.Logger) alertingBundle {
 	httpSink := service.MustNewHTTPAlertSinkService(service.HTTPAlertSinkServiceOptions{
 		Repo:   repos.HTTPAlertSinkRepo,
 		Logger: logger,
@@ -230,6 +230,7 @@ func newAlertingServices(repos *serviceRepositories, logger *slog.Logger) alerti
 		Sites:     repos.SiteRepo,
 		Sinks:     repos.HTTPAlertSinkRepo,
 		AlertSink: alertSinkSvc,
+		BaseURL:   baseURL,
 		Logger:    logger,
 	})
 
@@ -362,7 +363,7 @@ func buildDomainServices(opts *DomainServicesOptions) ServiceContainer {
 	jobService := newJobService(opts.Repos, opts.Observability)
 	eventService := newEventService(opts.Repos.EventRepo, svcLogger)
 	secretService := newSecretService(opts.Repos, appCfg, svcLogger)
-	alerting := newAlertingServices(opts.Repos, svcLogger)
+	alerting := newAlertingServices(opts.Repos, appCfg.HTTP.BaseURL, svcLogger)
 	domainAllowlistService := newDomainAllowlistService(opts.Repos.DomainAllowlistRepo, svcLogger)
 	sourceCache := newSourceCacheService(opts.Repos, appCfg.Cache)
 	sourceService := newSourceService(sourceServiceDeps{
