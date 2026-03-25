@@ -35,12 +35,12 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.873.0",
-		"@aws-sdk/s3-request-presigner": "^3.873.0",
+		"@aws-sdk/client-s3": "^3.1016.0",
+		"@aws-sdk/s3-request-presigner": "^3.1016.0",
 		"@azure/storage-blob": "^12.28.0",
-		"@google-cloud/storage": "^7.17.0",
+		"@google-cloud/storage": "^7.19.0",
 		"ioredis": "^5.7.0",
-		"minio": "^8.0.5",
+		"minio": "^8.0.7",
 		"puppeteer": "^24.17.0",
 		"undici": "^7.14.0",
 		"yaml": "^2.8.1"
