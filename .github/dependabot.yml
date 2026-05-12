@@ -1,0 +1,81 @@
+# Dependabot — automated dependency & security-update PRs
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+
+updates:
+  # ── GitHub Actions ────────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, github-actions]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # ── Go modules (merrymaker-go) ────────────────────────────────────────────
+  - package-ecosystem: gomod
+    directory: /services/merrymaker-go
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, go]
+    groups:
+      go-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 10
+
+  # ── npm (puppeteer-worker) ────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /services/puppeteer-worker
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, javascript]
+    groups:
+      puppeteer-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 10
+
+  # ── Bun / npm (merrymaker-go frontend) ───────────────────────────────────
+  # Dependabot reads package.json semver ranges; full bun.lock pin updates
+  # require Renovate Bot (https://docs.renovatebot.com/modules/manager/bun/).
+  - package-ecosystem: npm
+    directory: /services/merrymaker-go/frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, frontend]
+    groups:
+      frontend-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 10
+
+  # ── Docker base images (merrymaker-go) ───────────────────────────────────
+  - package-ecosystem: docker
+    directory: /services/merrymaker-go
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, docker]
+
+  # ── Docker base images (puppeteer-worker) ────────────────────────────────
+  - package-ecosystem: docker
+    directory: /services/puppeteer-worker
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    labels: [dependencies, docker]
