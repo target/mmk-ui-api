@@ -651,7 +651,8 @@ func launchBackground(ctx context.Context, deps *serviceStartupDeps, descriptor 
 						errMsg,
 					)
 				} else {
-					slog.Default().WarnContext(ctx, "dropping background service error", "service", descriptor.name, "error", errMsg)
+					slog.Default().
+						WarnContext(ctx, "dropping background service error", "service", descriptor.name, "error", errMsg)
 				}
 			}
 		}
@@ -660,7 +661,8 @@ func launchBackground(ctx context.Context, deps *serviceStartupDeps, descriptor 
 	if deps.logger != nil {
 		deps.logger.InfoContext(ctx, "background service started", "service", descriptor.name, "mode", descriptor.mode)
 	} else {
-		slog.Default().InfoContext(ctx, "background service started", "service", descriptor.name, "mode", descriptor.mode)
+		slog.Default().
+			InfoContext(ctx, "background service started", "service", descriptor.name, "mode", descriptor.mode)
 	}
 
 	return done
@@ -800,15 +802,15 @@ func newSecretRefreshBackgroundService(deps *serviceStartupDeps) backgroundServi
 				allowedScriptDir = deps.cfg.Config.SecretRefreshRunner.AllowedScriptDir
 			}
 			return RunSecretRefreshRunner(ctx, SecretRefreshRunnerConfig{
-				DB:              deps.cfg.DB,
-				Logger:          deps.logger,
-				Lease:           lease,
-				Concurrency:     concurrency,
-				DebugMode:       debugMode,
+				DB:               deps.cfg.DB,
+				Logger:           deps.logger,
+				Lease:            lease,
+				Concurrency:      concurrency,
+				DebugMode:        debugMode,
 				AllowedScriptDir: allowedScriptDir,
-				Encryptor:       deps.encryptor,
-				Metrics:         deps.cfg.Services.Observability.MetricsSink,
-				FailureNotifier: deps.cfg.Services.Observability.FailureNotifier,
+				Encryptor:        deps.encryptor,
+				Metrics:          deps.cfg.Services.Observability.MetricsSink,
+				FailureNotifier:  deps.cfg.Services.Observability.FailureNotifier,
 			})
 		},
 	}

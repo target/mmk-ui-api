@@ -31,11 +31,11 @@ type SecretRefreshServiceOptions struct {
 
 // SecretRefreshService orchestrates secret refresh operations for dynamic secrets.
 type SecretRefreshService struct {
-	secretRepo core.SecretRepository
-	adminRepo  core.ScheduledJobsAdminRepository
-	jobRepo    core.JobRepository
-	logger     *slog.Logger
-	debugMode  bool
+	secretRepo       core.SecretRepository
+	adminRepo        core.ScheduledJobsAdminRepository
+	jobRepo          core.JobRepository
+	logger           *slog.Logger
+	debugMode        bool
 	allowedScriptDir string
 }
 
@@ -54,11 +54,11 @@ func NewSecretRefreshService(opts SecretRefreshServiceOptions) (*SecretRefreshSe
 	}
 
 	svc := &SecretRefreshService{
-		secretRepo: opts.SecretRepo,
-		adminRepo:  opts.AdminRepo,
-		jobRepo:    opts.JobRepo,
-		logger:     logger,
-		debugMode:  opts.DebugMode,
+		secretRepo:       opts.SecretRepo,
+		adminRepo:        opts.AdminRepo,
+		jobRepo:          opts.JobRepo,
+		logger:           logger,
+		debugMode:        opts.DebugMode,
 		allowedScriptDir: opts.AllowedScriptDir,
 	}
 
@@ -305,7 +305,8 @@ func (s *SecretRefreshService) ExecuteProviderScript(ctx context.Context, secret
 	if !filepath.IsAbs(scriptPath) {
 		return "", fmt.Errorf("provider_script_path must be an absolute path: %q", scriptPath)
 	}
-	if s.allowedScriptDir != "" && !strings.HasPrefix(filepath.Clean(scriptPath), filepath.Clean(s.allowedScriptDir)+string(filepath.Separator)) {
+	if s.allowedScriptDir != "" &&
+		!strings.HasPrefix(filepath.Clean(scriptPath), filepath.Clean(s.allowedScriptDir)+string(filepath.Separator)) {
 		return "", fmt.Errorf("provider_script_path %q is outside allowed directory %q", scriptPath, s.allowedScriptDir)
 	}
 
