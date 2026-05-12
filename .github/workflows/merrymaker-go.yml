@@ -88,6 +88,10 @@ jobs:
           bun run build
 
       - name: Install gosec
+        # GOTOOLCHAIN=auto allows Go to fetch a newer toolchain if gosec@latest
+        # requires a Go version newer than the one declared in go.mod.
+        env:
+          GOTOOLCHAIN: auto
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: Run gosec
