@@ -1,0 +1,191 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily at 02:00 UTC — catches newly published CVEs between dependency bumps
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write # SARIF upload to GitHub Security tab
+
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Go: govulncheck (Go vulnerability database) ──────────────────────────
+  govulncheck:
+    name: govulncheck (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          check-latest: true
+          cache: true
+          cache-dependency-path: services/merrymaker-go/go.sum
+
+      - name: Setup Bun (needed to build embed targets before govulncheck)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Build frontend assets
+        working-directory: services/merrymaker-go/frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Run govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          work-dir: services/merrymaker-go
+          go-package: ./...
+
+  # ── npm audit (puppeteer-worker) ─────────────────────────────────────────
+  npm-audit:
+    name: npm audit (puppeteer-worker)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/puppeteer-worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: services/puppeteer-worker/package-lock.json
+
+      - name: Install dependencies (skip Chromium download)
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci --ignore-scripts
+
+      - name: npm audit
+        run: npm audit --audit-level=high
+
+  # ── bun audit (merrymaker-go frontend) ───────────────────────────────────
+  bun-audit:
+    name: bun audit (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/merrymaker-go/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: bun audit
+        run: bun audit --level high
+
+  # ── Trivy: filesystem scan — merrymaker-go ───────────────────────────────
+  trivy-go:
+    name: Trivy FS (merrymaker-go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: fs
+          scan-ref: services/merrymaker-go
+          format: sarif
+          output: trivy-go.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-go.sarif
+          category: trivy-merrymaker-go
+
+  # ── Trivy: filesystem scan — puppeteer-worker ────────────────────────────
+  trivy-puppeteer:
+    name: Trivy FS (puppeteer-worker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: fs
+          scan-ref: services/puppeteer-worker
+          format: sarif
+          output: trivy-puppeteer.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-puppeteer.sarif
+          category: trivy-puppeteer-worker
+
+  # ── CodeQL — Go + JavaScript/TypeScript ──────────────────────────────────
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [go, javascript-typescript]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Setup Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/merrymaker-go/go.mod
+          check-latest: true
+
+      - name: Setup Bun (needed to build embed targets before CodeQL Go scan)
+        if: matrix.language == 'go'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.2"
+
+      - name: Build frontend assets (Go embed requires compiled assets)
+        if: matrix.language == 'go'
+        working-directory: services/merrymaker-go/frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}
