@@ -99,6 +99,13 @@ linters:
     - wastedassign
     - whitespace
   exclusions:
+    # Equivalent of the removed run.skip-files: exclude test/bench/profile
+    # files from ALL linter analysis. This prevents cross-file linters (goconst)
+    # from counting occurrences in test files and firing on production code.
+    paths:
+      - "_test\\.go$"
+      - "_bench_test\\.go$"
+      - "_profile\\.go$"
     rules:
       - source: "^// Code generated .* DO NOT EDIT\\.$"
         linters:
