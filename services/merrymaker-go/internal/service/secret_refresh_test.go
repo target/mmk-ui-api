@@ -354,7 +354,12 @@ func TestSecretRefreshService_Integration_DeleteSecretRemovesJob(t *testing.T) {
 		secretRepo := data.NewSecretRepo(db, &cryptoutil.NoopEncryptor{})
 		adminRepo := data.NewScheduledJobsAdminRepo(db)
 		jobRepo := data.NewJobRepo(db, data.RepoConfig{})
-		refreshSvc := newTestSecretRefreshService(t, secretRepo, adminRepo, jobRepo)
+		// Create a mock script first so we have its dir for AllowedScriptDir
+		scriptContent := `#!/bin/bash
+echo "test-value"`
+		scriptPath := createMockScript(t, scriptContent)
+
+		refreshSvc := newTestSecretRefreshServiceInDir(t, secretRepo, adminRepo, jobRepo, filepath.Dir(scriptPath))
 
 		// Create SecretService with refresh service wired
 		secretService, err := NewSecretService(SecretServiceOptions{
@@ -362,11 +367,6 @@ func TestSecretRefreshService_Integration_DeleteSecretRemovesJob(t *testing.T) {
 			RefreshSvc: refreshSvc,
 		})
 		require.NoError(t, err)
-
-		// Create a mock script
-		scriptContent := `#!/bin/bash
-echo "test-value"`
-		scriptPath := createMockScript(t, scriptContent)
 
 		ctx := context.Background()
 
