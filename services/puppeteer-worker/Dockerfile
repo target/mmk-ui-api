@@ -1,4 +1,4 @@
-FROM node:24.11.1-bookworm-slim AS base
+FROM node:26.1.0-bookworm-slim AS base
 
 WORKDIR /app
 ENV NODE_ENV=production \
@@ -29,7 +29,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # ---------- Runtime ----------
-FROM node:24.11.1-bookworm-slim AS runtime
+FROM node:26.1.0-bookworm-slim AS runtime
 
 # Install Chromium and minimal fonts/libs for Puppeteer
 RUN apt-get update && apt-get install -y --no-install-recommends \
