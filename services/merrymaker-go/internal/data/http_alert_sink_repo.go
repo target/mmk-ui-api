@@ -104,7 +104,11 @@ func (r *HTTPAlertSinkRepo) Create(
 		if ensureErr := r.ensureSecretsExistTx(ctx, tx, req.Secrets); ensureErr != nil {
 			return ensureErr
 		}
-		if assocErr := r.associateSecretsByNamesTx(ctx, tx, httpAlertSinkAssocParams{sinkID: sinkID, names: req.Secrets}); assocErr != nil {
+		if assocErr := r.associateSecretsByNamesTx(
+			ctx,
+			tx,
+			httpAlertSinkAssocParams{sinkID: sinkID, names: req.Secrets},
+		); assocErr != nil {
 			return assocErr
 		}
 
@@ -407,7 +411,11 @@ func (r *HTTPAlertSinkRepo) buildUpdateParts(req *model.UpdateHTTPAlertSinkReque
 }
 
 func (r *HTTPAlertSinkRepo) replaceAssociationsTx(ctx context.Context, tx pgx.Tx, p httpAlertSinkAssocParams) error {
-	if _, err := tx.Exec(ctx, `DELETE FROM http_alert_sink_secrets WHERE http_alert_sink_id = $1`, p.sinkID); err != nil {
+	if _, err := tx.Exec(
+		ctx,
+		`DELETE FROM http_alert_sink_secrets WHERE http_alert_sink_id = $1`,
+		p.sinkID,
+	); err != nil {
 		return err
 	}
 	if len(p.names) == 0 {
@@ -449,7 +457,11 @@ func (r *HTTPAlertSinkRepo) Update(
 		}()
 
 		// Update basic fields if any
-		if fieldsErr := r.updateHTTPAlertSinkFieldsTx(ctx, tx, &httpAlertSinkUpdateFieldsParams{id: id, req: req}); fieldsErr != nil {
+		if fieldsErr := r.updateHTTPAlertSinkFieldsTx(
+			ctx,
+			tx,
+			&httpAlertSinkUpdateFieldsParams{id: id, req: req},
+		); fieldsErr != nil {
 			return fieldsErr
 		}
 
@@ -459,7 +471,11 @@ func (r *HTTPAlertSinkRepo) Update(
 			if ensureErr := r.ensureHTTPAlertSinkExistsTx(ctx, tx, id); ensureErr != nil {
 				return ensureErr
 			}
-			if replaceErr := r.replaceAssociationsTx(ctx, tx, httpAlertSinkAssocParams{sinkID: id, names: req.Secrets}); replaceErr != nil {
+			if replaceErr := r.replaceAssociationsTx(
+				ctx,
+				tx,
+				httpAlertSinkAssocParams{sinkID: id, names: req.Secrets},
+			); replaceErr != nil {
 				return replaceErr
 			}
 		}

@@ -30,7 +30,8 @@ func (r *JobRepo) FailStalePendingJobs(ctx context.Context, maxAge time.Duration
 	err := pgxutil.WithSQLTx(ctx, r.DB, pgxutil.SQLTxConfig{
 		Fn: func(tx *sql.Tx) error {
 			var locked bool
-			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperFailPending).Scan(&locked); err != nil {
+			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperFailPending).
+				Scan(&locked); err != nil {
 				return fmt.Errorf("acquire advisory lock: %w", err)
 			}
 			if !locked {
@@ -86,7 +87,8 @@ func (r *JobRepo) DeleteOldJobs(ctx context.Context, params core.DeleteOldJobsPa
 	err := pgxutil.WithSQLTx(ctx, r.DB, pgxutil.SQLTxConfig{
 		Fn: func(tx *sql.Tx) error {
 			var locked bool
-			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperDelete).Scan(&locked); err != nil {
+			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperDelete).
+				Scan(&locked); err != nil {
 				return fmt.Errorf("acquire advisory lock: %w", err)
 			}
 			if !locked {
@@ -143,7 +145,8 @@ func (r *JobRepo) DeleteOldJobResults(ctx context.Context, params core.DeleteOld
 	err := pgxutil.WithSQLTx(ctx, r.DB, pgxutil.SQLTxConfig{
 		Fn: func(tx *sql.Tx) error {
 			var locked bool
-			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperDeleteResults).Scan(&locked); err != nil {
+			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", advisoryLockReaperMajor, advisoryLockReaperDeleteResults).
+				Scan(&locked); err != nil {
 				return fmt.Errorf("acquire advisory lock: %w", err)
 			}
 			if !locked {

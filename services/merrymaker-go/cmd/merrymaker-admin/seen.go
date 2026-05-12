@@ -149,6 +149,7 @@ type querySeenDomainResponse struct {
 	Total int64
 }
 
+//nolint:funlen // golines line-wrapping pushed this 5 lines over the 60-line limit
 func querySeenDomainRows(req *querySeenDomainRequest) (querySeenDomainResponse, error) {
 	if req == nil || req.Options == nil {
 		return querySeenDomainResponse{}, nil
@@ -198,7 +199,14 @@ func querySeenDomainRows(req *querySeenDomainRequest) (querySeenDomainResponse, 
 	out := make([]seenDomainRow, 0)
 	for rows.Next() {
 		var row seenDomainRow
-		if scanErr := rows.Scan(&row.SiteID, &row.Scope, &row.Domain, &row.HitCount, &row.FirstSeenAt, &row.LastSeenAt); scanErr != nil {
+		if scanErr := rows.Scan(
+			&row.SiteID,
+			&row.Scope,
+			&row.Domain,
+			&row.HitCount,
+			&row.FirstSeenAt,
+			&row.LastSeenAt,
+		); scanErr != nil {
 			return querySeenDomainResponse{}, fmt.Errorf("scan seen domain row: %w", scanErr)
 		}
 		out = append(out, row)
@@ -389,7 +397,10 @@ func printSeenDomainRows(resp querySeenDomainResponse, opts *listOptions) error 
 		return fmt.Errorf("write seen domains total: %w", err)
 	}
 	if opts.Limit > 0 && len(resp.Rows) == opts.Limit && int64(opts.Offset+opts.Limit) < resp.Total {
-		if err := writeln(os.Stdout, "More rows available; adjust --offset or --limit to view additional data."); err != nil {
+		if err := writeln(
+			os.Stdout,
+			"More rows available; adjust --offset or --limit to view additional data.",
+		); err != nil {
 			return fmt.Errorf("write seen domains more-rows message: %w", err)
 		}
 	}

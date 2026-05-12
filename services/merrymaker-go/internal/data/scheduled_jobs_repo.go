@@ -294,7 +294,8 @@ func (r *ScheduledJobsRepo) TryWithTaskLock(
 	err := pgxutil.WithSQLTx(ctx, r.DB, pgxutil.SQLTxConfig{
 		Fn: func(tx *sql.Tx) error {
 			// Try to acquire advisory lock within transaction
-			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1)", lockKey).Scan(&locked); err != nil {
+			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1)", lockKey).
+				Scan(&locked); err != nil {
 				return fmt.Errorf("acquire advisory lock for task %s: %w", taskName, err)
 			}
 

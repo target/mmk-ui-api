@@ -36,7 +36,7 @@ jobs:
       - name: Setup Bun (needed to build embed targets before govulncheck)
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: "1.2.2"
+          bun-version: "1.3.13"
 
       - name: Build frontend assets
         working-directory: services/merrymaker-go/frontend
@@ -169,7 +169,7 @@ jobs:
         if: matrix.language == 'go'
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: "1.2.2"
+          bun-version: "1.3.13"
 
       - name: Build frontend assets (Go embed requires compiled assets)
         if: matrix.language == 'go'

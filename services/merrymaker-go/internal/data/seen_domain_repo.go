@@ -57,7 +57,16 @@ func (r *SeenDomainRepo) Create(
 			VALUES ($1, $2, $3, $4, $5, 1, $6)
 			RETURNING `+seenDomainColumns+`
 		`, req.SiteID, domain, req.Scope, first, last, r.timeProvider.Now().UTC())
-		return row.Scan(&out.ID, &out.SiteID, &out.Domain, &out.Scope, &out.FirstSeenAt, &out.LastSeenAt, &out.HitCount, &out.CreatedAt)
+		return row.Scan(
+			&out.ID,
+			&out.SiteID,
+			&out.Domain,
+			&out.Scope,
+			&out.FirstSeenAt,
+			&out.LastSeenAt,
+			&out.HitCount,
+			&out.CreatedAt,
+		)
 	}); err != nil {
 		return nil, err
 	}

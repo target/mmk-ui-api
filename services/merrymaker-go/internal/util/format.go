@@ -1,4 +1,4 @@
-package util //nolint:revive // package name util hosts shared formatting helpers used across HTTP templates
+package util //nolint:revive // "util" is an established namespace for this project's shared HTTP-template helpers
 
 import "time"
 

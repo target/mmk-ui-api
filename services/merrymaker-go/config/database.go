@@ -4,12 +4,12 @@ import "time"
 
 // DBConfig contains PostgreSQL database configuration.
 type DBConfig struct {
-	Host     string `env:"HOST"                    envDefault:"localhost"`
-	Port     int    `env:"PORT"                    envDefault:"5432"`
-	User     string `env:"USER"                    envDefault:"merrymaker"`
-	Password string `env:"PASSWORD"                envDefault:"merrymaker"`
-	Name     string `env:"NAME"                    envDefault:"merrymaker"`
-	SSLMode  string `env:"SSL_MODE"                envDefault:"disable"` // Use 'disable' for local dev, 'require' for production
+	Host     string `env:"HOST"     envDefault:"localhost"`
+	Port     int    `env:"PORT"     envDefault:"5432"`
+	User     string `env:"USER"     envDefault:"merrymaker"`
+	Password string `env:"PASSWORD" envDefault:"merrymaker"`
+	Name     string `env:"NAME"     envDefault:"merrymaker"`
+	SSLMode  string `env:"SSL_MODE" envDefault:"disable"` // Use 'disable' for local dev, 'require' for production
 	// RunMigrationsOnStart controls whether the application automatically applies migrations during startup.
 	RunMigrationsOnStart bool `env:"RUN_MIGRATIONS_ON_START" envDefault:"true"`
 }

@@ -588,7 +588,7 @@ func runDBReset(cmdCtx *commandContext, args []string) error {
 	}
 
 	return withDatabase(cmdCtx, opts.Timeout, func(ctx context.Context, db *sql.DB) error {
-		cmdCtx.Logger.Info("dropping public schema", "database", cmdCtx.Config.Postgres.Name)
+		cmdCtx.Logger.InfoContext(ctx, "dropping public schema", "database", cmdCtx.Config.Postgres.Name)
 		if resetErr := cmdCtx.resetDatabase(ctx, db); resetErr != nil {
 			return resetErr
 		}
@@ -616,7 +616,11 @@ func runDBSeed(cmdCtx *commandContext, args []string) error {
 		return err
 	}
 
-	if _, guardErr := guardRemoteHost(cmdCtx, opts.AllowRemote, "seed development data on the configured database"); guardErr != nil {
+	if _, guardErr := guardRemoteHost(
+		cmdCtx,
+		opts.AllowRemote,
+		"seed development data on the configured database",
+	); guardErr != nil {
 		return guardErr
 	}
 

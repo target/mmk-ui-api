@@ -224,7 +224,14 @@ func (h *JobHandlers) GetStatus(w http.ResponseWriter, r *http.Request) {
 				ErrorParams{Code: http.StatusNotFound, ErrCode: "job_not_found", Err: errors.New("job not found")},
 			)
 		} else {
-			WriteError(w, ErrorParams{Code: http.StatusInternalServerError, ErrCode: "get_status_failed", Err: errors.New("failed to get job status")})
+			WriteError(
+				w,
+				ErrorParams{
+					Code:    http.StatusInternalServerError,
+					ErrCode: "get_status_failed",
+					Err:     errors.New("failed to get job status"),
+				},
+			)
 		}
 		return
 	}
