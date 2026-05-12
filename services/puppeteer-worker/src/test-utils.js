@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { readFile, unlink, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, test } from "node:test";
@@ -301,9 +301,10 @@ export async function navigateToTestPage(page, html = TestData.simpleHtml) {
 </body>
 </html>`;
 
-	// Create a temporary file
-	const tempFile = join(tmpdir(), `puppeteer-test-${Date.now()}.html`);
-	await writeFile(tempFile, fullHtml, "utf8");
+	// Create a secure temporary directory (atomic, unique, owner-only access)
+	const tempDir = await mkdtemp(join(tmpdir(), "puppeteer-test-"));
+	const tempFile = join(tempDir, "test.html");
+	await writeFile(tempFile, fullHtml, { encoding: "utf8", mode: 0o600 });
 
 	try {
 		// Use file:// URL which supports localStorage
@@ -321,9 +322,9 @@ export async function navigateToTestPage(page, html = TestData.simpleHtml) {
 		// Re-inject monitoring script after navigation (if not already injected)
 		await ensureMonitoringInjected(page);
 	} finally {
-		// Clean up the temporary file
+		// Clean up the temporary directory and file
 		try {
-			await unlink(tempFile);
+			await rm(tempDir, { recursive: true, force: true });
 		} catch (_error) {
 			// Ignore cleanup errors
 		}
