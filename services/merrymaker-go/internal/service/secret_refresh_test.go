@@ -37,6 +37,24 @@ func newTestSecretRefreshService(
 	return svc
 }
 
+func newTestSecretRefreshServiceInDir(
+	t *testing.T,
+	secretRepo core.SecretRepository,
+	adminRepo core.ScheduledJobsAdminRepository,
+	jobRepo core.JobRepository,
+	allowedScriptDir string,
+) *SecretRefreshService {
+	t.Helper()
+	svc, err := NewSecretRefreshService(SecretRefreshServiceOptions{
+		SecretRepo:       secretRepo,
+		AdminRepo:        adminRepo,
+		JobRepo:          jobRepo,
+		AllowedScriptDir: allowedScriptDir,
+	})
+	require.NoError(t, err)
+	return svc
+}
+
 // createMockScript creates a temporary executable script for testing.
 func createMockScript(t *testing.T, content string) string {
 	t.Helper()
@@ -204,13 +222,15 @@ func TestSecretRefreshService_Integration_ExecuteRefresh(t *testing.T) {
 		secretRepo := data.NewSecretRepo(db, &cryptoutil.NoopEncryptor{})
 		adminRepo := data.NewScheduledJobsAdminRepo(db)
 		jobRepo := data.NewJobRepo(db, data.RepoConfig{})
-		refreshSvc := newTestSecretRefreshService(t, secretRepo, adminRepo, jobRepo)
 
 		// Create a mock script that outputs a new value
 		newValue := "refreshed-secret-value-123"
 		scriptContent := fmt.Sprintf(`#!/bin/bash
 echo "%s"`, newValue)
 		scriptPath := createMockScript(t, scriptContent)
+
+		// Construct service with allowed script dir set to the script's directory
+		refreshSvc := newTestSecretRefreshServiceInDir(t, secretRepo, adminRepo, jobRepo, filepath.Dir(scriptPath))
 
 		ctx := context.Background()
 
@@ -248,13 +268,14 @@ func TestSecretRefreshService_Integration_ScriptFailure(t *testing.T) {
 		secretRepo := data.NewSecretRepo(db, &cryptoutil.NoopEncryptor{})
 		adminRepo := data.NewScheduledJobsAdminRepo(db)
 		jobRepo := data.NewJobRepo(db, data.RepoConfig{})
-		refreshSvc := newTestSecretRefreshService(t, secretRepo, adminRepo, jobRepo)
 
 		// Create a script that fails
 		scriptContent := `#!/bin/bash
 echo "Error message" >&2
 exit 1`
 		scriptPath := createMockScript(t, scriptContent)
+
+		refreshSvc := newTestSecretRefreshServiceInDir(t, secretRepo, adminRepo, jobRepo, filepath.Dir(scriptPath))
 
 		ctx := context.Background()
 
@@ -333,7 +354,12 @@ func TestSecretRefreshService_Integration_DeleteSecretRemovesJob(t *testing.T) {
 		secretRepo := data.NewSecretRepo(db, &cryptoutil.NoopEncryptor{})
 		adminRepo := data.NewScheduledJobsAdminRepo(db)
 		jobRepo := data.NewJobRepo(db, data.RepoConfig{})
-		refreshSvc := newTestSecretRefreshService(t, secretRepo, adminRepo, jobRepo)
+		// Create a mock script first so we have its dir for AllowedScriptDir
+		scriptContent := `#!/bin/bash
+echo "test-value"`
+		scriptPath := createMockScript(t, scriptContent)
+
+		refreshSvc := newTestSecretRefreshServiceInDir(t, secretRepo, adminRepo, jobRepo, filepath.Dir(scriptPath))
 
 		// Create SecretService with refresh service wired
 		secretService, err := NewSecretService(SecretServiceOptions{
@@ -341,11 +367,6 @@ func TestSecretRefreshService_Integration_DeleteSecretRemovesJob(t *testing.T) {
 			RefreshSvc: refreshSvc,
 		})
 		require.NoError(t, err)
-
-		// Create a mock script
-		scriptContent := `#!/bin/bash
-echo "test-value"`
-		scriptPath := createMockScript(t, scriptContent)
 
 		ctx := context.Background()
 
@@ -378,12 +399,13 @@ func TestSecretRefreshService_Integration_ScriptWithEnvConfig(t *testing.T) {
 		secretRepo := data.NewSecretRepo(db, &cryptoutil.NoopEncryptor{})
 		adminRepo := data.NewScheduledJobsAdminRepo(db)
 		jobRepo := data.NewJobRepo(db, data.RepoConfig{})
-		refreshSvc := newTestSecretRefreshService(t, secretRepo, adminRepo, jobRepo)
 
 		// Create a script that uses environment variables
 		scriptContent := `#!/bin/bash
 echo "token-${API_URL}-${CLIENT_ID}"`
 		scriptPath := createMockScript(t, scriptContent)
+
+		refreshSvc := newTestSecretRefreshServiceInDir(t, secretRepo, adminRepo, jobRepo, filepath.Dir(scriptPath))
 
 		ctx := context.Background()
 

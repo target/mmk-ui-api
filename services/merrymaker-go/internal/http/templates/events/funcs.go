@@ -61,8 +61,9 @@ func serializeEventsToJSON(events any) (template.JS, error) {
 		if err != nil {
 			return "", err
 		}
-		// #nosec G203 - This is JSON data from our database, marshaled by encoding/json.
-		// It's placed in <script type="application/json"> tags for client-side parsing.
+		// #nosec G203 -- template.JS is safe here: encoding/json.Marshal HTML-escapes
+		// '<', '>', and '&' by default (see encoding/json HTMLEscape), preventing script-tag
+		// injection. Data originates from our database and is not attacker-controlled at this point.
 		return template.JS(b), nil
 	}
 
@@ -71,8 +72,9 @@ func serializeEventsToJSON(events any) (template.JS, error) {
 	if err != nil {
 		return "", err
 	}
-	// #nosec G203 - This is JSON data from our database, marshaled by encoding/json.
-	// It's placed in <script type="application/json"> tags for client-side parsing.
+	// #nosec G203 -- template.JS is safe here: encoding/json.Marshal HTML-escapes
+	// '<', '>', and '&' by default (see encoding/json HTMLEscape), preventing script-tag
+	// injection. Data originates from our database and is not attacker-controlled at this point.
 	return template.JS(b), nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -116,6 +117,9 @@ func validateProviderScriptPath(path string) string {
 	}
 	if len(path) > 500 {
 		return "Provider script path cannot exceed 500 characters."
+	}
+	if !filepath.IsAbs(path) {
+		return "Provider script path must be an absolute path (e.g. /opt/scripts/fetch.sh)."
 	}
 	return ""
 }

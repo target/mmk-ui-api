@@ -169,6 +169,11 @@ type SecretRefreshRunnerConfig struct {
 	// When enabled, the actual secret values resolved from provider scripts will be logged.
 	// WARNING: This is a security risk and should NEVER be enabled in production.
 	DebugMode bool `env:"SECRET_REFRESH_DEBUG_MODE" envDefault:"false"`
+
+	// AllowedScriptDir, when non-empty, restricts provider scripts to paths under this directory.
+	// Recommended: set to a dedicated scripts directory (e.g. /opt/mmk-scripts).
+	// Leave empty to allow any absolute path (default).
+	AllowedScriptDir string `env:"SECRET_REFRESH_ALLOWED_SCRIPT_DIR"`
 }
 
 // Sanitize applies guardrails to secret refresh runner configuration values.

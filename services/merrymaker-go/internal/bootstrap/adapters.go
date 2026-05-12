@@ -137,14 +137,16 @@ func RunAlertRunner(ctx context.Context, cfg AlertRunnerConfig) error {
 
 // SecretRefreshRunnerConfig contains configuration for secret refresh runner.
 type SecretRefreshRunnerConfig struct {
-	DB              *sql.DB
-	Logger          *slog.Logger
-	Lease           time.Duration
-	Concurrency     int
-	DebugMode       bool
-	Encryptor       cryptoutil.Encryptor
-	Metrics         statsd.Sink
-	FailureNotifier *failurenotifier.Service
+	DB          *sql.DB
+	Logger      *slog.Logger
+	Lease       time.Duration
+	Concurrency int
+	DebugMode   bool
+	// AllowedScriptDir restricts provider scripts to paths under this directory (optional).
+	AllowedScriptDir string
+	Encryptor        cryptoutil.Encryptor
+	Metrics          statsd.Sink
+	FailureNotifier  *failurenotifier.Service
 }
 
 // RunSecretRefreshRunner starts the secret refresh runner service for dynamic secret refresh.
@@ -156,9 +158,11 @@ func RunSecretRefreshRunner(ctx context.Context, cfg SecretRefreshRunnerConfig) 
 		Concurrency:            cfg.Concurrency,
 		JobType:                model.JobTypeSecretRefresh,
 		SecretRefreshDebugMode: cfg.DebugMode,
-		Encryptor:              cfg.Encryptor,
-		Metrics:                cfg.Metrics,
-		FailureNotifier:        cfg.FailureNotifier,
+		// Thread allowed script dir through to job runner/service
+		AllowedScriptDir: cfg.AllowedScriptDir,
+		Encryptor:        cfg.Encryptor,
+		Metrics:          cfg.Metrics,
+		FailureNotifier:  cfg.FailureNotifier,
 	})
 }
 
