@@ -4,71 +4,52 @@
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from "undici";
+import { createServer } from "node:http";
 import { JobClient } from "../dist/job-client.js";
 
 describe("JobClient aborts", () => {
-	let mockAgent;
-	let originalDispatcher;
-	let mockPool;
+	let server;
+	let port;
 
-	beforeEach(() => {
-		originalDispatcher = getGlobalDispatcher();
-		mockAgent = new MockAgent();
-		setGlobalDispatcher(mockAgent);
-		mockPool = mockAgent.get("http://localhost:8080");
+	beforeEach(async () => {
+		server = createServer((req, res) => {
+			// Simulate a slow response (500 ms); cancel the timer if the client disconnects
+			const t = setTimeout(() => {
+				if (!res.writableEnded) res.writeHead(204).end();
+			}, 500);
+			req.on("close", () => clearTimeout(t));
+		});
+		await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+		port = server.address().port;
 	});
 
-	afterEach(async () => {
-		setGlobalDispatcher(originalDispatcher);
-		await mockAgent.close();
-	});
+	afterEach(
+		() => new Promise((resolve, reject) => server.close((e) => (e ? reject(e) : resolve()))),
+	);
 
 	test("complete should reject with AbortError when external signal is aborted", async () => {
-		// Arrange: slow complete endpoint so we can abort while in-flight
-		mockPool
-			.intercept({
-				path: "/api/jobs/job-abc/complete",
-				method: "POST",
-			})
-			.reply(204)
-			.delay(500);
-
-		const client = new JobClient("http://localhost:8080", {
+		const client = new JobClient(`http://127.0.0.1:${port}`, {
 			timeoutMs: 1000,
 			retries: 0,
 		});
 		const controller = new AbortController();
 
-		// Act: start request then abort shortly after
 		const promise = client.complete("job-abc", controller.signal);
 		setTimeout(() => controller.abort(), 50);
 
-		// Assert
-		await assert.rejects(promise, (err) => err && err.name === "AbortError");
+		await assert.rejects(promise, (err) => err != null && err.name === "AbortError");
 	});
 
 	test("fail should reject with AbortError when external signal is aborted", async () => {
-		// Arrange: slow fail endpoint so we can abort while in-flight
-		mockPool
-			.intercept({
-				path: "/api/jobs/job-abc/fail",
-				method: "POST",
-			})
-			.reply(204)
-			.delay(500);
-
-		const client = new JobClient("http://localhost:8080", {
+		const client = new JobClient(`http://127.0.0.1:${port}`, {
 			timeoutMs: 1000,
 			retries: 0,
 		});
 		const controller = new AbortController();
 
-		// Act: start request then abort shortly after
 		const promise = client.fail("job-abc", "boom", controller.signal);
 		setTimeout(() => controller.abort(), 50);
 
-		// Assert
-		await assert.rejects(promise, (err) => err && err.name === "AbortError");
+		await assert.rejects(promise, (err) => err != null && err.name === "AbortError");
 	});
 });

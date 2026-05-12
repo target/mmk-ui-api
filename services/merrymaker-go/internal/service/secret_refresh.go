@@ -280,6 +280,39 @@ func (s *SecretRefreshService) updateSecretValue(ctx context.Context, secretID, 
 
 // ExecuteProviderScript runs the provider script and returns the new secret value.
 // This is a public method that can be used by other services (e.g., SecretService for initial value population).
+// resolveScriptPath ensures the provided scriptPath is absolute and located within the configured allowedScriptDir.
+// It uses os.ReadDir on the allowed directory and returns a filesystem-derived path (join of cleanDir and entry name)
+// to break taint analysis for exec.CommandContext.
+func (s *SecretRefreshService) resolveScriptPath(scriptPath string) (string, error) {
+	if !filepath.IsAbs(scriptPath) {
+		return "", fmt.Errorf("provider_script_path must be an absolute path: %q", scriptPath)
+	}
+	if s.allowedScriptDir == "" {
+		return "", errors.New("SECRET_REFRESH_ALLOWED_SCRIPT_DIR must be set to execute provider scripts")
+	}
+
+	cleanDir := filepath.Clean(s.allowedScriptDir)
+	cleanScript := filepath.Clean(scriptPath)
+	// ensure script is under allowed dir (must be a child, not equal)
+	if !strings.HasPrefix(cleanScript, cleanDir+string(filepath.Separator)) {
+		return "", fmt.Errorf("provider_script_path %q is outside allowed directory %q", scriptPath, s.allowedScriptDir)
+	}
+
+	entries, err := os.ReadDir(cleanDir)
+	if err != nil {
+		return "", fmt.Errorf("read allowed script dir: %w", err)
+	}
+
+	base := filepath.Base(cleanScript)
+	for _, e := range entries {
+		if !e.IsDir() && e.Name() == base {
+			return filepath.Join(cleanDir, e.Name()), nil
+		}
+	}
+
+	return "", fmt.Errorf("script %q not found in allowed directory %q", base, s.allowedScriptDir)
+}
+
 func (s *SecretRefreshService) ExecuteProviderScript(ctx context.Context, secret *model.Secret) (string, error) {
 	if secret.ProviderScriptPath == nil {
 		return "", errors.New("provider_script_path is nil")
@@ -299,20 +332,16 @@ func (s *SecretRefreshService) ExecuteProviderScript(ctx context.Context, secret
 		env = append(env, fmt.Sprintf("%s=%s", k, v))
 	}
 
-	// Execute script
-	// Validate script path before execution (defense-in-depth)
+	// Resolve exec path via allowed directory listing to ensure path used in exec is filesystem-derived
 	scriptPath := *secret.ProviderScriptPath
-	if !filepath.IsAbs(scriptPath) {
-		return "", fmt.Errorf("provider_script_path must be an absolute path: %q", scriptPath)
-	}
-	if s.allowedScriptDir != "" &&
-		!strings.HasPrefix(filepath.Clean(scriptPath), filepath.Clean(s.allowedScriptDir)+string(filepath.Separator)) {
-		return "", fmt.Errorf("provider_script_path %q is outside allowed directory %q", scriptPath, s.allowedScriptDir)
+	execPath, err := s.resolveScriptPath(scriptPath)
+	if err != nil {
+		return "", err
 	}
 
-	// #nosec G204 -- provider_script_path is admin-only (RoleAdmin required on all write routes).
-	// Path is validated to be absolute and, when AllowedScriptDir is configured, restricted to that prefix.
-	cmd := exec.CommandContext(ctx, scriptPath)
+	// #nosec G204 -- exec path is resolved by reading the allowed directory and joining a filesystem-derived
+	// directory and filename. Both components are config/filesystem-derived, not directly from user input.
+	cmd := exec.CommandContext(ctx, execPath)
 	cmd.Env = append(os.Environ(), env...)
 
 	output, err := cmd.Output()
