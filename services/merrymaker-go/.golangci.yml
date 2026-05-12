@@ -59,7 +59,9 @@ linters:
     - godot
     - gomoddirectives
     - goprintffuncname
-    - gosec
+    # gosec is intentionally excluded here — it runs in the dedicated GoSec
+    # CI job (merrymaker-go.yml) with continue-on-error:true so findings land
+    # in the GitHub Security tab without blocking the lint gate.
     - govet
     - iface
     - intrange
@@ -143,7 +145,6 @@ linters:
           - funlen
           - gocognit
           - goconst
-          - gosec
           - noctx
           - wrapcheck
           - unparam
