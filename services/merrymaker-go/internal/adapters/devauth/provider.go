@@ -70,8 +70,17 @@ func (p *Provider) Begin(_ context.Context, _ ports.BeginInput) (string, string,
 	return authURL, state, nonce, nil
 }
 
-// Exchange ignores the provided code/state/nonce (validation handled by handler) and returns the dev identity.
-func (p *Provider) Exchange(_ context.Context, _ ports.ExchangeInput) (domainauth.Identity, error) {
+// Exchange validates state and returns the dev identity.
+func (p *Provider) Exchange(_ context.Context, in ports.ExchangeInput) (domainauth.Identity, error) {
+	if in.State == "" {
+		return domainauth.Identity{}, errors.New("state is required")
+	}
+	if in.ExpectedState == "" {
+		return domainauth.Identity{}, errors.New("expected state is required")
+	}
+	if in.State != in.ExpectedState {
+		return domainauth.Identity{}, errors.New("state mismatch: possible CSRF attack")
+	}
 	// Refresh expiry on each exchange for convenience
 	if time.Until(p.identity.ExpiresAt) < 5*time.Minute {
 		p.identity.ExpiresAt = time.Now().Add(p.sessionDuration)

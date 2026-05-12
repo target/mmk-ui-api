@@ -133,6 +133,12 @@ func (p *Provider) Exchange(ctx context.Context, in ports.ExchangeInput) (domain
 	if in.State == "" {
 		return domainauth.Identity{}, errors.New("state is required")
 	}
+	if in.ExpectedState == "" {
+		return domainauth.Identity{}, errors.New("expected state is required")
+	}
+	if in.State != in.ExpectedState {
+		return domainauth.Identity{}, errors.New("state mismatch: possible CSRF attack")
+	}
 	if in.Nonce == "" {
 		return domainauth.Identity{}, errors.New("nonce is required")
 	}

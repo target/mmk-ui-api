@@ -25,9 +25,10 @@ type AuthProvider interface {
 
 // ExchangeInput groups parameters for the code/token exchange.
 type ExchangeInput struct {
-	Code  string
-	State string
-	Nonce string
+	Code          string
+	State         string // State returned by the IdP in the callback
+	ExpectedState string // Expected state value (from Begin) for CSRF validation
+	Nonce         string
 }
 
 // SessionStore persists and retrieves user sessions.

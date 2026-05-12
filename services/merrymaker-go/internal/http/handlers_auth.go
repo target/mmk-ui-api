@@ -113,9 +113,10 @@ func (h *AuthHandlers) Callback(w http.ResponseWriter, r *http.Request) {
 
 	// Complete the login flow
 	result, err := h.Svc.CompleteLogin(r.Context(), service.CompleteLoginInput{
-		Code:  code,
-		State: state,
-		Nonce: nonceCookie.Value,
+		Code:          code,
+		State:         state,
+		ExpectedState: stateCookie.Value,
+		Nonce:         nonceCookie.Value,
 	})
 	if err != nil {
 		WriteError(w, ErrorParams{

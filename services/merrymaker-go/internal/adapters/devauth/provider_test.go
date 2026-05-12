@@ -23,7 +23,7 @@ func TestProvider_BeginAndExchange(t *testing.T) {
 	if state == "" || nonce == "" {
 		t.Fatal("state and nonce should be generated")
 	}
-	id, err := prov.Exchange(context.Background(), ports.ExchangeInput{Code: "dev", State: state, Nonce: nonce})
+	id, err := prov.Exchange(context.Background(), ports.ExchangeInput{Code: "dev", State: state, ExpectedState: state, Nonce: nonce})
 	if err != nil {
 		t.Fatalf("Exchange error: %v", err)
 	}
