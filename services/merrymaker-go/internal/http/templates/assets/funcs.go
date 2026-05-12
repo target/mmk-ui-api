@@ -25,7 +25,9 @@ func Funcs(opts Options) template.FuncMap {
 		if opts.CriticalCSS == nil {
 			return ""
 		}
-		// #nosec G203 - Critical CSS is loaded from our own trusted source files at build time
+		// #nosec G203 -- template.CSS is safe here: critical CSS is embedded from our own
+		// source files at build time (or reloaded from disk in dev mode). It is never
+		// sourced from user-controlled input.
 		return template.CSS(opts.CriticalCSS())
 	}
 

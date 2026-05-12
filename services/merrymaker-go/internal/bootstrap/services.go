@@ -792,10 +792,12 @@ func newSecretRefreshBackgroundService(deps *serviceStartupDeps) backgroundServi
 			var lease time.Duration
 			concurrency := 0
 			debugMode := false
+			allowedScriptDir := ""
 			if deps.cfg.Config != nil {
 				lease = deps.cfg.Config.SecretRefreshRunner.JobLease
 				concurrency = deps.cfg.Config.SecretRefreshRunner.Concurrency
 				debugMode = deps.cfg.Config.SecretRefreshRunner.DebugMode
+				allowedScriptDir = deps.cfg.Config.SecretRefreshRunner.AllowedScriptDir
 			}
 			return RunSecretRefreshRunner(ctx, SecretRefreshRunnerConfig{
 				DB:              deps.cfg.DB,
@@ -803,6 +805,7 @@ func newSecretRefreshBackgroundService(deps *serviceStartupDeps) backgroundServi
 				Lease:           lease,
 				Concurrency:     concurrency,
 				DebugMode:       debugMode,
+				AllowedScriptDir: allowedScriptDir,
 				Encryptor:       deps.encryptor,
 				Metrics:         deps.cfg.Services.Observability.MetricsSink,
 				FailureNotifier: deps.cfg.Services.Observability.FailureNotifier,

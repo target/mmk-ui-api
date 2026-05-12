@@ -48,6 +48,9 @@ type RunnerOptions struct {
 	// Debug mode for secret refresh jobs (logs actual secret values - DANGEROUS)
 	SecretRefreshDebugMode bool
 
+	// AllowedScriptDir restricts provider script execution to this directory prefix (optional).
+	AllowedScriptDir string
+
 	// Encryptor for secrets (if nil, will use NoopEncryptor)
 	Encryptor cryptoutil.Encryptor
 
@@ -167,11 +170,12 @@ func newSecretRefreshService(
 	}
 	scheduledAdmin := data.NewScheduledJobsAdminRepo(opts.DB)
 	return service.MustNewSecretRefreshService(service.SecretRefreshServiceOptions{
-		SecretRepo: secretRepo,
-		AdminRepo:  scheduledAdmin,
-		JobRepo:    jobRepo,
-		Logger:     opts.Logger,
-		DebugMode:  opts.SecretRefreshDebugMode,
+		SecretRepo:       secretRepo,
+		AdminRepo:        scheduledAdmin,
+		JobRepo:          jobRepo,
+		Logger:           opts.Logger,
+		DebugMode:        opts.SecretRefreshDebugMode,
+		AllowedScriptDir: opts.AllowedScriptDir,
 	})
 }
 

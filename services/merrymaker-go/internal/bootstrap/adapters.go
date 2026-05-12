@@ -142,6 +142,8 @@ type SecretRefreshRunnerConfig struct {
 	Lease           time.Duration
 	Concurrency     int
 	DebugMode       bool
+	// AllowedScriptDir restricts provider scripts to paths under this directory (optional).
+	AllowedScriptDir string
 	Encryptor       cryptoutil.Encryptor
 	Metrics         statsd.Sink
 	FailureNotifier *failurenotifier.Service
@@ -156,6 +158,8 @@ func RunSecretRefreshRunner(ctx context.Context, cfg SecretRefreshRunnerConfig) 
 		Concurrency:            cfg.Concurrency,
 		JobType:                model.JobTypeSecretRefresh,
 		SecretRefreshDebugMode: cfg.DebugMode,
+		// Thread allowed script dir through to job runner/service
+		AllowedScriptDir:       cfg.AllowedScriptDir,
 		Encryptor:              cfg.Encryptor,
 		Metrics:                cfg.Metrics,
 		FailureNotifier:        cfg.FailureNotifier,

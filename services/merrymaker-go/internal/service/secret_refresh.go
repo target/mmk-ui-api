@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,6 +24,9 @@ type SecretRefreshServiceOptions struct {
 	JobRepo    core.JobRepository
 	Logger     *slog.Logger
 	DebugMode  bool
+	// AllowedScriptDir restricts provider script execution to paths under this directory.
+	// When empty, any absolute path is permitted.
+	AllowedScriptDir string
 }
 
 // SecretRefreshService orchestrates secret refresh operations for dynamic secrets.
@@ -32,6 +36,7 @@ type SecretRefreshService struct {
 	jobRepo    core.JobRepository
 	logger     *slog.Logger
 	debugMode  bool
+	allowedScriptDir string
 }
 
 // NewSecretRefreshService constructs a new SecretRefreshService.
@@ -54,6 +59,7 @@ func NewSecretRefreshService(opts SecretRefreshServiceOptions) (*SecretRefreshSe
 		jobRepo:    opts.JobRepo,
 		logger:     logger,
 		debugMode:  opts.DebugMode,
+		allowedScriptDir: opts.AllowedScriptDir,
 	}
 
 	// Log if debug mode is enabled (logs actual secret values)
@@ -294,8 +300,18 @@ func (s *SecretRefreshService) ExecuteProviderScript(ctx context.Context, secret
 	}
 
 	// Execute script
-	// #nosec G204 -- provider_script_path is admin-configured and stored in DB, not user input
-	cmd := exec.CommandContext(ctx, *secret.ProviderScriptPath)
+	// Validate script path before execution (defense-in-depth)
+	scriptPath := *secret.ProviderScriptPath
+	if !filepath.IsAbs(scriptPath) {
+		return "", fmt.Errorf("provider_script_path must be an absolute path: %q", scriptPath)
+	}
+	if s.allowedScriptDir != "" && !strings.HasPrefix(filepath.Clean(scriptPath), filepath.Clean(s.allowedScriptDir)+string(filepath.Separator)) {
+		return "", fmt.Errorf("provider_script_path %q is outside allowed directory %q", scriptPath, s.allowedScriptDir)
+	}
+
+	// #nosec G204 -- provider_script_path is admin-only (RoleAdmin required on all write routes).
+	// Path is validated to be absolute and, when AllowedScriptDir is configured, restricted to that prefix.
+	cmd := exec.CommandContext(ctx, scriptPath)
 	cmd.Env = append(os.Environ(), env...)
 
 	output, err := cmd.Output()
