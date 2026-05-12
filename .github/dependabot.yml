@@ -24,6 +24,13 @@ updates:
       day: monday
       time: "06:00"
       timezone: America/Chicago
+    # 3-day cooldown: supply-chain defence — the Mar 2026 Axios attack merged
+    # a malicious patch bump into 95 repos in < 1 hour via auto-merge. A 3-day
+    # window lets the advisory ecosystem catch compromised packages before we
+    # pull them in. Security updates still land fast; truly zero-day attacks
+    # would bypass this, but they are rare for Go modules.
+    cooldown:
+      default-days: 3
     labels: [dependencies, go]
     groups:
       go-deps:
@@ -38,6 +45,8 @@ updates:
       day: monday
       time: "06:00"
       timezone: America/Chicago
+    cooldown:
+      default-days: 3
     labels: [dependencies, javascript]
     groups:
       puppeteer-deps:
@@ -54,6 +63,8 @@ updates:
       day: monday
       time: "06:00"
       timezone: America/Chicago
+    cooldown:
+      default-days: 3
     labels: [dependencies, frontend]
     groups:
       frontend-deps:
