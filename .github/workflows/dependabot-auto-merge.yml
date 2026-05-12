@@ -1,0 +1,90 @@
+name: Dependabot auto-merge
+
+# ┌─ Security model (May 2026) ──────────────────────────────────────────────┐
+# │                                                                           │
+# │  Auto-merge is a supply-chain risk. The March 2026 Axios attack merged   │
+# │  a malicious patch bump into 95 repos in < 1 hour via exactly this       │
+# │  pattern. The trivy-action attack showed that even SHA-pinned Actions     │
+# │  can be silently updated to point at malicious commits by automation.     │
+# │                                                                           │
+# │  What we auto-merge (after CI passes + 3-day cooldown in dependabot.yml):│
+# │    ✅ Security updates  — patch or minor, gomod / npm only               │
+# │    ✅ Regular patch bumps — gomod / npm only                             │
+# │                                                                           │
+# │  What always requires human review:                                       │
+# │    🔴 github-actions  — executes in CI with full secret access           │
+# │    🔴 docker          — base-image supply-chain vector                   │
+# │    🔴 Major bumps     — breaking changes, any ecosystem                  │
+# │    🔴 Minor non-security bumps — weekly triage                           │
+# │                                                                           │
+# └───────────────────────────────────────────────────────────────────────────┘
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Hard block: GitHub Actions ecosystem ─────────────────────────────
+      # The workflow YAML runs inside CI with full secret access. A compromised
+      # SHA pin (trivy-action attack, Mar 2026) silently executes malicious
+      # code on every subsequent PR. Always require a human to verify the diff.
+      - name: Skip — github-actions (supply-chain risk, manual review required)
+        if: steps.meta.outputs.package-ecosystem == 'github_actions'
+        run: |
+          echo "::notice::GitHub Actions bump — manual review required."
+          echo "::notice::Reason: actions run in CI with secret access (ref: trivy-action supply-chain attack, Mar 2026)"
+
+      # ── Hard block: Docker ecosystem ─────────────────────────────────────
+      # Compromised base images silently replace the runtime environment.
+      - name: Skip — docker (supply-chain risk, manual review required)
+        if: steps.meta.outputs.package-ecosystem == 'docker'
+        run: |
+          echo "::notice::Docker base-image bump — manual review required."
+          echo "::notice::Reason: base-image supply-chain vector"
+
+      # ── Hard block: major version bumps ──────────────────────────────────
+      - name: Skip — major version bump (manual review required)
+        if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "::notice::Major bump (${{ steps.meta.outputs.dependency-names }}) — manual review required."
+
+      # ── Auto-merge gate ───────────────────────────────────────────────────
+      # Approve + enable auto-merge when ALL of:
+      #   • gomod or npm/yarn ecosystem (not github-actions, not docker)
+      #   • patch bump  OR  any security update (ghsa-id is set)
+      #   • not a major bump (belt-and-suspenders — already blocked above)
+      - name: Approve and enable auto-merge
+        if: |
+          (
+            steps.meta.outputs.package-ecosystem == 'go_modules' ||
+            steps.meta.outputs.package-ecosystem == 'npm_and_yarn'
+          ) && (
+            steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+            steps.meta.outputs.ghsa-id != ''
+          ) &&
+          steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Auto-merging: ${{ steps.meta.outputs.dependency-names }}"
+          echo "Update type:  ${{ steps.meta.outputs.update-type }}"
+          echo "GHSA:         ${{ steps.meta.outputs.ghsa-id }}"
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
