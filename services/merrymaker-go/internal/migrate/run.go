@@ -66,7 +66,11 @@ func migrationExists(ctx context.Context, db *sql.DB, info migrationInfo) (bool,
 }
 
 func insertMigration(ctx context.Context, tx *sql.Tx, info migrationInfo) error {
-	if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version) VALUES ($1)`, info.versionStr); err != nil {
+	if _, err := tx.ExecContext(
+		ctx,
+		`INSERT INTO schema_migrations (version) VALUES ($1)`,
+		info.versionStr,
+	); err != nil {
 		return fmt.Errorf("record migration %s: %w", info.file, err)
 	}
 	return nil

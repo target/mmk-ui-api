@@ -200,10 +200,10 @@ func JSONPath(column, path, alias string) string {
 
 	for i, part := range parts {
 		if i == len(parts)-1 {
-			pathBuilder.WriteString(fmt.Sprintf("->>'%s'", sanitizeJSONPath(part)))
+			fmt.Fprintf(&pathBuilder, "->>'%s'", sanitizeJSONPath(part))
 		} else {
 			// Intermediate parts: use -> for object navigation
-			pathBuilder.WriteString(fmt.Sprintf("->'%s'", sanitizeJSONPath(part)))
+			fmt.Fprintf(&pathBuilder, "->'%s'", sanitizeJSONPath(part))
 		}
 	}
 
@@ -362,14 +362,14 @@ func buildPaginationAndOrderClause(
 
 	// Add LIMIT clause only if it was explicitly set (not the default sentinel)
 	if options.Limit != defaultLimit {
-		clause.WriteString(fmt.Sprintf(" LIMIT $%d", paramCount))
+		fmt.Fprintf(&clause, " LIMIT $%d", paramCount)
 		args = append(args, options.Limit)
 		paramCount++
 	}
 
 	// Add OFFSET clause only if it was explicitly set (not the default sentinel)
 	if options.Offset != defaultOffset {
-		clause.WriteString(fmt.Sprintf(" OFFSET $%d", paramCount))
+		fmt.Fprintf(&clause, " OFFSET $%d", paramCount)
 		args = append(args, options.Offset)
 	}
 

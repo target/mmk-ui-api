@@ -222,7 +222,10 @@ func NewRunner(opts RunnerOptions) (*Runner, error) {
 	if r.secretRefreshSvc != nil {
 		r.handlers[model.JobTypeSecretRefresh] = r.handleSecretRefreshJob
 	} else {
-		r.logger.WarnContext(context.Background(), "SecretRefreshService not configured; secret refresh jobs will be ignored")
+		r.logger.WarnContext(
+			context.Background(),
+			"SecretRefreshService not configured; secret refresh jobs will be ignored",
+		)
 	}
 	return r, nil
 }

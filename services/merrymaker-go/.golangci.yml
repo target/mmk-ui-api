@@ -4,51 +4,9 @@ run:
   timeout: 5m
   tests: true
   modules-download-mode: readonly
-  skip-files:
-    - "_test\\.go$"
-    - "_bench_test\\.go$"
-    - "_profile\\.go$"
 
 issues:
   max-same-issues: 50
-  exclude-rules:
-    # Exclude funlen, gocognit, and nestif for test files
-    - path: "_test\\.go$"
-      linters:
-        - funlen
-        - gocognit
-        - nestif
-        - forbidigo
-        - exhaustive
-        - staticcheck
-        - govet
-        - reassign
-    # Exclude funlen, gocognit, and nestif for benchmark files
-    - path: "_bench_test\\.go$"
-      linters:
-        - funlen
-        - gocognit
-        - nestif
-        - forbidigo
-        - exhaustive
-        - staticcheck
-        - govet
-        - reassign
-    # Allow pragmatic constructs in profiling helpers
-    - path: "_profile\\.go$"
-      linters:
-        - forbidigo
-    # Ignore revive unused-parameter in test files only
-    - path: ".*_test\\.go$"
-      linters:
-        - revive
-      text: "unused-parameter"
-
-    # Allow returning interfaces in the example workflow harness test
-    - path: "internal/http/workflow_harness_example_test\\.go$"
-      linters:
-        - ireturn
-      text: "returns interface"
 formatters:
   enable:
     - goimports
@@ -208,6 +166,35 @@ linters:
         text: "unused-parameter"
         linters:
           - revive
+      # internal/errors and internal/metrics are common Go idioms; naming these
+      # packages the same as stdlib is intentional and well-understood.
+      - text: "avoid package names that conflict with Go standard library package names"
+        linters:
+          - revive
+      # nestif in all test/bench files (moved from issues.exclude-rules for v2 schema)
+      - path: ".*_test\\.go$"
+        linters:
+          - nestif
+      # Benchmark test files: same suppressions as unit tests
+      - path: "_bench_test\\.go$"
+        linters:
+          - funlen
+          - gocognit
+          - nestif
+          - forbidigo
+          - exhaustive
+          - staticcheck
+          - govet
+          - reassign
+      # Profiling helpers: allow pragmatic constructs
+      - path: "_profile\\.go$"
+        linters:
+          - forbidigo
+      # Allow returning interfaces in the example workflow harness test
+      - path: "internal/http/workflow_harness_example_test\\.go$"
+        linters:
+          - ireturn
+        text: "returns interface"
 
   settings:
     cyclop:
@@ -429,9 +416,6 @@ linters:
     reassign:
       patterns:
         - ".*"
-
-    revive:
-      config: revive.toml
 
     rowserrcheck:
       packages:

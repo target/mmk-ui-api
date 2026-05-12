@@ -497,7 +497,9 @@ func (h *UIHandlers) renderDashboardPage(w http.ResponseWriter, r *http.Request,
 
 	// Out-of-band update for the header title
 	safeTitle := html.EscapeString(layout.PageTitle)
-	if _, err := w.Write([]byte(`<h1 id="header-title" class="header-title" hx-swap-oob="outerHTML">` + safeTitle + `</h1>`)); err != nil {
+	if _, err := w.Write(
+		[]byte(`<h1 id="header-title" class="header-title" hx-swap-oob="outerHTML">` + safeTitle + `</h1>`),
+	); err != nil {
 		h.logger().Error("failed to write partial header title", "error", err)
 		return
 	}

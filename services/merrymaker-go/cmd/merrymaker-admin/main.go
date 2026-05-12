@@ -616,7 +616,11 @@ func runDBSeed(cmdCtx *commandContext, args []string) error {
 		return err
 	}
 
-	if _, guardErr := guardRemoteHost(cmdCtx, opts.AllowRemote, "seed development data on the configured database"); guardErr != nil {
+	if _, guardErr := guardRemoteHost(
+		cmdCtx,
+		opts.AllowRemote,
+		"seed development data on the configured database",
+	); guardErr != nil {
 		return guardErr
 	}
 

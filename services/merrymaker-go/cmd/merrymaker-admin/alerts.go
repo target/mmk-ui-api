@@ -300,7 +300,10 @@ func dispatchManualAlert(params *fireAlertDispatchParams) error {
 	}
 
 	if len(recorder.jobs) == 0 {
-		if err := writeln(os.Stdout, "No HTTP alert sinks were scheduled. Check the site's sink configuration."); err != nil {
+		if err := writeln(
+			os.Stdout,
+			"No HTTP alert sinks were scheduled. Check the site's sink configuration.",
+		); err != nil {
 			return fmt.Errorf("print dispatch summary: %w", err)
 		}
 		return nil

@@ -330,7 +330,10 @@ func registerSchemaCleanup(t TestingTB, resources schemaCleanupResources) {
 		defer cancel()
 
 		closeAndLog(t, "schema DB", resources.db)
-		if _, err := resources.adminDB.ExecContext(ctx, "DROP SCHEMA IF EXISTS "+resources.schema+" CASCADE"); err != nil {
+		if _, err := resources.adminDB.ExecContext(
+			ctx,
+			"DROP SCHEMA IF EXISTS "+resources.schema+" CASCADE",
+		); err != nil {
 			t.Logf("Warning: failed to drop schema %s: %v", resources.schema, err)
 		}
 		closeAndLog(t, "admin DB", resources.adminDB)

@@ -149,7 +149,12 @@ func (r *JobRepo) CreateInTx(
 	}
 
 	channel := "job_added_" + string(req.Type)
-	if _, notifyErr := sqlTx.ExecContext(ctx, `SELECT pg_notify($1::text, $2::text)`, channel, job.ID); notifyErr != nil {
+	if _, notifyErr := sqlTx.ExecContext(
+		ctx,
+		`SELECT pg_notify($1::text, $2::text)`,
+		channel,
+		job.ID,
+	); notifyErr != nil {
 		return nil, fmt.Errorf("send job notification: %w", notifyErr)
 	}
 
@@ -366,7 +371,8 @@ func (r *JobRepo) requeueExpired(ctx context.Context, jobType model.JobType) (in
 		Fn: func(tx *sql.Tx) error {
 			var locked bool
 			minorKey := advisoryLockRequeueMinor(jobType)
-			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1::integer, $2::integer)", advisoryLockRequeueMajor, minorKey).Scan(&locked); err != nil {
+			if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock($1::integer, $2::integer)", advisoryLockRequeueMajor, minorKey).
+				Scan(&locked); err != nil {
 				return fmt.Errorf("acquire advisory lock: %w", err)
 			}
 			if !locked {
@@ -562,7 +568,8 @@ func (r *JobRepo) Fail(ctx context.Context, id, errMsg string) (bool, error) {
 
 	var status string
 	var taskName, fireKey sql.NullString
-	if err := r.DB.QueryRowContext(ctx, query, id, errMsg, currentTime.UTC(), retryScheduledAt.UTC(), currentTime.UTC()).Scan(&status, &taskName, &fireKey); err != nil {
+	if err := r.DB.QueryRowContext(ctx, query, id, errMsg, currentTime.UTC(), retryScheduledAt.UTC(), currentTime.UTC()).
+		Scan(&status, &taskName, &fireKey); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
@@ -746,7 +753,8 @@ func (r *JobRepo) JobStatesByTaskName(
 	`
 
 	var hasRunning, hasPending, hasRetrying bool
-	if err := r.DB.QueryRowContext(ctx, query, now.UTC(), taskName).Scan(&hasRunning, &hasPending, &hasRetrying); err != nil {
+	if err := r.DB.QueryRowContext(ctx, query, now.UTC(), taskName).
+		Scan(&hasRunning, &hasPending, &hasRetrying); err != nil {
 		return 0, fmt.Errorf("check job states by task name: %w", err)
 	}
 
