@@ -134,17 +134,27 @@ func TestProvider_Exchange_ValidationErrors(t *testing.T) {
 	}{
 		{
 			name:   "missing code",
-			input:  ports.ExchangeInput{State: "state", Nonce: "nonce"},
+			input:  ports.ExchangeInput{State: "state", ExpectedState: "state", Nonce: "nonce"},
 			errMsg: "authorization code is required",
 		},
 		{
 			name:   "missing state",
-			input:  ports.ExchangeInput{Code: "code", Nonce: "nonce"},
+			input:  ports.ExchangeInput{Code: "code", ExpectedState: "state", Nonce: "nonce"},
 			errMsg: "state is required",
 		},
 		{
+			name:   "missing expected state",
+			input:  ports.ExchangeInput{Code: "code", State: "state", Nonce: "nonce"},
+			errMsg: "expected state is required",
+		},
+		{
+			name:   "state mismatch",
+			input:  ports.ExchangeInput{Code: "code", State: "state", ExpectedState: "other", Nonce: "nonce"},
+			errMsg: "state mismatch",
+		},
+		{
 			name:   "missing nonce",
-			input:  ports.ExchangeInput{Code: "code", State: "state"},
+			input:  ports.ExchangeInput{Code: "code", State: "state", ExpectedState: "state"},
 			errMsg: "nonce is required",
 		},
 	}
@@ -224,9 +234,10 @@ func TestProvider_Exchange_MockSuccess(t *testing.T) {
 	ctx := context.Background()
 
 	input := ports.ExchangeInput{
-		Code:  "test-code",
-		State: "test-state",
-		Nonce: "test-nonce",
+		Code:          "test-code",
+		State:         "test-state",
+		ExpectedState: "test-state",
+		Nonce:         "test-nonce",
 	}
 
 	// This will fail because we don't have a real token endpoint,

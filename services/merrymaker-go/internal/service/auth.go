@@ -64,9 +64,10 @@ func (s *AuthService) BeginLogin(ctx context.Context, redirectURL string) (*Begi
 
 // CompleteLoginInput groups parameters for completing a login flow.
 type CompleteLoginInput struct {
-	Code  string
-	State string
-	Nonce string
+	Code          string
+	State         string
+	ExpectedState string // Expected state value from Begin (for CSRF validation)
+	Nonce         string
 }
 
 // CompleteLoginResult contains the result of completing a login flow.
@@ -89,9 +90,10 @@ func (s *AuthService) CompleteLogin(ctx context.Context, input CompleteLoginInpu
 
 	// Exchange authorization code for identity
 	exchangeInput := ports.ExchangeInput{
-		Code:  input.Code,
-		State: input.State,
-		Nonce: input.Nonce,
+		Code:          input.Code,
+		State:         input.State,
+		ExpectedState: input.ExpectedState,
+		Nonce:         input.Nonce,
 	}
 	identity, err := s.provider.Exchange(ctx, exchangeInput)
 	if err != nil {

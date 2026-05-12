@@ -70,9 +70,10 @@ func TestMockAuthProvider_Exchange_Defaults(t *testing.T) {
 	ctx := context.Background()
 
 	input := ports.ExchangeInput{
-		Code:  "auth-code",
-		State: "state-1",
-		Nonce: "nonce-1",
+		Code:          "auth-code",
+		State:         "state-1",
+		ExpectedState: "state-1",
+		Nonce:         "nonce-1",
 	}
 	identity, err := provider.Exchange(ctx, input)
 
@@ -97,9 +98,10 @@ func TestMockAuthProvider_Exchange_CustomUser(t *testing.T) {
 	ctx := context.Background()
 
 	input := ports.ExchangeInput{
-		Code:  "auth-code",
-		State: "state-1",
-		Nonce: "nonce-1",
+		Code:          "auth-code",
+		State:         "state-1",
+		ExpectedState: "state-1",
+		Nonce:         "nonce-1",
 	}
 	identity, err := provider.Exchange(ctx, input)
 
@@ -124,9 +126,10 @@ func TestMockAuthProvider_Exchange_CustomFunc(t *testing.T) {
 	ctx := context.Background()
 
 	input := ports.ExchangeInput{
-		Code:  "auth-code",
-		State: "state-1",
-		Nonce: "nonce-1",
+		Code:          "auth-code",
+		State:         "state-1",
+		ExpectedState: "state-1",
+		Nonce:         "nonce-1",
 	}
 	identity, err := provider.Exchange(ctx, input)
 

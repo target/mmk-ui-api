@@ -142,9 +142,10 @@ func TestAuthService_CompleteLogin_Success(t *testing.T) {
 
 	ctx := context.Background()
 	input := CompleteLoginInput{
-		Code:  "auth-code",
-		State: "state-1",
-		Nonce: "nonce-1",
+		Code:          "auth-code",
+		State:         "state-1",
+		ExpectedState: "state-1",
+		Nonce:         "nonce-1",
 	}
 
 	result, err := service.CompleteLogin(ctx, input)
@@ -172,7 +173,7 @@ func TestAuthService_CompleteLogin_PopulatesNames(t *testing.T) {
 
 	service := NewAuthService(AuthServiceOptions{Provider: provider, Sessions: sessions, Roles: roles})
 	ctx := context.Background()
-	input := CompleteLoginInput{Code: "code", State: "state", Nonce: "nonce"}
+	input := CompleteLoginInput{Code: "code", State: "state", ExpectedState: "state", Nonce: "nonce"}
 	result, err := service.CompleteLogin(ctx, input)
 	require.NoError(t, err)
 	assert.Equal(t, "Mock", result.Session.FirstName)
@@ -201,9 +202,10 @@ func TestAuthService_CompleteLogin_AdminRole(t *testing.T) {
 
 	ctx := context.Background()
 	input := CompleteLoginInput{
-		Code:  "auth-code",
-		State: "state-1",
-		Nonce: "nonce-1",
+		Code:          "auth-code",
+		State:         "state-1",
+		ExpectedState: "state-1",
+		Nonce:         "nonce-1",
 	}
 
 	result, err := service.CompleteLogin(ctx, input)
