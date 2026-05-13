@@ -797,7 +797,4 @@ func TestJobEvents_PrevLinkCarriesCursorAndIndex(t *testing.T) {
 	require.Contains(t, body, "category=network")
 }
 
-//go:fix inline
-func strPtr(v string) *string {
-	return new(v)
-}
+

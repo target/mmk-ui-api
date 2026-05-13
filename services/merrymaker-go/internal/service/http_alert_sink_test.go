@@ -263,8 +263,7 @@ func TestAlertSinkService_ParseJSONHeaders_ArrayValues(t *testing.T) {
 	assert.Equal(t, "application/json, text/plain", prep.Headers["Accept"])
 }
 
-//go:fix inline
-func ptr(s string) *string { return new(s) }
+
 
 // Tests for HTTPAlertSinkService (CRUD operations)
 

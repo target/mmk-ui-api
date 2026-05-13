@@ -998,31 +998,8 @@ func TestJobRepo_Delete(t *testing.T) {
 }
 
 // Helper functions.
-//
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
-}
-
-//go:fix inline
-func timePtr(t time.Time) *time.Time {
-	return new(t)
-}
-
-//go:fix inline
-func jobTypePtr(jt model.JobType) *model.JobType {
-	return new(jt)
-}
-
-//go:fix inline
-func jobStatusPtr(js model.JobStatus) *model.JobStatus {
-	return new(js)
-}
-
-//go:fix inline
-func jobBoolPtr(b bool) *bool {
-	return new(b)
-}
+func jobTypePtr(v model.JobType) *model.JobType   { return &v }
+func jobStatusPtr(v model.JobStatus) *model.JobStatus { return &v }
 
 func TestJobRepo_ListRecentByTypeWithSiteNames(t *testing.T) {
 	testutil.SkipIfNoTestDB(t)

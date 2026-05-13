@@ -702,12 +702,3 @@ func schedulePayload(site *model.Site) ([]byte, error) {
 	}{SiteID: site.ID, SourceID: site.SourceID}
 	return json.Marshal(payload)
 }
-
-//go:fix inline
-func boolPtr(b bool) *bool { return new(b) }
-
-//go:fix inline
-func stringPtr(s string) *string { return new(s) }
-
-//go:fix inline
-func intPtr(i int) *int { return new(i) }

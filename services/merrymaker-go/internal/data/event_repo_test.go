@@ -901,8 +901,3 @@ func TestEventRepo_GetByIDs(t *testing.T) {
 
 // helpers.
 //
-//go:fix inline
-func intPtr(i int) *int { return new(i) }
-
-//go:fix inline
-func evStringPtr(s string) *string { return new(s) }

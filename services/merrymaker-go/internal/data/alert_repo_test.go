@@ -389,11 +389,6 @@ func TestAlertRepo_Resolve(t *testing.T) {
 
 // Helper function for creating bool pointers.
 //
-//go:fix inline
-func boolPtr(b bool) *bool {
-	return new(b)
-}
-
 // Helper function to create a test site with source.
 func createTestSite(t *testing.T, db *sql.DB) *model.Site {
 	t.Helper()

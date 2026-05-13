@@ -320,17 +320,7 @@ func TestUpdateHTTPAlertSinkRequest_HasUpdates(t *testing.T) {
 	}
 }
 
-// Helper functions for creating pointers.
-//
-//go:fix inline
-func httpAlertSinkStringPtr(s string) *string {
-	return new(s)
-}
 
-//go:fix inline
-func httpAlertSinkIntPtr(i int) *int {
-	return new(i)
-}
 
 func TestCreateHTTPAlertSinkRequest_Normalize(t *testing.T) {
 	req := CreateHTTPAlertSinkRequest{

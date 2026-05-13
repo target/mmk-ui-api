@@ -333,12 +333,3 @@ func TestUpdateSourceRequest_HasUpdates(t *testing.T) {
 
 // Helper functions for creating pointers.
 //
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
-}
-
-//go:fix inline
-func boolPtr(b bool) *bool {
-	return new(b)
-}

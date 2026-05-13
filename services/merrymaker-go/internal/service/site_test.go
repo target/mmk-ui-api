@@ -623,12 +623,4 @@ func TestTaskNameForSite(t *testing.T) {
 }
 
 // Helper functions.
-//
-//go:fix inline
-func boolPtr(b bool) *bool { return new(b) }
 
-//go:fix inline
-func stringPtr(s string) *string { return new(s) }
-
-//go:fix inline
-func intPtr(i int) *int { return new(i) }

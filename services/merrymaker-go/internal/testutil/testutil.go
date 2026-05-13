@@ -719,33 +719,3 @@ func SetupTestRedis(t TestingTB) *redis.Client {
 
 	return client
 }
-
-// Common pointer helper functions for tests.
-
-// StringPtr returns a pointer to the given string value.
-//
-//go:fix inline
-func StringPtr(s string) *string {
-	return new(s)
-}
-
-// BoolPtr returns a pointer to the given bool value.
-//
-//go:fix inline
-func BoolPtr(b bool) *bool {
-	return new(b)
-}
-
-// IntPtr returns a pointer to the given int value.
-//
-//go:fix inline
-func IntPtr(i int) *int {
-	return new(i)
-}
-
-// TimePtr returns a pointer to the given time value.
-//
-//go:fix inline
-func TimePtr(t time.Time) *time.Time {
-	return new(t)
-}

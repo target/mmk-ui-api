@@ -1,8 +1,9 @@
 package rules
 
-import "slices"
-
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 func appendSample(samples *[]string, domain string) {
 	if samples == nil {
