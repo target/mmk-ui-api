@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/target/mmk-ui-api/internal/core"
 	"github.com/target/mmk-ui-api/internal/domain/model"
 )
 
@@ -42,7 +41,7 @@ func TestIOCEvaluator_AlertContextIncludesAttribution(t *testing.T) {
 				"example.com": ioc,
 			}},
 		},
-		Alerter:  &core.AlertService{Repo: fa},
+		Alerter:  fa,
 		AlertTTL: 0,
 	}
 

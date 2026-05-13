@@ -244,12 +244,12 @@ func (s *RulesEngineMetricsService) GetMetrics() *RulesEngineMetrics {
 }
 
 // GetHealthStatus returns a simple health status based on metrics.
-func (s *RulesEngineMetricsService) GetHealthStatus() map[string]interface{} {
+func (s *RulesEngineMetricsService) GetHealthStatus() map[string]any {
 	snapshot := s.metrics.GetSnapshot()
 
-	status := map[string]interface{}{
+	status := map[string]any{
 		"status": "healthy",
-		"metrics": map[string]interface{}{
+		"metrics": map[string]any{
 			"events_processed":    snapshot.EventsProcessed,
 			"alerts_generated":    snapshot.AlertsGenerated,
 			"cache_hit_ratio":     s.metrics.GetCacheHitRatio(),

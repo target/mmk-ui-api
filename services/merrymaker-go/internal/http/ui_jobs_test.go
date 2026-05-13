@@ -715,12 +715,12 @@ func TestJobEvents_CursorLinksIncludeFilters(t *testing.T) {
 
 	jobID := "job-test"
 	start := time.Unix(1700000000, 0)
-	ev1 := &model.Event{ID: "evt-1", EventType: "console.log", CreatedAt: start, SourceJobID: strPtr(jobID)}
+	ev1 := &model.Event{ID: "evt-1", EventType: "console.log", CreatedAt: start, SourceJobID: new(jobID)}
 	ev2 := &model.Event{
 		ID:          "evt-2",
 		EventType:   "console.log",
 		CreatedAt:   start.Add(time.Second),
-		SourceJobID: strPtr(jobID),
+		SourceJobID: new(jobID),
 	}
 
 	nextCursor, err := data.EncodeEventCursorFromEvent(ev1, "timestamp", "asc")
@@ -755,12 +755,12 @@ func TestJobEvents_PrevLinkCarriesCursorAndIndex(t *testing.T) {
 
 	jobID := "job-test"
 	start := time.Unix(1700000100, 0)
-	ev1 := &model.Event{ID: "evt-10", EventType: "network.request", CreatedAt: start, SourceJobID: strPtr(jobID)}
+	ev1 := &model.Event{ID: "evt-10", EventType: "network.request", CreatedAt: start, SourceJobID: new(jobID)}
 	ev2 := &model.Event{
 		ID:          "evt-11",
 		EventType:   "network.request",
 		CreatedAt:   start.Add(time.Second),
-		SourceJobID: strPtr(jobID),
+		SourceJobID: new(jobID),
 	}
 	prevCursor := "prev-token"
 	nextCursor := "next-token"
@@ -797,6 +797,4 @@ func TestJobEvents_PrevLinkCarriesCursorAndIndex(t *testing.T) {
 	require.Contains(t, body, "category=network")
 }
 
-func strPtr(v string) *string {
-	return &v
-}
+

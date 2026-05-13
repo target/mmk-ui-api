@@ -98,15 +98,15 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "valid request with all fields",
 			req: UpdateSecretRequest{
-				Name:  stringPtr("TEST_SECRET"),
-				Value: stringPtr("secret-value-123"),
+				Name:  new("TEST_SECRET"),
+				Value: new("secret-value-123"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid request with only name",
 			req: UpdateSecretRequest{
-				Name: stringPtr("TEST_SECRET"),
+				Name: new("TEST_SECRET"),
 			},
 			wantErr: false,
 		},
@@ -114,7 +114,7 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "valid request with only value",
 			req: UpdateSecretRequest{
-				Value: stringPtr("secret-value-123"),
+				Value: new("secret-value-123"),
 			},
 			wantErr: false,
 		},
@@ -127,7 +127,7 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "empty name",
 			req: UpdateSecretRequest{
-				Name: stringPtr(""),
+				Name: new(""),
 			},
 			wantErr: true,
 			errMsg:  "name cannot be empty",
@@ -135,7 +135,7 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "whitespace only name",
 			req: UpdateSecretRequest{
-				Name: stringPtr("   "),
+				Name: new("   "),
 			},
 			wantErr: true,
 			errMsg:  "name cannot be empty",
@@ -144,7 +144,7 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "name too long",
 			req: UpdateSecretRequest{
-				Name: stringPtr(strings.Repeat("a", 256)), // 256 chars, exceeds 255 limit
+				Name: new(strings.Repeat("a", 256)), // 256 chars, exceeds 255 limit
 			},
 			wantErr: true,
 			errMsg:  "name cannot exceed 255 characters",
@@ -153,7 +153,7 @@ func TestUpdateSecretRequest_Validate(t *testing.T) {
 		{
 			name: "empty value is not allowed when provided",
 			req: UpdateSecretRequest{
-				Value: stringPtr(""), // Empty value is not allowed when provided
+				Value: new(""), // Empty value is not allowed when provided
 			},
 			wantErr: true,
 			errMsg:  "value cannot be empty",

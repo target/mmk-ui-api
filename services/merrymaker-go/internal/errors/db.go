@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/jackc/pgerrcode"
@@ -326,10 +327,5 @@ func isFunctionName(s string) bool {
 		"md5", "sha1", "sha256", "encode", "decode",
 	}
 	s = strings.ToLower(s)
-	for _, fn := range commonFunctions {
-		if s == fn {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(commonFunctions, s)
 }

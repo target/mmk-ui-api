@@ -39,9 +39,7 @@ func buildUnknownEvaluator(
 ) *UnknownDomainEvaluator {
 	t.Helper()
 	caches := BuildCaches(CachesOptions{TTL: DefaultCacheTTL(), Redis: redisRepo, SeenRepo: seenRepo})
-	alerter := &core.AlertService{
-		Repo: alertRepo,
-	}
+	alerter := alertRepo
 	return &UnknownDomainEvaluator{Caches: caches, Alerter: alerter, AlertTTL: time.Minute}
 }
 

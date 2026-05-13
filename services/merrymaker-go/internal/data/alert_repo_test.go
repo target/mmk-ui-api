@@ -388,10 +388,7 @@ func TestAlertRepo_Resolve(t *testing.T) {
 }
 
 // Helper function for creating bool pointers.
-func boolPtr(b bool) *bool {
-	return &b
-}
-
+//
 // Helper function to create a test site with source.
 func createTestSite(t *testing.T, db *sql.DB) *model.Site {
 	t.Helper()
@@ -409,7 +406,7 @@ func createTestSite(t *testing.T, db *sql.DB) *model.Site {
 	siteRepo := NewSiteRepo(db)
 	site, err := siteRepo.Create(context.Background(), &model.CreateSiteRequest{
 		Name:            "Test Site",
-		Enabled:         boolPtr(true),
+		Enabled:         new(true),
 		RunEveryMinutes: 30,
 		SourceID:        source.ID,
 	})
@@ -432,7 +429,7 @@ func createTestSiteWithName(t *testing.T, db *sql.DB, siteName, sourceName strin
 	siteRepo := NewSiteRepo(db)
 	site, err := siteRepo.Create(context.Background(), &model.CreateSiteRequest{
 		Name:            siteName,
-		Enabled:         boolPtr(true),
+		Enabled:         new(true),
 		RunEveryMinutes: 30,
 		SourceID:        source.ID,
 	})

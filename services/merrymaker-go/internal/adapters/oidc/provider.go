@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -323,12 +324,7 @@ func generateRandomString(length int) (string, error) {
 
 // hasOpenIDScope reports whether the configured scopes include "openid".
 func (p *Provider) hasOpenIDScope() bool {
-	for _, sc := range p.config.Scopes {
-		if sc == "openid" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(p.config.Scopes, "openid")
 }
 
 // getIDTokenFromToken extracts the id_token from oauth2.Token.

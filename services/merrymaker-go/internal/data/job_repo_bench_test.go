@@ -250,9 +250,7 @@ func BenchmarkJobRepo_MultiWorkerScenario(b *testing.B) {
 
 		var wg sync.WaitGroup
 		for range numWorkers {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				for range jobsPerWorker {
 					// Reserve job
 					job, err := repo.ReserveNext(context.Background(), model.JobTypeBrowser, 30)
@@ -276,7 +274,7 @@ func BenchmarkJobRepo_MultiWorkerScenario(b *testing.B) {
 						b.Error(err)
 					}
 				}
-			}()
+			})
 		}
 		wg.Wait()
 	})
@@ -315,9 +313,7 @@ func BenchmarkJobRepo_CreateAndReserveRace(b *testing.B) {
 
 		// Consumer goroutines
 		for range 3 {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				ticker := time.NewTicker(1 * time.Millisecond)
 				defer ticker.Stop()
 
@@ -332,7 +328,7 @@ func BenchmarkJobRepo_CreateAndReserveRace(b *testing.B) {
 						continue
 					}
 				}
-			}()
+			})
 		}
 
 		wg.Wait()

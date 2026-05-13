@@ -368,7 +368,7 @@ func TestBuildSampleAlertJSON(t *testing.T) {
 			sampleJSON := buildSampleAlertJSON(tt.baseURL)
 
 			// Parse the returned JSON
-			var payload map[string]interface{}
+			var payload map[string]any
 			err := json.Unmarshal([]byte(sampleJSON), &payload)
 			require.NoError(t, err, "sample JSON should be valid JSON")
 
@@ -380,7 +380,7 @@ func TestBuildSampleAlertJSON(t *testing.T) {
 			// Verify alert field is present and valid
 			alertRaw, ok := payload["alert"]
 			require.True(t, ok, "alert field should be present")
-			var alert map[string]interface{}
+			var alert map[string]any
 			alertBytes, err := json.Marshal(alertRaw)
 			require.NoError(t, err)
 			err = json.Unmarshal(alertBytes, &alert)

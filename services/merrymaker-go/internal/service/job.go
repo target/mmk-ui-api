@@ -352,10 +352,7 @@ func applyJobContext(payload *notify.JobFailurePayload, job *model.Job, siteID s
 		payload.SiteID = siteID
 	}
 
-	retryCount := job.RetryCount
-	if retryCount < 0 {
-		retryCount = 0
-	}
+	retryCount := max(job.RetryCount, 0)
 
 	status := job.Status
 	switch {

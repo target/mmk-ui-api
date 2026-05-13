@@ -40,11 +40,11 @@ func TestJobRepoExportedMethodsMatchAllowlist(t *testing.T) {
 		"WaitForNotification":           {},
 	}
 
-	methods := reflect.TypeOf(&JobRepo{})
+	methods := reflect.TypeFor[*JobRepo]()
 	seen := make(map[string]struct{})
 
-	for i := range methods.NumMethod() {
-		m := methods.Method(i)
+	for m := range methods.Methods() {
+		m := m
 		if !m.IsExported() {
 			continue
 		}

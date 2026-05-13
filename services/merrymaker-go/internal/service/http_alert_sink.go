@@ -359,10 +359,7 @@ func (s *AlertSinkService) ScheduleAlert(
 	if err != nil {
 		return nil, fmt.Errorf("marshal job payload: %w", err)
 	}
-	mr := sink.Retry
-	if mr < 0 {
-		mr = 0
-	}
+	mr := max(sink.Retry, 0)
 	req := &model.CreateJobRequest{
 		Type:       model.JobTypeAlert,
 		Payload:    b,

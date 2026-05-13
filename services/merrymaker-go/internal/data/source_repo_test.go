@@ -332,7 +332,7 @@ func TestSourceRepo_Update(t *testing.T) {
 
 		// Test updating name only
 		nameUpdate := model.UpdateSourceRequest{
-			Name: testutil.StringPtr("updated-name"),
+			Name: new("updated-name"),
 		}
 		updated, err := repo.Update(ctx, created.ID, nameUpdate)
 		require.NoError(t, err)
@@ -348,7 +348,7 @@ func TestSourceRepo_Update(t *testing.T) {
 
 		// Test updating value only
 		valueUpdate := model.UpdateSourceRequest{
-			Value: testutil.StringPtr("console.log('updated');"),
+			Value: new("console.log('updated');"),
 		}
 		updated, err = repo.Update(ctx, created.ID, valueUpdate)
 		require.NoError(t, err)
@@ -361,7 +361,7 @@ func TestSourceRepo_Update(t *testing.T) {
 
 		// Test updating test flag only
 		testUpdate := model.UpdateSourceRequest{
-			Test: testutil.BoolPtr(true),
+			Test: new(true),
 		}
 		updated, err = repo.Update(ctx, created.ID, testUpdate)
 		require.NoError(t, err)
@@ -377,9 +377,9 @@ func TestSourceRepo_Update(t *testing.T) {
 
 		// Test updating multiple fields
 		multiUpdate := model.UpdateSourceRequest{
-			Name:    testutil.StringPtr("multi-update"),
-			Value:   testutil.StringPtr("console.log('multi');"),
-			Test:    testutil.BoolPtr(false),
+			Name:    new("multi-update"),
+			Value:   new("console.log('multi');"),
+			Test:    new(false),
 			Secrets: []string{"MULTI_SECRET"},
 		}
 		updated, err = repo.Update(ctx, created.ID, multiUpdate)
@@ -397,7 +397,7 @@ func TestSourceRepo_Update(t *testing.T) {
 
 		// Test validation errors
 		invalidUpdate := model.UpdateSourceRequest{
-			Name: testutil.StringPtr(""),
+			Name: new(""),
 		}
 		_, err = repo.Update(ctx, created.ID, invalidUpdate)
 		require.Error(t, err)

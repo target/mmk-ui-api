@@ -246,9 +246,7 @@ func (r *Runner) Run(ctx context.Context) error {
 	errCh := make(chan error, 1)
 
 	for range r.workers {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if err := r.workerLoop(ctx, ch); err != nil {
 				// first error wins, cancels all workers
 				select {
@@ -257,7 +255,7 @@ func (r *Runner) Run(ctx context.Context) error {
 				default:
 				}
 			}
-		}()
+		})
 	}
 
 	wg.Wait()

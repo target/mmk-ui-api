@@ -162,7 +162,7 @@ func isForwardedHTTPS(r *http.Request) bool {
 	}
 
 	// Handle comma-separated values (e.g., "https,http")
-	for _, proto := range strings.Split(xfProto, ",") {
+	for proto := range strings.SplitSeq(xfProto, ",") {
 		if strings.EqualFold(strings.TrimSpace(proto), "https") {
 			return true
 		}

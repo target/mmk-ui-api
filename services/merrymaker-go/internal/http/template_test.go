@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,13 +26,7 @@ func TestTemplateRenderer_LoadTemplates(t *testing.T) {
 	// Check for expected template names
 	expectedTemplates := []string{"layout", "content", "error-layout", "dashboard-content"}
 	for _, expected := range expectedTemplates {
-		found := false
-		for _, name := range templateNames {
-			if name == expected {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(templateNames, expected)
 		assert.True(t, found, "Template %s should be loaded", expected)
 	}
 }

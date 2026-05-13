@@ -39,9 +39,9 @@ func TestAlertSinkService_ResolveSecrets(t *testing.T) {
 		Name:        "test",
 		URI:         "https://example.com/path",
 		Method:      "POST",
-		Body:        ptr("token=__API_KEY__"),
-		QueryParams: ptr("key=__API_KEY__&a=b"),
-		Headers:     ptr("Authorization: Bearer __API_KEY__"),
+		Body:        new("token=__API_KEY__"),
+		QueryParams: new("key=__API_KEY__&a=b"),
+		Headers:     new("Authorization: Bearer __API_KEY__"),
 		OkStatus:    200,
 		Retry:       1,
 		Secrets:     []string{"API_KEY"},
@@ -72,7 +72,7 @@ func TestAlertSinkService_ValidateSinkConfiguration(t *testing.T) {
 			Evaluator:  evalStub{validateErr: assert.AnError},
 		},
 	)
-	sink := model.HTTPAlertSink{Method: "POST", Body: ptr("bad expr"), Secrets: []string{"S"}}
+	sink := model.HTTPAlertSink{Method: "POST", Body: new("bad expr"), Secrets: []string{"S"}}
 	// Since validation fails on JMESPath, secret resolution should not be invoked
 	err := svc.ValidateSinkConfiguration(context.Background(), sink)
 	require.Error(t, err)
@@ -84,7 +84,7 @@ func TestAlertSinkService_ValidateSinkConfiguration(t *testing.T) {
 	sinkOK := model.HTTPAlertSink{
 		Method:  "POST",
 		URI:     "https://example.com",
-		Body:    ptr("items"),
+		Body:    new("items"),
 		Secrets: []string{"S"},
 	}
 	secretRepo.EXPECT().GetByName(gomock.Any(), "S").Return(&model.Secret{Name: "S", Value: "v"}, nil)
@@ -111,9 +111,9 @@ func TestAlertSinkService_ProcessSinkConfiguration(t *testing.T) {
 		Name:        "test",
 		URI:         "https://api.example.com/alert",
 		Method:      "POST",
-		Body:        ptr("some.expr"),
-		QueryParams: ptr("token=__T__"),
-		Headers:     ptr("X-API: __T__\nAccept: application/json"),
+		Body:        new("some.expr"),
+		QueryParams: new("token=__T__"),
+		Headers:     new("X-API: __T__\nAccept: application/json"),
 		OkStatus:    204,
 		Retry:       2,
 		Secrets:     []string{"T"},
@@ -154,9 +154,9 @@ func TestAlertSinkService_ProcessSinkConfiguration_DefaultContentType(t *testing
 		Name:        "test-default-ct",
 		URI:         "https://api.example.com/alert",
 		Method:      "POST",
-		Body:        ptr("some.expr"),
-		QueryParams: ptr("a=b"),
-		Headers:     ptr("X-Trace: abc123"),
+		Body:        new("some.expr"),
+		QueryParams: new("a=b"),
+		Headers:     new("X-Trace: abc123"),
 		OkStatus:    200,
 		Retry:       1,
 	}
@@ -186,7 +186,7 @@ func TestAlertSinkService_ParseJSONHeaders(t *testing.T) {
 		URI:    "https://api.example.com/alert",
 		Method: "POST",
 		// JSON headers with secret placeholder
-		Headers: ptr(`{"X-API": "__T__", "Accept": "application/json"}`),
+		Headers: new(`{"X-API": "__T__", "Accept": "application/json"}`),
 		Secrets: []string{"T"},
 	}
 	secretRepo.EXPECT().GetByName(gomock.Any(), "T").Return(&model.Secret{Name: "T", Value: "abc"}, nil)
@@ -239,7 +239,7 @@ func TestAlertSinkService_ParseJSONHeaders_Invalid(t *testing.T) {
 	jobRepo := mocks.NewMockJobRepository(ctrl)
 	svc := NewAlertSinkService(AlertSinkServiceOptions{JobRepo: jobRepo, SecretRepo: secretRepo, Evaluator: evalStub{}})
 
-	sink := model.HTTPAlertSink{Method: "POST", URI: "https://example.com", Headers: ptr("{ invalid")}
+	sink := model.HTTPAlertSink{Method: "POST", URI: "https://example.com", Headers: new("{ invalid")}
 	_, err := svc.ProcessSinkConfiguration(context.Background(), sink, json.RawMessage(`{}`))
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid headers JSON")
@@ -256,14 +256,14 @@ func TestAlertSinkService_ParseJSONHeaders_ArrayValues(t *testing.T) {
 	sink := model.HTTPAlertSink{
 		Method:  "GET",
 		URI:     "https://example.com",
-		Headers: ptr(`{"Accept":["application/json","text/plain"]}`),
+		Headers: new(`{"Accept":["application/json","text/plain"]}`),
 	}
 	prep, err := svc.ProcessSinkConfiguration(context.Background(), sink, json.RawMessage(`{}`))
 	require.NoError(t, err)
 	assert.Equal(t, "application/json, text/plain", prep.Headers["Accept"])
 }
 
-func ptr(s string) *string { return &s }
+
 
 // Tests for HTTPAlertSinkService (CRUD operations)
 
@@ -362,7 +362,7 @@ func TestHTTPAlertSinkService_Update(t *testing.T) {
 	svc := MustNewHTTPAlertSinkService(HTTPAlertSinkServiceOptions{Repo: repo})
 
 	req := &model.UpdateHTTPAlertSinkRequest{
-		Name: ptr("updated-sink"),
+		Name: new("updated-sink"),
 	}
 
 	expected := &model.HTTPAlertSink{
@@ -546,7 +546,7 @@ func TestAlertSinkService_TestFire_WithSecrets(t *testing.T) {
 		Name:     "test-sink",
 		URI:      "https://webhook.example.com/alert?token=__API_KEY__",
 		Method:   "POST",
-		Headers:  ptr(`{"Authorization": "Bearer __API_KEY__"}`),
+		Headers:  new(`{"Authorization": "Bearer __API_KEY__"}`),
 		OkStatus: 200,
 		Secrets:  []string{"API_KEY"},
 	}

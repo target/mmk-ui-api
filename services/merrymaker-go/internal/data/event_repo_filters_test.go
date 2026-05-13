@@ -48,7 +48,7 @@ func TestEventRepo_ListWithFilters_CategoryFilter(t *testing.T) {
 		// Test network category filter
 		networkOpts := model.EventListByJobOptions{
 			JobID:    jobID,
-			Category: evStringPtr("network"),
+			Category: new("network"),
 			Limit:    10,
 			Offset:   0,
 		}
@@ -60,7 +60,7 @@ func TestEventRepo_ListWithFilters_CategoryFilter(t *testing.T) {
 		// Test console category filter
 		consoleOpts := model.EventListByJobOptions{
 			JobID:    jobID,
-			Category: evStringPtr("console"),
+			Category: new("console"),
 			Limit:    10,
 			Offset:   0,
 		}
@@ -72,7 +72,7 @@ func TestEventRepo_ListWithFilters_CategoryFilter(t *testing.T) {
 		// Test security category filter
 		securityOpts := model.EventListByJobOptions{
 			JobID:    jobID,
-			Category: evStringPtr("security"),
+			Category: new("security"),
 			Limit:    10,
 			Offset:   0,
 		}
@@ -84,7 +84,7 @@ func TestEventRepo_ListWithFilters_CategoryFilter(t *testing.T) {
 		// Test action category filter
 		actionOpts := model.EventListByJobOptions{
 			JobID:    jobID,
-			Category: evStringPtr("action"),
+			Category: new("action"),
 			Limit:    10,
 			Offset:   0,
 		}
@@ -96,7 +96,7 @@ func TestEventRepo_ListWithFilters_CategoryFilter(t *testing.T) {
 		// Test error category filter
 		errorOpts := model.EventListByJobOptions{
 			JobID:    jobID,
-			Category: evStringPtr("error"),
+			Category: new("error"),
 			Limit:    10,
 			Offset:   0,
 		}
@@ -139,7 +139,7 @@ func TestEventRepo_ListWithFilters_SearchQuery(t *testing.T) {
 		// Test search for "example.com"
 		searchOpts := model.EventListByJobOptions{
 			JobID:       jobID,
-			SearchQuery: evStringPtr("example.com"),
+			SearchQuery: new("example.com"),
 			Limit:       10,
 			Offset:      0,
 		}
@@ -151,7 +151,7 @@ func TestEventRepo_ListWithFilters_SearchQuery(t *testing.T) {
 		// Test search for "Hello"
 		helloOpts := model.EventListByJobOptions{
 			JobID:       jobID,
-			SearchQuery: evStringPtr("Hello"),
+			SearchQuery: new("Hello"),
 			Limit:       10,
 			Offset:      0,
 		}
@@ -163,7 +163,7 @@ func TestEventRepo_ListWithFilters_SearchQuery(t *testing.T) {
 		// Test search for non-existent term
 		noMatchOpts := model.EventListByJobOptions{
 			JobID:       jobID,
-			SearchQuery: evStringPtr("nonexistent"),
+			SearchQuery: new("nonexistent"),
 			Limit:       10,
 			Offset:      0,
 		}
@@ -205,8 +205,8 @@ func TestEventRepo_ListWithFilters_Sorting(t *testing.T) {
 		// Test sort by event_type ASC
 		sortAscOpts := model.EventListByJobOptions{
 			JobID:   jobID,
-			SortBy:  evStringPtr("event_type"),
-			SortDir: evStringPtr("asc"),
+			SortBy:  new("event_type"),
+			SortDir: new("asc"),
 			Limit:   10,
 			Offset:  0,
 		}
@@ -220,8 +220,8 @@ func TestEventRepo_ListWithFilters_Sorting(t *testing.T) {
 		// Test sort by event_type DESC
 		sortDescOpts := model.EventListByJobOptions{
 			JobID:   jobID,
-			SortBy:  evStringPtr("event_type"),
-			SortDir: evStringPtr("desc"),
+			SortBy:  new("event_type"),
+			SortDir: new("desc"),
 			Limit:   10,
 			Offset:  0,
 		}

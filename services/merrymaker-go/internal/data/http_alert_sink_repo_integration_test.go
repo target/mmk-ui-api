@@ -105,7 +105,7 @@ func TestHTTPAlertSinkRepo_Integration_ConcurrentUpdate(t *testing.T) {
 			go func(id int) {
 				defer wg.Done()
 				updateReq := &model.UpdateHTTPAlertSinkRequest{
-					URI: testutil.StringPtr(fmt.Sprintf("https://updated%d.example.com/webhook", id)),
+					URI: new(fmt.Sprintf("https://updated%d.example.com/webhook", id)),
 				}
 				updated, err := repo.Update(ctx, sink.ID, updateReq)
 				if err != nil {
@@ -157,8 +157,8 @@ func TestHTTPAlertSinkRepo_Integration_BulkOperations(t *testing.T) {
 				Name:     fmt.Sprintf("bulk-sink-%03d", i),
 				URI:      fmt.Sprintf("https://bulk%d.example.com/webhook", i),
 				Method:   "POST",
-				OkStatus: testutil.IntPtr(200 + (i % 5)), // Vary status codes
-				Retry:    testutil.IntPtr(i % 10),        // Vary retry counts
+				OkStatus: new(200 + (i % 5)), // Vary status codes
+				Retry:    new(i % 10),        // Vary retry counts
 			}
 			_, err := repo.Create(ctx, req)
 			require.NoError(t, err)
@@ -225,7 +225,7 @@ func TestHTTPAlertSinkRepo_Integration_TransactionIsolation(t *testing.T) {
 		// Test that failed operations don't affect the database
 		// Try to update with invalid data (this should fail validation)
 		invalidUpdate := &model.UpdateHTTPAlertSinkRequest{
-			Name: testutil.StringPtr(""), // Empty name should fail validation
+			Name: new(""), // Empty name should fail validation
 		}
 
 		_, err = repo.Update(ctx, sink.ID, invalidUpdate)

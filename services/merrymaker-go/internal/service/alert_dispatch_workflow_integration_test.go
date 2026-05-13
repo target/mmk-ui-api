@@ -71,8 +71,8 @@ func TestAlertDispatchWorkflow_SingleSink(t *testing.T) {
 			Method:      "POST",
 			URI:         "https://example.com/alerts",
 			Secrets:     []string{secret.Name},
-			Headers:     testutil.StringPtr(`{"Authorization": "Bearer __test-api-key-workflow__"}`),
-			QueryParams: testutil.StringPtr("api_key=__test-api-key-workflow__"),
+			Headers:     new(`{"Authorization": "Bearer __test-api-key-workflow__"}`),
+			QueryParams: new("api_key=__test-api-key-workflow__"),
 			OkStatus:    &okStatus,
 			Retry:       &retry,
 		})

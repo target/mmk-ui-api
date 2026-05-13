@@ -200,10 +200,7 @@ func calcRulesAlertCounts(res *service.RulesProcessingResults, alertMode model.S
 		muted = res.AlertsCreated
 	}
 
-	delivered := res.AlertsCreated - muted
-	if delivered < 0 {
-		delivered = 0
-	}
+	delivered := max(res.AlertsCreated-muted, 0)
 	return delivered, muted
 }
 
@@ -993,10 +990,7 @@ func buildJobEventsPageState(req jobEventsRequest, pageResp *model.EventListPage
 
 	if req.usesCursor() {
 		events = clampPageEvents(events, req.pageSize)
-		prevIndexOffset := req.indexOffset - req.pageSize
-		if prevIndexOffset < 0 {
-			prevIndexOffset = 0
-		}
+		prevIndexOffset := max(req.indexOffset-req.pageSize, 0)
 		return jobEventsPageState{
 			Events:          events,
 			HasNext:         nextCursor != nil,
@@ -1034,10 +1028,7 @@ func buildOffsetJobEventsPageState(
 	}
 
 	nextIndexOffset := req.indexOffset + len(events)
-	prevIndexOffset := req.indexOffset - req.pageSize
-	if prevIndexOffset < 0 {
-		prevIndexOffset = 0
-	}
+	prevIndexOffset := max(req.indexOffset-req.pageSize, 0)
 
 	return jobEventsPageState{
 		Events:          events,

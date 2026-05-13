@@ -40,7 +40,7 @@ func TestJobRepo_Create(t *testing.T) {
 				Payload:   json.RawMessage(`{"rules": ["rule1", "rule2"]}`),
 				Metadata:  json.RawMessage(`{"source": "api"}`),
 				Priority:  75,
-				SessionID: stringPtr("550e8400-e29b-41d4-a716-446655440000"),
+				SessionID: new("550e8400-e29b-41d4-a716-446655440000"),
 			},
 			wantErr: false,
 		},
@@ -50,7 +50,7 @@ func TestJobRepo_Create(t *testing.T) {
 				Type:        model.JobTypeBrowser,
 				Payload:     json.RawMessage(`{"url": "https://scheduled.com"}`),
 				Priority:    25,
-				ScheduledAt: timePtr(time.Now().Add(time.Hour)),
+				ScheduledAt: new(time.Now().Add(time.Hour)),
 				MaxRetries:  5,
 			},
 			wantErr: false,
@@ -673,7 +673,7 @@ func TestJobRepo_List(t *testing.T) {
 			{
 				name: "filter by is_test",
 				opts: &model.JobListOptions{
-					IsTest: jobBoolPtr(true),
+					IsTest: new(true),
 					Limit:  10,
 				},
 				wantLen: 1,
@@ -998,25 +998,8 @@ func TestJobRepo_Delete(t *testing.T) {
 }
 
 // Helper functions.
-func stringPtr(s string) *string {
-	return &s
-}
-
-func timePtr(t time.Time) *time.Time {
-	return &t
-}
-
-func jobTypePtr(jt model.JobType) *model.JobType {
-	return &jt
-}
-
-func jobStatusPtr(js model.JobStatus) *model.JobStatus {
-	return &js
-}
-
-func jobBoolPtr(b bool) *bool {
-	return &b
-}
+func jobTypePtr(v model.JobType) *model.JobType   { return &v }
+func jobStatusPtr(v model.JobStatus) *model.JobStatus { return &v }
 
 func TestJobRepo_ListRecentByTypeWithSiteNames(t *testing.T) {
 	testutil.SkipIfNoTestDB(t)

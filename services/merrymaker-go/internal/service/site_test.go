@@ -41,8 +41,8 @@ func TestSiteService_Create_Success(t *testing.T) {
 	ctx := context.Background()
 	req := &model.CreateSiteRequest{
 		Name:            "test-site",
-		Enabled:         boolPtr(true),
-		Scope:           stringPtr("*"),
+		Enabled:         new(true),
+		Scope:           new("*"),
 		RunEveryMinutes: 15,
 		SourceID:        "source-123",
 	}
@@ -51,7 +51,7 @@ func TestSiteService_Create_Success(t *testing.T) {
 		ID:              testSiteID,
 		Name:            "test-site",
 		Enabled:         true,
-		Scope:           stringPtr("*"),
+		Scope:           new("*"),
 		RunEveryMinutes: 15,
 		SourceID:        "source-123",
 		CreatedAt:       time.Now(),
@@ -95,7 +95,7 @@ func TestSiteService_Create_DisabledSite(t *testing.T) {
 	ctx := context.Background()
 	req := &model.CreateSiteRequest{
 		Name:            "disabled-site",
-		Enabled:         boolPtr(false),
+		Enabled:         new(false),
 		RunEveryMinutes: 30,
 		SourceID:        "source-456",
 	}
@@ -163,7 +163,7 @@ func TestSiteService_Create_ScheduleReconcileError(t *testing.T) {
 	ctx := context.Background()
 	req := &model.CreateSiteRequest{
 		Name:            "test-site",
-		Enabled:         boolPtr(true),
+		Enabled:         new(true),
 		RunEveryMinutes: 15,
 		SourceID:        "source-123",
 	}
@@ -206,9 +206,9 @@ func TestSiteService_Update_Success(t *testing.T) {
 
 	ctx := context.Background()
 	updateReq := model.UpdateSiteRequest{
-		Name:            stringPtr("updated-site"),
-		Enabled:         boolPtr(true),
-		RunEveryMinutes: intPtr(30),
+		Name:            new("updated-site"),
+		Enabled:         new(true),
+		RunEveryMinutes: new(30),
 	}
 
 	updatedSite := &model.Site{
@@ -257,7 +257,7 @@ func TestSiteService_Update_DisableSite(t *testing.T) {
 
 	ctx := context.Background()
 	updateReq := model.UpdateSiteRequest{
-		Enabled: boolPtr(false),
+		Enabled: new(false),
 	}
 
 	updatedSite := &model.Site{
@@ -296,7 +296,7 @@ func TestSiteService_Update_SiteRepoError(t *testing.T) {
 
 	ctx := context.Background()
 	updateReq := model.UpdateSiteRequest{
-		Name: stringPtr("updated-site"),
+		Name: new("updated-site"),
 	}
 
 	// Mock site update failure
@@ -320,7 +320,7 @@ func TestSiteService_Update_ScheduleReconcileError(t *testing.T) {
 
 	ctx := context.Background()
 	updateReq := model.UpdateSiteRequest{
-		Enabled: boolPtr(true),
+		Enabled: new(true),
 	}
 
 	updatedSite := &model.Site{
@@ -507,7 +507,7 @@ func TestSiteService_ReconcileSchedule_NilAdmin(t *testing.T) {
 	ctx := context.Background()
 	req := &model.CreateSiteRequest{
 		Name:            "test-site",
-		Enabled:         boolPtr(true),
+		Enabled:         new(true),
 		RunEveryMinutes: 15,
 		SourceID:        "source-123",
 	}
@@ -543,7 +543,7 @@ func TestSiteService_ReconcileSchedule_ZeroInterval(t *testing.T) {
 	ctx := context.Background()
 	req := &model.CreateSiteRequest{
 		Name:            "test-site",
-		Enabled:         boolPtr(true),
+		Enabled:         new(true),
 		RunEveryMinutes: 0, // Zero interval should default to 1 minute
 		SourceID:        "source-123",
 	}
@@ -623,6 +623,4 @@ func TestTaskNameForSite(t *testing.T) {
 }
 
 // Helper functions.
-func boolPtr(b bool) *bool       { return &b }
-func stringPtr(s string) *string { return &s }
-func intPtr(i int) *int          { return &i }
+
