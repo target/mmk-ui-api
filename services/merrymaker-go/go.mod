@@ -28,7 +28,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec // indirect
+	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
 )
 
 require (
