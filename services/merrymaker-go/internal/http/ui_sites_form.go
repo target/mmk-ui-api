@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -18,44 +17,28 @@ const optionListLimit = 10000 // named to avoid magic numbers; adjust as needed
 
 // buildSourceOptions returns [{ID, Name, Selected}] for the source select.
 func (h *UIHandlers) buildSourceOptions(ctx context.Context, selectedID string) ([]map[string]any, error) {
-	var out []map[string]any
 	if h.SourceSvc == nil {
-		return out, errors.New("sources service unavailable")
+		return nil, errors.New("sources service unavailable")
 	}
-	list, err := h.SourceSvc.List(ctx, optionListLimit, 0)
-	if err != nil {
-		return out, err
-	}
-	sort.Slice(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
-	for _, s := range list {
-		out = append(out, map[string]any{
-			"ID":       s.ID,
-			"Name":     s.Name,
-			"Selected": s.ID == selectedID,
-		})
-	}
-	return out, nil
+	selected := map[string]struct{}{selectedID: {}}
+	opts := BuildSelectOptions(ctx, h.SourceSvc.List, selected,
+		func(s *model.Source) string { return s.ID },
+		func(s *model.Source) string { return s.Name },
+		optionListLimit)
+	return toOptionMaps(opts), nil
 }
 
 // buildAlertSinkOptions returns [{ID, Name, Selected}] for the alert sink select.
 func (h *UIHandlers) buildAlertSinkOptions(ctx context.Context, selectedID string) ([]map[string]any, error) {
-	var out []map[string]any
 	if h.Sinks == nil {
-		return out, errors.New("alert sinks service unavailable")
+		return nil, errors.New("alert sinks service unavailable")
 	}
-	list, err := h.Sinks.List(ctx, optionListLimit, 0)
-	if err != nil {
-		return out, err
-	}
-	sort.Slice(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
-	for _, s := range list {
-		out = append(out, map[string]any{
-			"ID":       s.ID,
-			"Name":     s.Name,
-			"Selected": s.ID == selectedID,
-		})
-	}
-	return out, nil
+	selected := map[string]struct{}{selectedID: {}}
+	opts := BuildSelectOptions(ctx, h.Sinks.List, selected,
+		func(s *model.HTTPAlertSink) string { return s.ID },
+		func(s *model.HTTPAlertSink) string { return s.Name },
+		optionListLimit)
+	return toOptionMaps(opts), nil
 }
 
 // renderSiteForm renders the Site create/edit form page with common framing data.
@@ -388,4 +371,17 @@ func (h *UIHandlers) SiteUpdate(w http.ResponseWriter, r *http.Request) {
 		SuccessURL: "/sites",
 		PageMeta:   PageMeta{Title: "Merrymaker - Edit Site", PageTitle: "Edit Site", CurrentPage: PageSiteForm},
 	})
+}
+
+// toOptionMaps converts SelectOptions to the legacy map format used by HTML templates.
+func toOptionMaps(opts []SelectOption) []map[string]any {
+	out := make([]map[string]any, 0, len(opts))
+	for _, o := range opts {
+		out = append(out, map[string]any{
+			"ID":       o.ID,
+			"Name":     o.Name,
+			"Selected": o.Selected,
+		})
+	}
+	return out
 }

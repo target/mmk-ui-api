@@ -7,6 +7,7 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -612,4 +613,83 @@ func (h *UIHandlers) logAndRenderTemplateError(w http.ResponseWriter, r *http.Re
 
 	// In production, show generic error
 	http.Error(w, "internal server error", http.StatusInternalServerError)
+}
+
+// SelectOption represents a dropdown/multiselect option.
+type SelectOption struct {
+	ID       string
+	Name     string
+	Selected bool
+}
+
+// BuildSelectOptions fetches entities via listFn, sorts by name (case-insensitive),
+// and produces SelectOption slices keyed by entity ID for use in HTML selects.
+// The selectedIDs map is keyed by entity ID; an entry present marks that option as selected.
+func BuildSelectOptions[E any](
+	ctx context.Context,
+	listFn func(context.Context, int, int) ([]E, error),
+	selectedIDs map[string]struct{},
+	idFn func(E) string,
+	nameFn func(E) string,
+	limit int,
+) []SelectOption {
+	list, err := listFn(ctx, limit, 0)
+	if err != nil {
+		return nil
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return strings.ToLower(nameFn(list[i])) < strings.ToLower(nameFn(list[j]))
+	})
+	opts := make([]SelectOption, 0, len(list))
+	for _, item := range list {
+		id := idFn(item)
+		_, sel := selectedIDs[id]
+		opts = append(opts, SelectOption{
+			ID:       id,
+			Name:     nameFn(item),
+			Selected: sel,
+		})
+	}
+	return opts
+}
+
+// BuildSelectOptionsByName is like BuildSelectOptions but selects by name instead of ID.
+func BuildSelectOptionsByName[E any](
+	ctx context.Context,
+	listFn func(context.Context, int, int) ([]E, error),
+	selectedNames map[string]struct{},
+	idFn func(E) string,
+	nameFn func(E) string,
+	limit int,
+) []SelectOption {
+	list, err := listFn(ctx, limit, 0)
+	if err != nil {
+		return nil
+	}
+	sort.Slice(list, func(i, j int) bool {
+		return strings.ToLower(nameFn(list[i])) < strings.ToLower(nameFn(list[j]))
+	})
+	opts := make([]SelectOption, 0, len(list))
+	for _, item := range list {
+		name := nameFn(item)
+		_, sel := selectedNames[name]
+		opts = append(opts, SelectOption{
+			ID:       idFn(item),
+			Name:     name,
+			Selected: sel,
+		})
+	}
+	return opts
+}
+
+// toNameOnlyOptionMaps converts SelectOptions to a name-only map format for HTML templates.
+func toNameOnlyOptionMaps(opts []SelectOption) []map[string]any {
+	out := make([]map[string]any, 0, len(opts))
+	for _, o := range opts {
+		out = append(out, map[string]any{
+			"Name":     o.Name,
+			"Selected": o.Selected,
+		})
+	}
+	return out
 }
