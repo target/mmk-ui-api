@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -130,27 +129,18 @@ func buildSampleAlertJSON(baseURL string) string {
 
 // buildSecretOptions returns a slice of {Name, Selected} maps for the secrets select.
 func (h *UIHandlers) buildSecretOptions(ctx context.Context, selected []string) []map[string]any {
-	var out []map[string]any
 	if h.SecretSvc == nil {
-		return out
+		return nil
 	}
-	// Fetch up to 1000 for options; adjust if needed later
-	list, err := h.SecretSvc.List(ctx, 1000, 0)
-	if err != nil {
-		return out
-	}
-	// Sort by name (case-insensitive) for stable UX ordering
-	sort.Slice(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
 	set := map[string]struct{}{}
 	for _, s := range selected {
 		set[strings.TrimSpace(s)] = struct{}{}
 	}
-	out = make([]map[string]any, 0, len(list))
-	for _, s := range list {
-		_, sel := set[s.Name]
-		out = append(out, map[string]any{"Name": s.Name, "Selected": sel})
-	}
-	return out
+	opts := BuildSelectOptionsByName(ctx, h.SecretSvc.List, set,
+		func(s *model.Secret) string { return s.ID },
+		func(s *model.Secret) string { return s.Name },
+		1000)
+	return toNameOnlyOptionMaps(opts)
 }
 
 // parseSecretsFromForm collects non-empty unique secret names from a POSTed form.
