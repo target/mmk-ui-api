@@ -15,7 +15,6 @@ func TestNewEventFilterService(t *testing.T) {
 	service := NewEventFilterService()
 
 	assert.NotNil(t, service)
-	assert.NotEmpty(t, service.ProcessableEventTypes)
 
 	// Check that default processable event types are set
 	expectedTypes := []string{
@@ -26,7 +25,7 @@ func TestNewEventFilterService(t *testing.T) {
 	for _, eventType := range expectedTypes {
 		assert.True(
 			t,
-			service.ProcessableEventTypes[eventType],
+			service.ShouldProcessEvent(eventType),
 			"Event type %s should be processable by default",
 			eventType,
 		)
@@ -155,57 +154,9 @@ func TestEventFilterService_FilterProcessableEvents(t *testing.T) {
 	assert.Equal(t, "Network.requestWillBeSent", processableEvents[0].Type)
 }
 
-func TestEventFilterService_AddRemoveProcessableEventType(t *testing.T) {
-	service := NewEventFilterService()
 
-	// Add a new processable event type
-	service.AddProcessableEventType("custom_event")
-	assert.True(t, service.ShouldProcessEvent("custom_event"))
 
-	// Remove an existing processable event type
-	service.RemoveProcessableEventType("domain_seen")
-	assert.False(t, service.ShouldProcessEvent("domain_seen"))
 
-	// Add back the removed event type
-	service.SetProcessableEventType("domain_seen", true)
-	assert.True(t, service.ShouldProcessEvent("domain_seen"))
-
-	// Disable an event type without removing it
-	service.SetProcessableEventType("domain_seen", false)
-	assert.False(t, service.ShouldProcessEvent("domain_seen"))
-}
-
-func TestEventFilterService_GetProcessableEventTypes(t *testing.T) {
-	service := NewEventFilterService()
-
-	eventTypes := service.GetProcessableEventTypes()
-
-	// Should return a copy, not the original map
-	assert.NotSame(t, &service.ProcessableEventTypes, &eventTypes)
-
-	// Should contain the same data
-	assert.Len(t, eventTypes, len(service.ProcessableEventTypes))
-	for eventType, shouldProcess := range service.ProcessableEventTypes {
-		assert.Equal(t, shouldProcess, eventTypes[eventType])
-	}
-}
-
-func TestEventFilterService_GetProcessableEventTypesList(t *testing.T) {
-	service := NewEventFilterService()
-
-	// Add a disabled event type
-	service.SetProcessableEventType("disabled_event", false)
-
-	eventTypesList := service.GetProcessableEventTypesList()
-
-	// Should only contain enabled event types
-	for _, eventType := range eventTypesList {
-		assert.True(t, service.ProcessableEventTypes[eventType], "Event type %s should be enabled", eventType)
-	}
-
-	// Should not contain disabled event types
-	assert.NotContains(t, eventTypesList, "disabled_event")
-}
 
 func TestEventFilterService_GetFilterStats(t *testing.T) {
 	service := NewEventFilterService()
