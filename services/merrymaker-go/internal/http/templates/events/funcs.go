@@ -1,15 +1,14 @@
 package events
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
 
 	"github.com/target/mmk-ui-api/internal/domain/model"
+	"github.com/target/mmk-ui-api/internal/http/templates/tmplutil"
 )
 
 // Deps contains the dependencies required to build event-related template helpers.
@@ -35,17 +34,7 @@ func Funcs(deps Deps) template.FuncMap {
 		"isHTTPURL":                IsHTTPURL,
 	}
 
-	funcs["renderEventPartial"] = func(name string, data any) (template.HTML, error) {
-		if deps.Template == nil || *deps.Template == nil {
-			return "", errors.New("template not initialized")
-		}
-		var buf bytes.Buffer
-		if err := (*deps.Template).ExecuteTemplate(&buf, name, data); err != nil {
-			return "", err
-		}
-		// #nosec G203 - Rendered HTML originates from our trusted template set and varies only by data already escaped by html/template.
-		return template.HTML(buf.String()), nil
-	}
+	funcs["renderEventPartial"] = tmplutil.RenderPartial(deps.Template)
 
 	return funcs
 }

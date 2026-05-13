@@ -44,7 +44,6 @@ func TestJobRepoExportedMethodsMatchAllowlist(t *testing.T) {
 	seen := make(map[string]struct{})
 
 	for m := range methods.Methods() {
-		m := m
 		if !m.IsExported() {
 			continue
 		}

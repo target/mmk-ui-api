@@ -1,15 +1,14 @@
 package core
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/target/mmk-ui-api/internal/http/templates/tmplutil"
 	"github.com/target/mmk-ui-api/internal/http/uiutil"
 )
 
@@ -40,18 +39,9 @@ func Funcs(deps Deps) template.FuncMap {
 }
 
 func addRenderFuncs(funcs template.FuncMap, deps Deps) {
+	render := tmplutil.RenderPartial(deps.Template)
 	funcs["renderSection"] = func(page string, data any) (template.HTML, error) {
-		if deps.Template == nil || *deps.Template == nil {
-			return "", errors.New("template not initialized")
-		}
-		var buf bytes.Buffer
-		if err := (*deps.Template).ExecuteTemplate(&buf, deps.ContentTemplateFor(page), data); err != nil {
-			return "", err
-		}
-		// #nosec G203 - The HTML here is rendered by our own trusted templates (html/template),
-		// and is embedded back into the same template set. User-provided values were already
-		// auto-escaped during ExecuteTemplate above.
-		return template.HTML(buf.String()), nil
+		return render(deps.ContentTemplateFor(page), data)
 	}
 
 	funcs["toJSON"] = func(v any) (string, error) {
