@@ -99,7 +99,7 @@ func ParseOverrunStateMask(v string) (OverrunStateMask, error) {
 		return 0, nil
 	}
 	var mask OverrunStateMask
-	for _, part := range strings.Split(v, ",") {
+	for part := range strings.SplitSeq(v, ",") {
 		name := strings.ToLower(strings.TrimSpace(part))
 		flag, err := parseOverrunStateName(name)
 		if err != nil {

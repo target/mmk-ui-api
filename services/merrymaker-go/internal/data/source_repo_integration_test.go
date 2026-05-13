@@ -198,7 +198,7 @@ func TestSourceRepo_Integration_ConcurrentReadWrite(t *testing.T) {
 			go func(writerID int) {
 				defer wg.Done()
 				updateReq := model.UpdateSourceRequest{
-					Value: testutil.StringPtr(fmt.Sprintf("console.log('updated by writer %d');", writerID)),
+					Value: new(fmt.Sprintf("console.log('updated by writer %d');", writerID)),
 				}
 				updated, err := repo.Update(ctx, source.ID, updateReq)
 				if err != nil {
@@ -327,7 +327,7 @@ func TestSourceRepo_Integration_TransactionIsolation(t *testing.T) {
 		// Test that failed operations don't affect the database
 		// Try to update with invalid data (this should fail validation)
 		invalidUpdate := model.UpdateSourceRequest{
-			Name: testutil.StringPtr(""), // Empty name should fail validation
+			Name: new(""), // Empty name should fail validation
 		}
 
 		updated, err := repo.Update(ctx, source.ID, invalidUpdate)
@@ -433,7 +433,7 @@ func TestSourceRepo_Integration_ConcurrentUpdateDelete(t *testing.T) {
 			go func(updaterID int) {
 				defer wg.Done()
 				updateReq := model.UpdateSourceRequest{
-					Value: testutil.StringPtr(fmt.Sprintf("console.log('updated by %d');", updaterID)),
+					Value: new(fmt.Sprintf("console.log('updated by %d');", updaterID)),
 				}
 				updated, err := repo.Update(ctx, source.ID, updateReq)
 				if err != nil {
@@ -587,7 +587,7 @@ func TestSourceRepo_Integration_StressTest(t *testing.T) {
 						if len(sources) > 0 {
 							source := sources[op%len(sources)]
 							updateReq := model.UpdateSourceRequest{
-								Value: testutil.StringPtr(
+								Value: new(
 									fmt.Sprintf("console.log('updated by worker %d op %d');", id, op),
 								),
 							}

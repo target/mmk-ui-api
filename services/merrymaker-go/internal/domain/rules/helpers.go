@@ -1,5 +1,7 @@
 package rules
 
+import "slices"
+
 import "strings"
 
 func appendSample(samples *[]string, domain string) {
@@ -55,10 +57,8 @@ func AppendUniqueLower(list *[]string, value string) {
 	if v == "" {
 		return
 	}
-	for _, existing := range *list {
-		if existing == v {
-			return
-		}
+	if slices.Contains(*list, v) {
+		return
 	}
 	*list = append(*list, v)
 }

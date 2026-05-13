@@ -282,7 +282,7 @@ func validateDependencies(opts RunnerOptions, deps *runnerDeps) error {
 
 	required := []struct {
 		name  string
-		value interface{}
+		value any
 	}{
 		{"JobRepository", deps.jobsRepo},
 		{"EventRepository", deps.eventsRepo},

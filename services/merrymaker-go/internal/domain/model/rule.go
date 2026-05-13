@@ -143,7 +143,7 @@ type YaraRuleConfig struct {
 
 // CustomRuleConfig represents configuration for custom rules.
 type CustomRuleConfig struct {
-	Script     string                 `json:"script,omitempty"`     // Custom rule script/logic
-	Parameters map[string]interface{} `json:"parameters,omitempty"` // Custom rule parameters
-	Scope      string                 `json:"scope,omitempty"`      // Scope context for custom rule
+	Script     string         `json:"script,omitempty"`     // Custom rule script/logic
+	Parameters map[string]any `json:"parameters,omitempty"` // Custom rule parameters
+	Scope      string         `json:"scope,omitempty"`      // Scope context for custom rule
 }

@@ -98,7 +98,7 @@ type JobScenario struct {
 // JobAction represents an action to perform on a job.
 type JobAction struct {
 	Type   string // "reserve", "complete", "fail", "heartbeat"
-	Params map[string]interface{}
+	Params map[string]any
 }
 
 // NewTestScenario creates a new TestScenarioBuilder.
@@ -175,7 +175,7 @@ func CompleteAction() JobAction {
 func FailAction(errorMsg string) JobAction {
 	return JobAction{
 		Type:   "fail",
-		Params: map[string]interface{}{"error": errorMsg},
+		Params: map[string]any{"error": errorMsg},
 	}
 }
 
@@ -183,7 +183,7 @@ func FailAction(errorMsg string) JobAction {
 func HeartbeatAction(leaseSeconds int) JobAction {
 	return JobAction{
 		Type:   "heartbeat",
-		Params: map[string]interface{}{"leaseSeconds": leaseSeconds},
+		Params: map[string]any{"leaseSeconds": leaseSeconds},
 	}
 }
 

@@ -63,9 +63,9 @@ func TestAlertDispatchIntegration_EndToEnd(t *testing.T) {
 			Method:   "POST",
 			URI:      "https://webhook.site/test",
 			Secrets:  []string{secret.Name},
-			Headers:  stringPtr(`{"Content-Type": "application/json"}`),
-			OkStatus: intPtr(200),
-			Retry:    intPtr(3),
+			Headers:  new(`{"Content-Type": "application/json"}`),
+			OkStatus: new(200),
+			Retry:    new(3),
 		})
 		require.NoError(t, err)
 		_, err = siteRepo.Update(ctx, site.ID, model.UpdateSiteRequest{

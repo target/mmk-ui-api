@@ -46,8 +46,8 @@ func TestEventRepo_BulkInsert_Success_WithSourceJobID(t *testing.T) {
 				{
 					Type:       "domain_seen",
 					Data:       json.RawMessage(`{"domain":"example.com"}`),
-					StorageKey: evStringPtr("s3://bucket/key1"),
-					Priority:   intPtr(42),
+					StorageKey: new("s3://bucket/key1"),
+					Priority:   new(42),
 				},
 				{
 					Type:       "file_seen",
@@ -142,7 +142,7 @@ func TestEventRepo_BulkInsert_ShouldProcessFalse(t *testing.T) {
 				{
 					Type:     "noop",
 					Data:     json.RawMessage(`{"ok":true}`),
-					Priority: intPtr(5),
+					Priority: new(5),
 				},
 			},
 		}
@@ -174,12 +174,12 @@ func TestEventRepo_BulkInsert_RollbackOnError(t *testing.T) {
 				{
 					Type:     "ok_event",
 					Data:     json.RawMessage(`{"n":1}`),
-					Priority: intPtr(10), // valid
+					Priority: new(10), // valid
 				},
 				{
 					Type:     "bad_event",
 					Data:     json.RawMessage(`{"n":2}`),
-					Priority: intPtr(200), // invalid due to CHECK (0..100)
+					Priority: new(200), // invalid due to CHECK (0..100)
 				},
 			},
 		}
@@ -250,8 +250,8 @@ func TestEventRepo_BulkInsertCopy_Success(t *testing.T) {
 				{
 					Type:       "domain_seen",
 					Data:       json.RawMessage(`{"domain":"example.com"}`),
-					StorageKey: evStringPtr("s3://bucket/key1"),
-					Priority:   intPtr(42),
+					StorageKey: new("s3://bucket/key1"),
+					Priority:   new(42),
 				},
 				{
 					Type:       "file_seen",
@@ -357,20 +357,20 @@ func TestEventRepo_ListByJob_Success(t *testing.T) {
 				{
 					Type:       "domain_seen",
 					Data:       json.RawMessage(`{"domain":"example.com"}`),
-					StorageKey: evStringPtr("s3://bucket/key1"),
-					Priority:   intPtr(10),
+					StorageKey: new("s3://bucket/key1"),
+					Priority:   new(10),
 					Timestamp:  time.Now().Add(-3 * time.Minute), // Oldest
 				},
 				{
 					Type:      "file_seen",
 					Data:      json.RawMessage(`{"sha256":"abc123"}`),
-					Priority:  intPtr(20),
+					Priority:  new(20),
 					Timestamp: time.Now().Add(-2 * time.Minute), // Middle
 				},
 				{
 					Type:      "alert_triggered",
 					Data:      json.RawMessage(`{"severity":"high"}`),
-					Priority:  intPtr(30),
+					Priority:  new(30),
 					Timestamp: time.Now().Add(-1 * time.Minute), // Newest
 				},
 			},
@@ -458,7 +458,7 @@ func TestEventRepo_ListByJob_Pagination(t *testing.T) {
 			events[i] = model.RawEvent{
 				Type:      fmt.Sprintf("event_%d", i),
 				Data:      json.RawMessage(fmt.Sprintf(`{"index":%d}`, i)),
-				Priority:  intPtr(i * 10),
+				Priority:  new(i * 10),
 				Timestamp: time.Now().Add(time.Duration(i) * time.Minute), // Ascending order
 			}
 		}
@@ -622,8 +622,8 @@ func TestEventRepo_ListByJob_KeysetPagination(t *testing.T) {
 			}, true)
 			require.NoError(t, err)
 
-			sortBy := evStringPtr("event_type")
-			sortDir := evStringPtr("desc")
+			sortBy := new("event_type")
+			sortDir := new("desc")
 			firstPage, err := eventRepo.ListByJob(ctx, model.EventListByJobOptions{
 				JobID:   jobID,
 				Limit:   2,
@@ -778,8 +778,8 @@ func TestEventRepo_BulkInsertWithProcessingFlags(t *testing.T) {
 				{
 					Type:       "Network.requestWillBeSent",
 					Data:       json.RawMessage(`{"url":"https://example.com"}`),
-					StorageKey: evStringPtr("s3://bucket/key1"),
-					Priority:   intPtr(42),
+					StorageKey: new("s3://bucket/key1"),
+					Priority:   new(42),
 				},
 				{
 					Type:       "Runtime.consoleAPICalled",
@@ -791,7 +791,7 @@ func TestEventRepo_BulkInsertWithProcessingFlags(t *testing.T) {
 					Type:       "domain_seen",
 					Data:       json.RawMessage(`{"domain":"example.com"}`),
 					StorageKey: nil,
-					Priority:   intPtr(10),
+					Priority:   new(10),
 				},
 			},
 		}
@@ -900,5 +900,9 @@ func TestEventRepo_GetByIDs(t *testing.T) {
 }
 
 // helpers.
-func intPtr(i int) *int            { return &i }
-func evStringPtr(s string) *string { return &s }
+//
+//go:fix inline
+func intPtr(i int) *int { return new(i) }
+
+//go:fix inline
+func evStringPtr(s string) *string { return new(s) }

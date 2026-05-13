@@ -77,9 +77,7 @@ func (s *Service) NotifyJobFailure(ctx context.Context, payload notify.JobFailur
 
 	var wg sync.WaitGroup
 	for _, entry := range s.sinks {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if err := entry.Sink.SendJobFailure(ctx, payload); err != nil {
 				s.logger.Error("failure notifier delivery error",
 					"sink", entry.Name,
@@ -88,7 +86,7 @@ func (s *Service) NotifyJobFailure(ctx context.Context, payload notify.JobFailur
 					"error", err,
 				)
 			}
-		}()
+		})
 	}
 	wg.Wait()
 }

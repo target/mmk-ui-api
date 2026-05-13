@@ -40,7 +40,7 @@ func TestSiteRepo_Create_Get_List_Update_Delete(t *testing.T) {
 		req := &model.CreateSiteRequest{
 			Name:            fmt.Sprintf("site-%d", time.Now().UnixNano()),
 			Enabled:         nil, // default true
-			Scope:           testutil.StringPtr("*"),
+			Scope:           new("*"),
 			HTTPAlertSinkID: nil,
 			RunEveryMinutes: 15,
 			SourceID:        src.ID,
@@ -72,7 +72,7 @@ func TestSiteRepo_Create_Get_List_Update_Delete(t *testing.T) {
 		newEvery := 30
 		muted := model.SiteAlertModeMuted
 		upd := model.UpdateSiteRequest{
-			Enabled:         testutil.BoolPtr(false),
+			Enabled:         new(false),
 			Scope:           &newScope,
 			RunEveryMinutes: &newEvery,
 			AlertMode:       &muted,

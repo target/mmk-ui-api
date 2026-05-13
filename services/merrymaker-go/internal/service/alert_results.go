@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"maps"
 	"net/url"
 	"strings"
 	"time"
@@ -58,9 +59,7 @@ func NewSecretRedactor(secrets map[string]string) SecretRedactor {
 		return SecretRedactor{}
 	}
 	clone := make(map[string]string, len(secrets))
-	for k, v := range secrets {
-		clone[k] = v
-	}
+	maps.Copy(clone, secrets)
 	return SecretRedactor{secrets: clone}
 }
 

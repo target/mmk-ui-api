@@ -311,7 +311,7 @@ func defaultHTTPAlertSinkSeeds() []*model.CreateHTTPAlertSinkRequest {
 			Name:   "slack-alerts",
 			Method: "POST",
 			URI:    "https://hooks.slack.com/services/dev/webhook",
-			Body: stringPtr(`{
+			Body: new(`{
         "text": '🧪 Merrymaker manual alert test',
         "attachments": [{
           "color": '#439FE0',
@@ -324,27 +324,27 @@ func defaultHTTPAlertSinkSeeds() []*model.CreateHTTPAlertSinkRequest {
         }]
       }`),
 			Secrets:  []string{"webhook-token"},
-			Headers:  stringPtr(`{"Content-Type": "application/json"}`),
-			OkStatus: intPtr(200),
-			Retry:    intPtr(3),
+			Headers:  new(`{"Content-Type": "application/json"}`),
+			OkStatus: new(200),
+			Retry:    new(3),
 		},
 		{
 			Name:     "discord-notifications",
 			Method:   "POST",
 			URI:      "https://discord.com/api/webhooks/dev/webhook",
 			Secrets:  []string{"api-key"},
-			Headers:  stringPtr(`{"Content-Type": "application/json", "User-Agent": "Merrymaker-Dev"}`),
-			OkStatus: intPtr(204),
-			Retry:    intPtr(2),
+			Headers:  new(`{"Content-Type": "application/json", "User-Agent": "Merrymaker-Dev"}`),
+			OkStatus: new(204),
+			Retry:    new(2),
 		},
 		{
 			Name:     "email-service",
 			Method:   "POST",
 			URI:      "https://api.sendgrid.com/v3/mail/send",
 			Secrets:  []string{"bearer-token"},
-			Headers:  stringPtr(`{"Content-Type": "application/json", "Authorization": "Bearer __BEARER_TOKEN__"}`),
-			OkStatus: intPtr(202),
-			Retry:    intPtr(3),
+			Headers:  new(`{"Content-Type": "application/json", "Authorization": "Bearer __BEARER_TOKEN__"}`),
+			OkStatus: new(202),
+			Retry:    new(3),
 		},
 	}
 }
@@ -429,8 +429,8 @@ func createSiteRequests(sources []*model.Source, sinks []*model.HTTPAlertSink) (
 		}
 		requests = append(requests, &model.CreateSiteRequest{
 			Name:            spec.siteName,
-			Enabled:         boolPtr(spec.enabled),
-			Scope:           stringPtr(spec.scope),
+			Enabled:         new(spec.enabled),
+			Scope:           new(spec.scope),
 			RunEveryMinutes: spec.minutes,
 			SourceID:        sourceID,
 			HTTPAlertSinkID: getSinkByName(sinkByName, spec.sinkName),
@@ -703,6 +703,11 @@ func schedulePayload(site *model.Site) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
-func boolPtr(b bool) *bool       { return &b }
-func stringPtr(s string) *string { return &s }
-func intPtr(i int) *int          { return &i }
+//go:fix inline
+func boolPtr(b bool) *bool { return new(b) }
+
+//go:fix inline
+func stringPtr(s string) *string { return new(s) }
+
+//go:fix inline
+func intPtr(i int) *int { return new(i) }

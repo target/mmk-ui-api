@@ -156,21 +156,21 @@ func TestUpdateSourceRequest_Validate(t *testing.T) {
 		{
 			name: "valid request with name update",
 			req: UpdateSourceRequest{
-				Name: stringPtr("updated-source"),
+				Name: new("updated-source"),
 			},
 			wantErr: "",
 		},
 		{
 			name: "valid request with value update",
 			req: UpdateSourceRequest{
-				Value: stringPtr("console.log('updated');"),
+				Value: new("console.log('updated');"),
 			},
 			wantErr: "",
 		},
 		{
 			name: "valid request with test flag update",
 			req: UpdateSourceRequest{
-				Test: boolPtr(true),
+				Test: new(true),
 			},
 			wantErr: "",
 		},
@@ -184,56 +184,56 @@ func TestUpdateSourceRequest_Validate(t *testing.T) {
 		{
 			name: "empty name",
 			req: UpdateSourceRequest{
-				Name: stringPtr(""),
+				Name: new(""),
 			},
 			wantErr: "name cannot be empty",
 		},
 		{
 			name: "whitespace only name",
 			req: UpdateSourceRequest{
-				Name: stringPtr("   "),
+				Name: new("   "),
 			},
 			wantErr: "name cannot be empty",
 		},
 		{
 			name: "empty value",
 			req: UpdateSourceRequest{
-				Value: stringPtr(""),
+				Value: new(""),
 			},
 			wantErr: "value cannot be empty",
 		},
 		{
 			name: "whitespace only value",
 			req: UpdateSourceRequest{
-				Value: stringPtr("   "),
+				Value: new("   "),
 			},
 			wantErr: "value cannot be empty",
 		},
 		{
 			name: "name exactly 255 characters",
 			req: UpdateSourceRequest{
-				Name: stringPtr(strings.Repeat("a", 255)),
+				Name: new(strings.Repeat("a", 255)),
 			},
 			wantErr: "",
 		},
 		{
 			name: "name too long (256 characters)",
 			req: UpdateSourceRequest{
-				Name: stringPtr(strings.Repeat("a", 256)),
+				Name: new(strings.Repeat("a", 256)),
 			},
 			wantErr: "name cannot exceed 255 characters",
 		},
 		{
 			name: "name with unicode characters within limit",
 			req: UpdateSourceRequest{
-				Name: stringPtr(strings.Repeat("🚀", 255)),
+				Name: new(strings.Repeat("🚀", 255)),
 			},
 			wantErr: "",
 		},
 		{
 			name: "name with unicode characters over limit",
 			req: UpdateSourceRequest{
-				Name: stringPtr(strings.Repeat("🚀", 256)),
+				Name: new(strings.Repeat("🚀", 256)),
 			},
 			wantErr: "name cannot exceed 255 characters",
 		},
@@ -280,21 +280,21 @@ func TestUpdateSourceRequest_HasUpdates(t *testing.T) {
 		{
 			name: "name update",
 			req: UpdateSourceRequest{
-				Name: stringPtr("new-name"),
+				Name: new("new-name"),
 			},
 			want: true,
 		},
 		{
 			name: "value update",
 			req: UpdateSourceRequest{
-				Value: stringPtr("new value"),
+				Value: new("new value"),
 			},
 			want: true,
 		},
 		{
 			name: "test flag update",
 			req: UpdateSourceRequest{
-				Test: boolPtr(true),
+				Test: new(true),
 			},
 			want: true,
 		},
@@ -315,9 +315,9 @@ func TestUpdateSourceRequest_HasUpdates(t *testing.T) {
 		{
 			name: "multiple updates",
 			req: UpdateSourceRequest{
-				Name:    stringPtr("new-name"),
-				Value:   stringPtr("new value"),
-				Test:    boolPtr(false),
+				Name:    new("new-name"),
+				Value:   new("new value"),
+				Test:    new(false),
 				Secrets: []string{"SECRET1", "SECRET2"},
 			},
 			want: true,
@@ -332,10 +332,13 @@ func TestUpdateSourceRequest_HasUpdates(t *testing.T) {
 }
 
 // Helper functions for creating pointers.
+//
+//go:fix inline
 func stringPtr(s string) *string {
-	return &s
+	return new(s)
 }
 
+//go:fix inline
 func boolPtr(b bool) *bool {
-	return &b
+	return new(b)
 }

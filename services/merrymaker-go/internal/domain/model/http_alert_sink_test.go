@@ -31,11 +31,11 @@ func TestCreateHTTPAlertSinkRequest_Validate(t *testing.T) {
 				Name:        "test-alert-sink-full",
 				URI:         "https://example.com/webhook",
 				Method:      "PUT",
-				Body:        httpAlertSinkStringPtr(`{"message": "alert"}`),
-				QueryParams: httpAlertSinkStringPtr("token=abc123"),
-				Headers:     httpAlertSinkStringPtr("Content-Type: application/json"),
-				OkStatus:    httpAlertSinkIntPtr(201),
-				Retry:       httpAlertSinkIntPtr(5),
+				Body:        new(`{"message": "alert"}`),
+				QueryParams: new("token=abc123"),
+				Headers:     new("Content-Type: application/json"),
+				OkStatus:    new(201),
+				Retry:       new(5),
 				Secrets:     []string{"API_KEY", "SECRET_TOKEN"},
 			},
 			wantErr: false,
@@ -146,7 +146,7 @@ func TestCreateHTTPAlertSinkRequest_Validate(t *testing.T) {
 				Name:     "test-alert-sink",
 				URI:      "https://example.com/webhook",
 				Method:   "POST",
-				OkStatus: httpAlertSinkIntPtr(99),
+				OkStatus: new(99),
 			},
 			wantErr: true,
 			errMsg:  "ok_status must be between 100 and 599",
@@ -157,7 +157,7 @@ func TestCreateHTTPAlertSinkRequest_Validate(t *testing.T) {
 				Name:     "test-alert-sink",
 				URI:      "https://example.com/webhook",
 				Method:   "POST",
-				OkStatus: httpAlertSinkIntPtr(600),
+				OkStatus: new(600),
 			},
 			wantErr: true,
 			errMsg:  "ok_status must be between 100 and 599",
@@ -168,7 +168,7 @@ func TestCreateHTTPAlertSinkRequest_Validate(t *testing.T) {
 				Name:   "test-alert-sink",
 				URI:    "https://example.com/webhook",
 				Method: "POST",
-				Retry:  httpAlertSinkIntPtr(-1),
+				Retry:  new(-1),
 			},
 			wantErr: true,
 			errMsg:  "retry must be non-negative",
@@ -221,21 +221,21 @@ func TestUpdateHTTPAlertSinkRequest_Validate(t *testing.T) {
 		{
 			name: "valid update with name",
 			req: UpdateHTTPAlertSinkRequest{
-				Name: httpAlertSinkStringPtr("updated-name"),
+				Name: new("updated-name"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid update with all fields",
 			req: UpdateHTTPAlertSinkRequest{
-				Name:        httpAlertSinkStringPtr("updated-name"),
-				URI:         httpAlertSinkStringPtr("https://updated.example.com/webhook"),
-				Method:      httpAlertSinkStringPtr("PATCH"),
-				Body:        httpAlertSinkStringPtr(`{"updated": true}`),
-				QueryParams: httpAlertSinkStringPtr("updated=true"),
-				Headers:     httpAlertSinkStringPtr("X-Updated: true"),
-				OkStatus:    httpAlertSinkIntPtr(202),
-				Retry:       httpAlertSinkIntPtr(2),
+				Name:        new("updated-name"),
+				URI:         new("https://updated.example.com/webhook"),
+				Method:      new("PATCH"),
+				Body:        new(`{"updated": true}`),
+				QueryParams: new("updated=true"),
+				Headers:     new("X-Updated: true"),
+				OkStatus:    new(202),
+				Retry:       new(2),
 				Secrets:     []string{"NEW_SECRET"},
 			},
 			wantErr: false,
@@ -249,7 +249,7 @@ func TestUpdateHTTPAlertSinkRequest_Validate(t *testing.T) {
 		{
 			name: "invalid name too short",
 			req: UpdateHTTPAlertSinkRequest{
-				Name: httpAlertSinkStringPtr("ab"),
+				Name: new("ab"),
 			},
 			wantErr: true,
 			errMsg:  "name must be at least 3 characters",
@@ -257,7 +257,7 @@ func TestUpdateHTTPAlertSinkRequest_Validate(t *testing.T) {
 		{
 			name: "invalid URI - wrong scheme",
 			req: UpdateHTTPAlertSinkRequest{
-				URI: httpAlertSinkStringPtr("ftp://example.com/webhook"),
+				URI: new("ftp://example.com/webhook"),
 			},
 			wantErr: true,
 			errMsg:  "uri must use http or https scheme",
@@ -265,7 +265,7 @@ func TestUpdateHTTPAlertSinkRequest_Validate(t *testing.T) {
 		{
 			name: "invalid method",
 			req: UpdateHTTPAlertSinkRequest{
-				Method: httpAlertSinkStringPtr("INVALID"),
+				Method: new("INVALID"),
 			},
 			wantErr: true,
 			errMsg:  "method must be one of: GET, POST, PUT, PATCH, DELETE",
@@ -300,7 +300,7 @@ func TestUpdateHTTPAlertSinkRequest_HasUpdates(t *testing.T) {
 		{
 			name: "has name update",
 			req: UpdateHTTPAlertSinkRequest{
-				Name: httpAlertSinkStringPtr("test"),
+				Name: new("test"),
 			},
 			want: true,
 		},
@@ -321,12 +321,15 @@ func TestUpdateHTTPAlertSinkRequest_HasUpdates(t *testing.T) {
 }
 
 // Helper functions for creating pointers.
+//
+//go:fix inline
 func httpAlertSinkStringPtr(s string) *string {
-	return &s
+	return new(s)
 }
 
+//go:fix inline
 func httpAlertSinkIntPtr(i int) *int {
-	return &i
+	return new(i)
 }
 
 func TestCreateHTTPAlertSinkRequest_Normalize(t *testing.T) {
@@ -345,9 +348,9 @@ func TestCreateHTTPAlertSinkRequest_Normalize(t *testing.T) {
 
 func TestUpdateHTTPAlertSinkRequest_Normalize(t *testing.T) {
 	req := UpdateHTTPAlertSinkRequest{
-		Name:   httpAlertSinkStringPtr("  updated-name  "),
-		URI:    httpAlertSinkStringPtr("  https://updated.example.com  "),
-		Method: httpAlertSinkStringPtr("  patch  "),
+		Name:   new("  updated-name  "),
+		URI:    new("  https://updated.example.com  "),
+		Method: new("  patch  "),
 	}
 
 	req.Normalize()

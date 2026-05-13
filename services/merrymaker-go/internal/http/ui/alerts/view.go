@@ -304,7 +304,7 @@ func humanizeIdentifier(value string) string {
 
 func trimPrefixCaseInsensitive(text, prefix string) (string, bool) {
 	candidates := []string{prefix}
-	if base := strings.TrimSuffix(prefix, ":"); base != prefix {
+	if base, ok := strings.CutSuffix(prefix, ":"); ok {
 		candidates = append(candidates, base)
 	}
 

@@ -40,9 +40,7 @@ func TestScheduledJobsRepo_Integration_ConcurrentFindDue(t *testing.T) {
 		var wg sync.WaitGroup
 
 		for range numWorkers {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 
 				// Use a transaction to hold the locks longer
 				tx, err := db.BeginTx(ctx, nil)
@@ -75,7 +73,7 @@ func TestScheduledJobsRepo_Integration_ConcurrentFindDue(t *testing.T) {
 				time.Sleep(50 * time.Millisecond)
 
 				results <- taskNames
-			}()
+			})
 		}
 
 		wg.Wait()
@@ -267,13 +265,11 @@ func TestScheduledJobsRepo_Integration_MarkQueuedRace(t *testing.T) {
 		var wg sync.WaitGroup
 
 		for range numWorkers {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				found, err := repo.MarkQueued(ctx, taskID, now)
 				assert.NoError(t, err)
 				results <- found
-			}()
+			})
 		}
 
 		wg.Wait()

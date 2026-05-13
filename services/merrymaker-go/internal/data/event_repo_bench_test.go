@@ -25,7 +25,7 @@ func BenchmarkEventRepo_BulkInsert(b *testing.B) {
 			events[i] = model.RawEvent{
 				Type:     "benchmark_event",
 				Data:     json.RawMessage(data),
-				Priority: intPtr(1),
+				Priority: new(1),
 			}
 		}
 
@@ -58,7 +58,7 @@ func BenchmarkEventRepo_BulkInsertCopy(b *testing.B) {
 			events[i] = model.RawEvent{
 				Type:     "benchmark_event_copy",
 				Data:     json.RawMessage(data),
-				Priority: intPtr(1),
+				Priority: new(1),
 			}
 		}
 

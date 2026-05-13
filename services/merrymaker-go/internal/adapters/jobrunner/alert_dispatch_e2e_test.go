@@ -103,8 +103,8 @@ func TestAlertDispatch_EndToEnd(t *testing.T) {
 			Method:      "POST",
 			URI:         mockWebhook.URL + "/webhook",
 			Secrets:     []string{secret.Name},
-			QueryParams: testutil.StringPtr("token=__test-webhook-token-e2e__"),
-			Headers: testutil.StringPtr(
+			QueryParams: new("token=__test-webhook-token-e2e__"),
+			Headers: new(
 				`{"Content-Type": "application/json", "X-API-Key": "__test-webhook-token-e2e__"}`,
 			),
 			OkStatus: &okStatus,

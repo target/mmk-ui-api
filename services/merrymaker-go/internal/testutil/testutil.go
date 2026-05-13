@@ -164,11 +164,11 @@ func WithAutoDB(t TestingTB, fn func(*sql.DB)) {
 // TestingTB is an interface that covers both *testing.T and *testing.B.
 type TestingTB interface {
 	Helper()
-	Skip(args ...interface{})
-	Skipf(format string, args ...interface{})
-	Fatal(args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Logf(format string, args ...interface{})
+	Skip(args ...any)
+	Skipf(format string, args ...any)
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Logf(format string, args ...any)
 }
 
 // SkipIfNoTestDB skips the test if test database is not available.
@@ -723,21 +723,29 @@ func SetupTestRedis(t TestingTB) *redis.Client {
 // Common pointer helper functions for tests.
 
 // StringPtr returns a pointer to the given string value.
+//
+//go:fix inline
 func StringPtr(s string) *string {
-	return &s
+	return new(s)
 }
 
 // BoolPtr returns a pointer to the given bool value.
+//
+//go:fix inline
 func BoolPtr(b bool) *bool {
-	return &b
+	return new(b)
 }
 
 // IntPtr returns a pointer to the given int value.
+//
+//go:fix inline
 func IntPtr(i int) *int {
-	return &i
+	return new(i)
 }
 
 // TimePtr returns a pointer to the given time value.
+//
+//go:fix inline
 func TimePtr(t time.Time) *time.Time {
-	return &t
+	return new(t)
 }

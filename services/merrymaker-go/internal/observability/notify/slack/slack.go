@@ -49,10 +49,7 @@ func NewClient(cfg Config) (*Client, error) {
 		timeout = 5 * time.Second
 	}
 
-	retries := cfg.RetryLimit
-	if retries < 0 {
-		retries = 0
-	}
+	retries := max(cfg.RetryLimit, 0)
 
 	hc := cfg.Client
 	if hc == nil {

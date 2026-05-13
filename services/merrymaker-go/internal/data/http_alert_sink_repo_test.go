@@ -85,11 +85,11 @@ func getCreateTestCases() []struct {
 				Name:        "test-alert-sink-full",
 				URI:         "https://example.com/webhook",
 				Method:      "POST",
-				Body:        testutil.StringPtr(`{"message": "alert"}`),
-				QueryParams: testutil.StringPtr("token=abc123"),
-				Headers:     testutil.StringPtr("Content-Type: application/json"),
-				OkStatus:    testutil.IntPtr(201),
-				Retry:       testutil.IntPtr(5),
+				Body:        new(`{"message": "alert"}`),
+				QueryParams: new("token=abc123"),
+				Headers:     new("Content-Type: application/json"),
+				OkStatus:    new(201),
+				Retry:       new(5),
 				Secrets:     []string{"TEST_SECRET_1", "TEST_SECRET_2"},
 			},
 			wantErr: false,
@@ -241,11 +241,11 @@ func TestHTTPAlertSinkRepo_GetByID(t *testing.T) {
 			Name:        "get-by-id-test",
 			URI:         "https://example.com/webhook",
 			Method:      "POST",
-			Body:        testutil.StringPtr(`{"test": true}`),
-			QueryParams: testutil.StringPtr("param=value"),
-			Headers:     testutil.StringPtr("Authorization: Bearer token"),
-			OkStatus:    testutil.IntPtr(202),
-			Retry:       testutil.IntPtr(2),
+			Body:        new(`{"test": true}`),
+			QueryParams: new("param=value"),
+			Headers:     new("Authorization: Bearer token"),
+			OkStatus:    new(202),
+			Retry:       new(2),
 			Secrets:     []string{"GET_SECRET_1", "GET_SECRET_2"},
 		}
 
@@ -382,11 +382,11 @@ func TestHTTPAlertSinkRepo_Update(t *testing.T) {
 			Name:        "update-test-sink",
 			URI:         "https://example.com/webhook",
 			Method:      "POST",
-			Body:        testutil.StringPtr(`{"initial": true}`),
-			QueryParams: testutil.StringPtr("initial=true"),
-			Headers:     testutil.StringPtr("Initial-Header: value"),
-			OkStatus:    testutil.IntPtr(200),
-			Retry:       testutil.IntPtr(3),
+			Body:        new(`{"initial": true}`),
+			QueryParams: new("initial=true"),
+			Headers:     new("Initial-Header: value"),
+			OkStatus:    new(200),
+			Retry:       new(3),
 			Secrets:     []string{"UPDATE_SECRET_1"},
 		}
 
@@ -395,14 +395,14 @@ func TestHTTPAlertSinkRepo_Update(t *testing.T) {
 
 		// Test updating all fields
 		updateReq := &model.UpdateHTTPAlertSinkRequest{
-			Name:        testutil.StringPtr("updated-sink-name"),
-			URI:         testutil.StringPtr("https://updated.example.com/webhook"),
-			Method:      testutil.StringPtr("PATCH"),
-			Body:        testutil.StringPtr(`{"updated": true}`),
-			QueryParams: testutil.StringPtr("updated=true"),
-			Headers:     testutil.StringPtr("Updated-Header: value"),
-			OkStatus:    testutil.IntPtr(201),
-			Retry:       testutil.IntPtr(5),
+			Name:        new("updated-sink-name"),
+			URI:         new("https://updated.example.com/webhook"),
+			Method:      new("PATCH"),
+			Body:        new(`{"updated": true}`),
+			QueryParams: new("updated=true"),
+			Headers:     new("Updated-Header: value"),
+			OkStatus:    new(201),
+			Retry:       new(5),
 			Secrets:     []string{"UPDATE_SECRET_2", "UPDATE_SECRET_3"},
 		}
 
@@ -424,7 +424,7 @@ func TestHTTPAlertSinkRepo_Update(t *testing.T) {
 
 		// Test partial update (only name)
 		partialReq := &model.UpdateHTTPAlertSinkRequest{
-			Name: testutil.StringPtr("partially-updated-name"),
+			Name: new("partially-updated-name"),
 		}
 
 		partialUpdated, err := repo.Update(ctx, created.ID, partialReq)
@@ -438,7 +438,7 @@ func TestHTTPAlertSinkRepo_Update(t *testing.T) {
 
 		// Test updating non-existent sink
 		nonExistentUpdate := &model.UpdateHTTPAlertSinkRequest{
-			Name: testutil.StringPtr("non-existent-update"),
+			Name: new("non-existent-update"),
 		}
 		notFound, err := repo.Update(ctx, "550e8400-e29b-41d4-a716-446655440000", nonExistentUpdate)
 		require.Error(t, err)
@@ -481,7 +481,7 @@ func TestHTTPAlertSinkRepo_Update_ValidationErrors(t *testing.T) {
 			{
 				name: "invalid name too short",
 				updateReq: &model.UpdateHTTPAlertSinkRequest{
-					Name: testutil.StringPtr("ab"),
+					Name: new("ab"),
 				},
 				wantErr: true,
 				errMsg:  "name must be at least 3 characters",
@@ -489,7 +489,7 @@ func TestHTTPAlertSinkRepo_Update_ValidationErrors(t *testing.T) {
 			{
 				name: "invalid URI scheme",
 				updateReq: &model.UpdateHTTPAlertSinkRequest{
-					URI: testutil.StringPtr("ftp://example.com/webhook"),
+					URI: new("ftp://example.com/webhook"),
 				},
 				wantErr: true,
 				errMsg:  "uri must use http or https scheme",
@@ -497,7 +497,7 @@ func TestHTTPAlertSinkRepo_Update_ValidationErrors(t *testing.T) {
 			{
 				name: "invalid method",
 				updateReq: &model.UpdateHTTPAlertSinkRequest{
-					Method: testutil.StringPtr("INVALID"),
+					Method: new("INVALID"),
 				},
 				wantErr: true,
 				errMsg:  "method must be one of: GET, POST, PUT, PATCH, DELETE",

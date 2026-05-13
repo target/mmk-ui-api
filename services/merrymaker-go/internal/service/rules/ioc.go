@@ -178,8 +178,8 @@ func buildAlertDescription(host string, ioc *model.IOC) string {
 }
 
 // buildEventContext constructs the event context object for the alert.
-func buildEventContext(req IOCRequest, ioc *model.IOC) map[string]interface{} {
-	ctx := map[string]interface{}{
+func buildEventContext(req IOCRequest, ioc *model.IOC) map[string]any {
+	ctx := map[string]any{
 		"host":      req.Host,
 		"scope":     req.Scope.Scope,
 		"site_id":   req.SiteID,

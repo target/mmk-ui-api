@@ -49,35 +49,35 @@ func TestBulkEventRequest_Validate_SourceJobID(t *testing.T) {
 		},
 		{
 			name:        "empty source job id (allowed)",
-			sourceJobID: stringPtr(""),
+			sourceJobID: new(""),
 			expectError: false,
 		},
 		{
 			name:        "valid UUID",
-			sourceJobID: stringPtr("550e8400-e29b-41d4-a716-446655440000"),
+			sourceJobID: new("550e8400-e29b-41d4-a716-446655440000"),
 			expectError: false,
 		},
 		{
 			name:        "invalid UUID format",
-			sourceJobID: stringPtr("invalid-uuid"),
+			sourceJobID: new("invalid-uuid"),
 			expectError: true,
 			errorMsg:    "source job id must be a valid UUID",
 		},
 		{
 			name:        "malformed UUID - missing digit",
-			sourceJobID: stringPtr("550e8400-e29b-41d4-a716-44665544000"),
+			sourceJobID: new("550e8400-e29b-41d4-a716-44665544000"),
 			expectError: true,
 			errorMsg:    "source job id must be a valid UUID",
 		},
 		{
 			name:        "malformed UUID - wrong length",
-			sourceJobID: stringPtr("550e8400-e29b-41d4-a716"),
+			sourceJobID: new("550e8400-e29b-41d4-a716"),
 			expectError: true,
 			errorMsg:    "source job id must be a valid UUID",
 		},
 		{
 			name:        "valid UUID without hyphens",
-			sourceJobID: stringPtr("550e8400e29b41d4a716446655440000"),
+			sourceJobID: new("550e8400e29b41d4a716446655440000"),
 			expectError: false,
 		},
 	}

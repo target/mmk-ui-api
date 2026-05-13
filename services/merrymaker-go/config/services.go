@@ -49,8 +49,8 @@ func ParseServices(servicesStr string) (map[ServiceMode]bool, error) {
 		return services, errors.New("at least one service must be specified")
 	}
 
-	parts := strings.Split(servicesStr, ",")
-	for _, part := range parts {
+	parts := strings.SplitSeq(servicesStr, ",")
+	for part := range parts {
 		serviceName := strings.TrimSpace(part)
 		if serviceName == "" {
 			continue

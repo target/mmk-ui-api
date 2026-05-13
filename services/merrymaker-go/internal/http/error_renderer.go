@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/jackc/pgerrcode"
@@ -339,10 +340,5 @@ func isFunctionName(s string) bool {
 	}
 	s = strings.ToLower(s)
 	// Check if s is in the list of common functions
-	for _, fn := range commonFunctions {
-		if s == fn {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(commonFunctions, s)
 }

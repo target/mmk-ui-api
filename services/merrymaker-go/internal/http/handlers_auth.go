@@ -189,7 +189,7 @@ func (h *AuthHandlers) Status(w http.ResponseWriter, r *http.Request) {
 	// Get session ID from cookie
 	sessionCookie, err := r.Cookie("session_id")
 	if err != nil {
-		WriteJSON(w, http.StatusOK, map[string]interface{}{
+		WriteJSON(w, http.StatusOK, map[string]any{
 			"authenticated": false,
 		})
 		return
@@ -200,16 +200,16 @@ func (h *AuthHandlers) Status(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Session is invalid or expired, clear the cookie
 		h.clearCookie(w, r, "session_id")
-		WriteJSON(w, http.StatusOK, map[string]interface{}{
+		WriteJSON(w, http.StatusOK, map[string]any{
 			"authenticated": false,
 		})
 		return
 	}
 
 	// Return session information
-	WriteJSON(w, http.StatusOK, map[string]interface{}{
+	WriteJSON(w, http.StatusOK, map[string]any{
 		"authenticated": true,
-		"user": map[string]interface{}{
+		"user": map[string]any{
 			"id":         session.UserID,
 			"first_name": session.FirstName,
 			"last_name":  session.LastName,

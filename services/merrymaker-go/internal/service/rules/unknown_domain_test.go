@@ -90,9 +90,7 @@ func TestUnknownDomainEvaluator_BasicFlow(t *testing.T) {
 
 	// Wire alert service via fake repo
 	fa := &fakeAlertRepo{}
-	alerter := &core.AlertService{
-		Repo: fa,
-	}
+	alerter := fa
 	eval := &UnknownDomainEvaluator{Caches: c, Alerter: alerter, AlertTTL: time.Minute}
 	req := UnknownDomainRequest{
 		Scope:  ScopeKey{SiteID: "site-1", Scope: "default"},
@@ -125,7 +123,7 @@ func TestUnknownDomainEvaluator_AlertContextIncludesAttribution(t *testing.T) {
 	}
 
 	fa := &fakeAlertRepo{}
-	alerter := &core.AlertService{Repo: fa}
+	alerter := fa
 	eval := &UnknownDomainEvaluator{Caches: c, Alerter: alerter}
 
 	req := UnknownDomainRequest{
@@ -166,9 +164,7 @@ func TestUnknownDomainEvaluator_AllowlistPreemption(t *testing.T) {
 	seenLocal := NewLocalLRU(DefaultLocalLRUConfig())
 	c := Caches{Seen: NewSeenDomainsCache(SeenDomainsCacheDeps{Local: seenLocal, TTL: DefaultCacheTTL()})}
 	fa := &fakeAlertRepo{}
-	alerter := &core.AlertService{
-		Repo: fa,
-	}
+	alerter := fa
 	al := staticAllowlist{set: map[string]bool{"allowed.com": true}}
 	eval := &UnknownDomainEvaluator{Caches: c, Alerter: alerter, Allowlist: al}
 	req := UnknownDomainRequest{Scope: ScopeKey{SiteID: "s", Scope: "default"}, Domain: "allowed.com", SiteID: "s"}

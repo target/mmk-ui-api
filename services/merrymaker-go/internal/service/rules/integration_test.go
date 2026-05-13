@@ -134,9 +134,7 @@ func TestUnknownDomainEvaluator_WithAllowlist_Integration(t *testing.T) {
 	})
 
 	// Create alert service (using core for rules package to avoid import cycle)
-	alertService := &core.AlertService{
-		Repo: mockAlertRepo,
-	}
+	alertService := mockAlertRepo
 
 	// Create caches (minimal setup for testing)
 	seenLocal := NewLocalLRU(DefaultLocalLRUConfig())
@@ -267,9 +265,7 @@ func TestUnknownDomainEvaluator_MultiplePatternTypes_Integration(t *testing.T) {
 	})
 
 	// Create alert service
-	alertService := &core.AlertService{
-		Repo: mockAlertRepo,
-	}
+	alertService := mockAlertRepo
 
 	// Create caches
 	seenLocal := NewLocalLRU(DefaultLocalLRUConfig())

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"log/slog"
+	"maps"
 	"net/http"
 
 	httpassets "github.com/target/mmk-ui-api/internal/http/assets"
@@ -186,8 +187,6 @@ func createTemplateFuncs(t **template.Template, renderer *TemplateRenderer) temp
 
 func mergeTemplateFuncs(dst template.FuncMap, sources ...template.FuncMap) {
 	for _, src := range sources {
-		for key, val := range src {
-			dst[key] = val
-		}
+		maps.Copy(dst, src)
 	}
 }

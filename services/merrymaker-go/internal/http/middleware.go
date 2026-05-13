@@ -488,8 +488,8 @@ func acceptsGzip(acceptEncoding string) bool {
 	}
 
 	// Simple parsing: check for "gzip" and ensure it's not explicitly disabled with q=0
-	parts := strings.Split(acceptEncoding, ",")
-	for _, part := range parts {
+	parts := strings.SplitSeq(acceptEncoding, ",")
+	for part := range parts {
 		part = strings.TrimSpace(part)
 
 		// Check if this part contains "gzip"
@@ -499,8 +499,8 @@ func acceptsGzip(acceptEncoding string) bool {
 
 		// Extract encoding name (before any semicolon)
 		encoding := part
-		if idx := strings.Index(part, ";"); idx != -1 {
-			encoding = strings.TrimSpace(part[:idx])
+		if before, _, ok := strings.Cut(part, ";"); ok {
+			encoding = strings.TrimSpace(before)
 		}
 
 		if strings.ToLower(encoding) != "gzip" {
@@ -547,7 +547,7 @@ func (p *gzipWriterPool) ensureLevelPool(level int) *gzipLevelPool {
 	newPool := &gzipLevelPool{
 		level: level,
 		pool: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return newGzipWriter(level)
 			},
 		},

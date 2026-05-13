@@ -11,7 +11,7 @@ import (
 	"github.com/target/mmk-ui-api/internal/domain/model"
 )
 
-// AlertCreator is a small interface for creating alerts (adapter over core.AlertService).
+// AlertCreator is a small interface for creating alerts.
 // Kept local to avoid expanding public APIs; satisfies ≤3 params rule via request structs.
 type AlertCreator interface {
 	Create(ctx context.Context, req *model.CreateAlertRequest) (*model.Alert, error)
@@ -523,7 +523,7 @@ func (e *UnknownDomainEvaluator) createAlert(
 ) error {
 	title := "Unknown domain observed"
 	desc := "First time seen domain: " + params.Domain + " (scope: " + params.Scope.Scope + ")"
-	ctxObj := map[string]interface{}{
+	ctxObj := map[string]any{
 		"domain":  params.Domain,
 		"scope":   params.Scope.Scope,
 		"site_id": params.Scope.SiteID,
