@@ -31,18 +31,18 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.15",
 		"esbuild": "^0.28.0",
-		"tsx": "^4.20.4",
+		"tsx": "^4.22.0",
 		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.1045.0",
-		"@aws-sdk/s3-request-presigner": "^3.1045.0",
+		"@aws-sdk/client-s3": "^3.1048.0",
+		"@aws-sdk/s3-request-presigner": "^3.1048.0",
 		"@azure/storage-blob": "^12.31.0",
 		"@google-cloud/storage": "^7.19.0",
 		"ioredis": "^5.10.1",
 		"minio": "^8.0.7",
-		"puppeteer": "^24.43.0",
-		"undici": "^8.2.0",
-		"yaml": "^2.8.4"
+		"puppeteer": "^25.0.2",
+		"undici": "^8.3.0",
+		"yaml": "^2.9.0"
 	}
 }
