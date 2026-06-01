@@ -137,7 +137,7 @@ type csrfCookieParams struct {
 }
 
 // setCSRFCookie sets the CSRF token cookie.
-func setCSRFCookie(w http.ResponseWriter, r *http.Request, params csrfCookieParams) {
+func setCSRFCookie(w http.ResponseWriter, _ *http.Request, params csrfCookieParams) {
 	// Secure is always true — the app is served over HTTPS (direct TLS or
 	// a proxy terminating TLS). SameSite=Strict provides additional protection.
 	http.SetCookie(w, &http.Cookie{
@@ -150,24 +150,6 @@ func setCSRFCookie(w http.ResponseWriter, r *http.Request, params csrfCookiePara
 		SameSite: http.SameSiteStrictMode, // Strict for CSRF tokens
 		MaxAge:   3600 * 12,               // 12 hours
 	})
-}
-
-// isForwardedHTTPS checks if the request was forwarded over HTTPS.
-// Handles comma-separated values in X-Forwarded-Proto header.
-func isForwardedHTTPS(r *http.Request) bool {
-	xfProto := r.Header.Get("X-Forwarded-Proto")
-	if xfProto == "" {
-		return false
-	}
-
-	// Handle comma-separated values (e.g., "https,http")
-	for proto := range strings.SplitSeq(xfProto, ",") {
-		if strings.EqualFold(strings.TrimSpace(proto), "https") {
-			return true
-		}
-	}
-
-	return false
 }
 
 // validateCSRFToken validates the CSRF token from the request against the cookie value.

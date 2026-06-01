@@ -1097,7 +1097,10 @@ func (h *UIHandlers) JobEvents(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if templateErr := h.T.t.ExecuteTemplate(w, "job-events-fragment", data); templateErr != nil {
-		h.logger().ErrorContext(r.Context(), "JobEvents: template execution failed", "job_id", jobID, "error", templateErr)
+		h.logger().ErrorContext(
+			r.Context(), "JobEvents: template execution failed",
+			"job_id", jobID, "error", templateErr,
+		)
 		http.Error(w, "failed to render job events", http.StatusInternalServerError)
 	}
 }
