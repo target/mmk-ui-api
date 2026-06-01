@@ -138,16 +138,15 @@ type csrfCookieParams struct {
 
 // setCSRFCookie sets the CSRF token cookie.
 func setCSRFCookie(w http.ResponseWriter, r *http.Request, params csrfCookieParams) {
-	// Check if request is over HTTPS, accounting for proxies
-	isSecure := r.TLS != nil || isForwardedHTTPS(r)
-
+	// Secure is always true — the app is served over HTTPS (direct TLS or
+	// a proxy terminating TLS). SameSite=Strict provides additional protection.
 	http.SetCookie(w, &http.Cookie{
 		Name:     params.Name,
 		Value:    params.Token,
 		Path:     "/",
 		Domain:   params.Domain,
 		HttpOnly: false, // Must be readable by JavaScript for HTMX to include it
-		Secure:   isSecure,
+		Secure:   true,
 		SameSite: http.SameSiteStrictMode, // Strict for CSRF tokens
 		MaxAge:   3600 * 12,               // 12 hours
 	})
