@@ -5,6 +5,37 @@ import (
 	"strings"
 )
 
+// BaseFilter holds common filter fields shared across list pages.
+// Embed this struct in page-specific filters to avoid duplicating parsing logic.
+type BaseFilter struct {
+	Q       string
+	Enabled *bool
+	Sort    string
+	Dir     string
+}
+
+// ParseBaseFilter parses common fields from URL query parameters.
+// Callers should embed the result and then override/extend with page-specific fields.
+func ParseBaseFilter(q url.Values) BaseFilter {
+	var enabledPtr *bool
+	switch strings.TrimSpace(q.Get("enabled")) {
+	case StrTrue, "1":
+		b := true
+		enabledPtr = &b
+	case StrFalse, "0":
+		b := false
+		enabledPtr = &b
+	}
+	sort, dir := ParseSortParam(q, "sort", "dir")
+
+	return BaseFilter{
+		Q:       strings.TrimSpace(q.Get("q")),
+		Enabled: enabledPtr,
+		Sort:    sort,
+		Dir:     dir,
+	}
+}
+
 const (
 	// StrTrue represents the string "true" for boolean query parameters.
 	StrTrue = "true"
