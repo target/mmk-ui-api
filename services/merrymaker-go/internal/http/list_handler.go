@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/url"
 )
@@ -10,6 +11,31 @@ import (
 // It takes a context and pagination bounds, and returns a slice of items of type T.
 // Maintains ≤3 parameters per project constraints.
 type ListFetcher[T any] func(ctx context.Context, pg pageOpts) ([]T, error)
+
+// WrapListFetcher adapts a service List method with signature (ctx, limit, offset) -> ([]T, error)
+// into a ListFetcher that handles pagination bounds and error logging.
+//
+// Usage:
+//
+//	Fetcher: WrapListFetcher(h.SecretSvc.List, h.logger(), "failed to load secrets for UI"),
+func WrapListFetcher[T any](
+	listFunc func(ctx context.Context, limit, offset int) ([]T, error),
+	logger *slog.Logger,
+	msg string,
+) ListFetcher[T] {
+	return func(ctx context.Context, pg pageOpts) ([]T, error) {
+		limit, offset := pg.LimitAndOffset()
+		items, err := listFunc(ctx, limit, offset)
+		if err != nil {
+			logger.Error(msg,
+				"error", err,
+				"page", pg.Page,
+				"page_size", pg.PageSize,
+			)
+		}
+		return items, err
+	}
+}
 
 // FilterParser is a function type for parsing URL query parameters into filter data.
 // It takes url.Values and returns the parsed filter of type F, or an error if parsing fails.
