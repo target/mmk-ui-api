@@ -1116,7 +1116,10 @@ func (h *UIHandlers) JobEventDetails(w http.ResponseWriter, r *http.Request) {
 
 	events, err := h.EventSvc.GetByIDs(r.Context(), []string{eventID})
 	if err != nil {
-		h.logger().ErrorContext(r.Context(), "JobEventDetails: failed to fetch event", "event_id", eventID, "job_id", jobID, "error", err)
+		h.logger().ErrorContext(
+			r.Context(), "JobEventDetails: failed to fetch event",
+			"event_id", eventID, "job_id", jobID, "error", err,
+		)
 		http.Error(w, "failed to load event", http.StatusInternalServerError)
 		return
 	}
