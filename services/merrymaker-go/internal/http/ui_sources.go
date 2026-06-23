@@ -14,18 +14,17 @@ const errMsgUnableLoadSources = "Unable to load sources."
 // --- helpers to keep handlers small and readable ---
 
 type sourcesFilters struct {
-	Q            string
+	BaseFilter
 	IncludeTests bool
 }
 
 func readSourcesFilters(v url.Values) sourcesFilters {
-	q := strings.TrimSpace(v.Get("q"))
 	inc := false
 	switch strings.ToLower(strings.TrimSpace(v.Get("include_tests"))) {
 	case "1", StrTrue, "on", "yes":
 		inc = true
 	}
-	return sourcesFilters{Q: q, IncludeTests: inc}
+	return sourcesFilters{BaseFilter: ParseBaseFilter(v), IncludeTests: inc}
 }
 
 func (h *UIHandlers) buildSourceCounts(
