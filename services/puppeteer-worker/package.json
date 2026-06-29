@@ -29,20 +29,20 @@
 		"node": ">=24.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.16",
+		"@biomejs/biome": "2.5.1",
 		"esbuild": "^0.28.1",
 		"tsx": "^4.22.4",
 		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.1065.0",
-		"@aws-sdk/s3-request-presigner": "^3.1065.0",
-		"@azure/storage-blob": "^12.32.0",
+		"@aws-sdk/client-s3": "^3.1075.0",
+		"@aws-sdk/s3-request-presigner": "^3.1075.0",
+		"@azure/storage-blob": "^12.33.0",
 		"@google-cloud/storage": "^7.21.0",
 		"ioredis": "^5.11.1",
 		"minio": "^8.0.7",
-		"puppeteer": "^25.1.0",
-		"undici": "^8.4.1",
+		"puppeteer": "^25.2.1",
+		"undici": "^8.5.0",
 		"yaml": "^2.9.0"
 	}
 }
