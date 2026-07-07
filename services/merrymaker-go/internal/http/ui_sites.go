@@ -127,26 +127,22 @@ func (h *UIHandlers) Sites(w http.ResponseWriter, r *http.Request) {
 		Handler: h,
 		W:       w,
 		R:       r,
-		FilteredFetcher: func(ctx context.Context, filters sitesFilter, pg pageOpts) ([]siteRow, error) {
-			// Fetch pageSize+1 to detect hasNext
-			limit, offset := pg.LimitAndOffset()
-
-			rows, err := h.listSiteRows(ctx, filters, pageBounds{Limit: limit, Offset: offset})
-			if err != nil {
-				// Log the error for operational visibility
-				h.logLoadError(ctx, "failed to load sites for UI", err,
+		FilteredFetcher: WrapFilteredFetcher(
+			func(ctx context.Context, filters sitesFilter, limit, offset int) ([]siteRow, error) {
+				return h.listSiteRows(ctx, filters, pageBounds{Limit: limit, Offset: offset})
+			},
+			h.logger(),
+			"failed to load sites for UI",
+			func(filters sitesFilter, _ pageOpts) []any {
+				return []any{
 					"query", filters.Q,
 					"enabled", filters.Enabled,
 					"scope", filters.Scope,
 					"sort", filters.Sort,
 					"dir", filters.Dir,
-					"page", pg.Page,
-					"page_size", pg.PageSize,
-				)
-				return nil, err
-			}
-			return rows, nil
-		},
+				}
+			},
+		),
 		FilterParser: parseSitesFilter,
 		EnrichData: func(builder *TemplateDataBuilder, _ []siteRow, filters sitesFilter) {
 			// Add filter values to template

@@ -38,13 +38,29 @@ func (h *UIHandlers) IOCs(w http.ResponseWriter, r *http.Request) {
 
 	// Use generic list handler with filtering
 	HandleList(ListHandlerOpts[*model.IOC, iocsFilter]{
-		Handler:         h,
-		W:               w,
-		R:               r,
-		FilteredFetcher: h.fetchIOCsWithFilters,
-		FilterParser:    parseIOCsFilter,
-		EnrichData:      h.enrichIOCsData(),
-		BasePath:        "/iocs",
+		Handler: h,
+		W:       w,
+		R:       r,
+		FilteredFetcher: WrapFilteredFetcher(
+			func(ctx context.Context, filters iocsFilter, limit, offset int) ([]*model.IOC, error) {
+				opts := model.IOCListOptions{
+					Limit:   limit,
+					Offset:  offset,
+					Type:    filters.Type,
+					Enabled: filters.Enabled,
+					Search:  filters.Search,
+				}
+				return h.IOCSvc.List(ctx, opts)
+			},
+			h.logger(),
+			"failed to load IOCs for UI",
+			func(filters iocsFilter, _ pageOpts) []any {
+				return []any{"filters", filters}
+			},
+		),
+		FilterParser: parseIOCsFilter,
+		EnrichData:   h.enrichIOCsData(),
+		BasePath:     "/iocs",
 		PageMeta: PageMeta{
 			Title:       "Merrymaker - IOCs",
 			PageTitle:   "IOCs",
@@ -57,30 +73,6 @@ func (h *UIHandlers) IOCs(w http.ResponseWriter, r *http.Request) {
 		},
 		UnavailableMessage: errMsgUnableLoadIOCs,
 	})
-}
-
-// fetchIOCsWithFilters fetches IOCs with applied filters and pagination.
-func (h *UIHandlers) fetchIOCsWithFilters(ctx context.Context, f iocsFilter, pg pageOpts) ([]*model.IOC, error) {
-	limit, offset := pg.LimitAndOffset()
-
-	opts := model.IOCListOptions{
-		Limit:   limit,
-		Offset:  offset,
-		Type:    f.Type,
-		Enabled: f.Enabled,
-		Search:  f.Search,
-	}
-
-	iocs, err := h.IOCSvc.List(ctx, opts)
-	if err != nil {
-		h.logger().ErrorContext(ctx, "failed to load IOCs for UI",
-			"error", err,
-			"page", pg.Page,
-			"page_size", pg.PageSize,
-			"filters", f,
-		)
-	}
-	return iocs, err
 }
 
 // parseIOCsFilter parses filter parameters from query string.
