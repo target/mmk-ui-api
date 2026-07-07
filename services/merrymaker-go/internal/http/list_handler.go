@@ -38,7 +38,7 @@ func WrapListFetcher[T any](
 }
 
 // WrapFilteredFetcher adapts a filtered fetch function to FilteredFetcher and centralizes logging.
-func WrapFilteredFetcher[T any, F any](
+func WrapFilteredFetcher[T, F any](
 	fetchFunc func(ctx context.Context, filters F, limit, offset int) ([]T, error),
 	logger *slog.Logger,
 	msg string,
