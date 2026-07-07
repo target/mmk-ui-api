@@ -114,16 +114,28 @@ func parseSourcesFilter(q url.Values) (sourcesFilters, error) {
 func (h *UIHandlers) Sources(w http.ResponseWriter, r *http.Request) {
 	// Use generic list handler with filtering
 	HandleList(ListHandlerOpts[*model.Source, sourcesFilters]{
-		Handler:         h,
-		W:               w,
-		R:               r,
-		FilteredFetcher: h.fetchSourcesWithFilters,
-		FilterParser:    parseSourcesFilter,
-		EnrichData:      h.enrichSourcesData(r),
-		BasePath:        "/sources",
-		PageMeta:        PageMeta{Title: "Merrymaker - Sources", PageTitle: "Sources", CurrentPage: PageSources},
-		ItemsKey:        "Sources",
-		ErrorMessage:    errMsgUnableLoadSources,
+		Handler: h,
+		W:       w,
+		R:       r,
+		FilteredFetcher: WrapFilteredFetcher(
+			func(ctx context.Context, filters sourcesFilters, limit, offset int) ([]*model.Source, error) {
+				if filters.Q != "" {
+					return h.listSourcesByQuery(ctx, filters.Q, limit, offset)
+				}
+				return h.SourceSvc.List(ctx, limit, offset)
+			},
+			h.logger(),
+			"failed to load sources for UI",
+			func(filters sourcesFilters, pg pageOpts) []any {
+				return []any{"query", filters.Q, "include_tests", filters.IncludeTests}
+			},
+		),
+		FilterParser: parseSourcesFilter,
+		EnrichData:   h.enrichSourcesData(r),
+		BasePath:     "/sources",
+		PageMeta:     PageMeta{Title: "Merrymaker - Sources", PageTitle: "Sources", CurrentPage: PageSources},
+		ItemsKey:     "Sources",
+		ErrorMessage: errMsgUnableLoadSources,
 		ServiceAvailable: func() bool {
 			return h.SourceSvc != nil
 		},
@@ -133,31 +145,6 @@ func (h *UIHandlers) Sources(w http.ResponseWriter, r *http.Request) {
 			builder.With("Query", filters.Q).With("IncludeTests", filters.IncludeTests)
 		},
 	})
-}
-
-// fetchSourcesWithFilters fetches sources with optional filtering.
-func (h *UIHandlers) fetchSourcesWithFilters(
-	ctx context.Context,
-	filters sourcesFilters,
-	pg pageOpts,
-) ([]*model.Source, error) {
-	limit, offset := pg.LimitAndOffset()
-
-	var sources []*model.Source
-	var err error
-	if filters.Q != "" {
-		sources, err = h.listSourcesByQuery(ctx, filters.Q, limit, offset)
-	} else {
-		sources, err = h.SourceSvc.List(ctx, limit, offset)
-	}
-
-	if err != nil {
-		h.logger().ErrorContext(ctx, "failed to load sources for UI",
-			"error", err, "query", filters.Q, "include_tests", filters.IncludeTests,
-			"page", pg.Page, "page_size", pg.PageSize,
-		)
-	}
-	return sources, err
 }
 
 // enrichSourcesData returns a data enricher that adds filter values and scan counts.

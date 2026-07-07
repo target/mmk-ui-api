@@ -37,6 +37,27 @@ func WrapListFetcher[T any](
 	}
 }
 
+// WrapFilteredFetcher adapts a filtered fetch function to FilteredFetcher and centralizes logging.
+func WrapFilteredFetcher[T any, F any](
+	fetchFunc func(ctx context.Context, filters F, limit, offset int) ([]T, error),
+	logger *slog.Logger,
+	msg string,
+	attrs func(filters F, pg pageOpts) []any,
+) FilteredFetcher[T, F] {
+	return func(ctx context.Context, filters F, pg pageOpts) ([]T, error) {
+		limit, offset := pg.LimitAndOffset()
+		items, err := fetchFunc(ctx, filters, limit, offset)
+		if err != nil {
+			args := []any{"error", err, "page", pg.Page, "page_size", pg.PageSize}
+			if attrs != nil {
+				args = append(args, attrs(filters, pg)...)
+			}
+			logger.ErrorContext(ctx, msg, args...)
+		}
+		return items, err
+	}
+}
+
 // FilterParser is a function type for parsing URL query parameters into filter data.
 // It takes url.Values and returns the parsed filter of type F, or an error if parsing fails.
 // The error allows the handler to show meaningful validation errors for invalid filter params.
