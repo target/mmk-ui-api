@@ -25,19 +25,9 @@ func (h *UIHandlers) Secrets(w http.ResponseWriter, r *http.Request) {
 		Handler: h,
 		W:       w,
 		R:       r,
-		Fetcher: func(ctx context.Context, pg pageOpts) ([]*model.Secret, error) {
-			// Fetch pageSize+1 to detect hasNext
-			limit, offset := pg.LimitAndOffset()
-			secrets, err := h.SecretSvc.List(ctx, limit, offset)
-			if err != nil {
-				h.logger().Error("failed to load secrets for UI",
-					"error", err,
-					"page", pg.Page,
-					"page_size", pg.PageSize,
-				)
-			}
-			return secrets, err
-		},
+		Fetcher: WrapListFetcher(func(ctx context.Context, limit, offset int) ([]*model.Secret, error) {
+			return h.SecretSvc.List(ctx, limit, offset)
+		}, h.logger(), "failed to load secrets for UI"),
 		BasePath: "/secrets",
 		PageMeta: PageMeta{
 			Title:       "Merrymaker - Secrets",

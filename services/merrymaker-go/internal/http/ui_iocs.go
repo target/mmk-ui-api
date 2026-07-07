@@ -12,9 +12,9 @@ const errMsgUnableLoadIOCs = "Unable to load IOCs."
 
 // iocsFilter holds filter parameters for the IOCs list view.
 type iocsFilter struct {
-	Type    *model.IOCType
-	Enabled *bool
-	Search  *string
+	BaseFilter
+	Type   *model.IOCType
+	Search *string
 }
 
 // IOCs serves the IOCs list page, HTMX-aware.
@@ -85,7 +85,7 @@ func (h *UIHandlers) fetchIOCsWithFilters(ctx context.Context, f iocsFilter, pg 
 
 // parseIOCsFilter parses filter parameters from query string.
 func parseIOCsFilter(q url.Values) (iocsFilter, error) {
-	var f iocsFilter
+	f := iocsFilter{BaseFilter: ParseBaseFilter(q)}
 
 	// Type filter
 	if typeStr := q.Get("type"); typeStr != "" {
@@ -93,15 +93,9 @@ func parseIOCsFilter(q url.Values) (iocsFilter, error) {
 		f.Type = &iocType
 	}
 
-	// Enabled filter
-	if enabledStr := q.Get("enabled"); enabledStr != "" {
-		enabled := enabledStr == StrTrue || enabledStr == "1"
-		f.Enabled = &enabled
-	}
-
-	// Search filter
-	if search := q.Get("q"); search != "" {
-		f.Search = &search
+	// Search filter (use BaseFilter.Q, but keep pointer form for backward compat)
+	if f.Q != "" {
+		f.Search = &f.Q
 	}
 
 	return f, nil
@@ -127,14 +121,10 @@ func (h *UIHandlers) enrichIOCsData() DataEnricher[*model.IOC, iocsFilter] {
 		}
 		builder.With("EnabledFilter", enabledFilter)
 
-		searchQuery := ""
-		if f.Search != nil {
-			searchQuery = *f.Search
-		}
-		builder.With("SearchQuery", searchQuery)
+		builder.With("SearchQuery", f.Q)
 
 		// Add flag to indicate if any filters are active
-		hasActiveFilters := f.Type != nil || f.Enabled != nil || (f.Search != nil && *f.Search != "")
+		hasActiveFilters := f.Type != nil || f.Enabled != nil || f.Q != ""
 		builder.With("HasActiveFilters", hasActiveFilters)
 	}
 }

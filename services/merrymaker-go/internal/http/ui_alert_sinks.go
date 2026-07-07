@@ -56,18 +56,9 @@ func (h *UIHandlers) AlertSinks(w http.ResponseWriter, r *http.Request) {
 		Handler: h,
 		W:       w,
 		R:       r,
-		Fetcher: func(ctx context.Context, pg pageOpts) ([]*model.HTTPAlertSink, error) {
-			limit, offset := pg.LimitAndOffset()
-			items, err := h.Sinks.List(ctx, limit, offset)
-			if err != nil {
-				h.logger().Error("failed to load alert sinks for UI",
-					"error", err,
-					"page", pg.Page,
-					"page_size", pg.PageSize,
-				)
-			}
-			return items, err
-		},
+		Fetcher: WrapListFetcher(func(ctx context.Context, limit, offset int) ([]*model.HTTPAlertSink, error) {
+			return h.Sinks.List(ctx, limit, offset)
+		}, h.logger(), "failed to load alert sinks for UI"),
 		BasePath:     alertSinksBasePath,
 		PageMeta:     alertSinkListMeta(),
 		ItemsKey:     "AlertSinks",

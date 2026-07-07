@@ -19,11 +19,8 @@ type siteRow struct {
 }
 
 type sitesFilter struct {
-	Q       string
-	Enabled *bool
-	Scope   string
-	Sort    string
-	Dir     string
+	BaseFilter
+	Scope string
 }
 
 type pageBounds struct {
@@ -32,18 +29,10 @@ type pageBounds struct {
 }
 
 func parseSitesFilter(q url.Values) (sitesFilter, error) {
-	qv := strings.TrimSpace(q.Get("q"))
-	enabledStr := strings.TrimSpace(q.Get("enabled"))
-	var enabledPtr *bool
-	switch enabledStr {
-	case StrTrue, StrFalse:
-		b := enabledStr == StrTrue
-		enabledPtr = &b
-	}
-	scope := strings.TrimSpace(q.Get("scope"))
-	sort, dir := ParseSortParam(q, "sort", "dir")
-
-	return sitesFilter{Q: qv, Enabled: enabledPtr, Scope: scope, Sort: sort, Dir: dir}, nil
+	return sitesFilter{
+		BaseFilter: ParseBaseFilter(q),
+		Scope:      strings.TrimSpace(q.Get("scope")),
+	}, nil
 }
 
 func toSiteRows(sites []*model.Site) []siteRow {
