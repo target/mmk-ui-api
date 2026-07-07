@@ -270,6 +270,12 @@ func (h *UIHandlers) handleDelete(w http.ResponseWriter, r *http.Request, opts d
 	}
 }
 
+// logLoadError standardizes list-load error logging with request context.
+func (h *UIHandlers) logLoadError(ctx context.Context, message string, err error, attrs ...any) {
+	args := append([]any{"error", err}, attrs...)
+	h.logger().ErrorContext(ctx, message, args...)
+}
+
 // triggerToast sends a standardized HX-Trigger payload for toast notifications.
 // Centralizing this avoids repeating the boilerplate map construction across handlers.
 func triggerToast(w http.ResponseWriter, message, toastType string) {
