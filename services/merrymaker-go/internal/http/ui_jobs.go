@@ -1057,7 +1057,7 @@ func (h *UIHandlers) JobEvents(w http.ResponseWriter, r *http.Request) {
 
 	pageResp, err := h.fetchJobEvents(r.Context(), req.fetchParams)
 	if err != nil {
-		log.Printf("JobEvents: failed to list events for job %s: %v", jobID, err)
+		h.logger().ErrorContext(r.Context(), "JobEvents: failed to list events", "job_id", jobID, "error", err)
 		http.Error(w, "failed to load job events", http.StatusInternalServerError)
 		return
 	}
@@ -1097,7 +1097,10 @@ func (h *UIHandlers) JobEvents(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if templateErr := h.T.t.ExecuteTemplate(w, "job-events-fragment", data); templateErr != nil {
-		log.Printf("JobEvents: template execution failed for job %s: %v", jobID, templateErr)
+		h.logger().ErrorContext(
+			r.Context(), "JobEvents: template execution failed",
+			"job_id", jobID, "error", templateErr,
+		)
 		http.Error(w, "failed to render job events", http.StatusInternalServerError)
 	}
 }
@@ -1113,7 +1116,10 @@ func (h *UIHandlers) JobEventDetails(w http.ResponseWriter, r *http.Request) {
 
 	events, err := h.EventSvc.GetByIDs(r.Context(), []string{eventID})
 	if err != nil {
-		log.Printf("JobEventDetails: failed to fetch event %s for job %s: %v", eventID, jobID, err)
+		h.logger().ErrorContext(
+			r.Context(), "JobEventDetails: failed to fetch event",
+			"event_id", eventID, "job_id", jobID, "error", err,
+		)
 		http.Error(w, "failed to load event", http.StatusInternalServerError)
 		return
 	}
