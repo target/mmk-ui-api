@@ -108,16 +108,7 @@ export class PuppeteerRunner {
 			await this.initialize(config);
 			await this.executeScript(script);
 			await this.collectClientEvents();
-
-			const result: ExecutionResult = {
-				sessionId: this.sessionId,
-				success: true,
-				executionTime: Date.now() - startTime,
-				eventCount: this.events.length,
-				fileCount: this.fileCapture?.getStats().totalFiles || 0,
-			};
-
-			return result;
+			return this.buildSuccessResult(startTime);
 		} catch (error) {
 			// Capture failure context and emit failure event
 			logger.error(error, "Script execution failed", {
@@ -130,33 +121,53 @@ export class PuppeteerRunner {
 						: undefined,
 			});
 			await this.handleScriptFailure(error, script);
-
-			return {
-				sessionId: this.sessionId,
-				success: false,
-				error: error instanceof Error ? error.message : String(error),
-				executionTime: Date.now() - startTime,
-				eventCount: this.events.length,
-				fileCount: 0,
-			};
+			return this.buildFailureResult(error, startTime);
 		} finally {
-			// Final flush of any remaining events (including failure events)
-			if (config.shipping?.endpoint) {
-				try {
-					// Wait for any in-flight flush to complete
-					while (this.isShipping) {
-						await new Promise((resolve) => setTimeout(resolve, 25));
-					}
-					// Attempt final flush if events remain
-					await this.flushEvents("final");
-				} catch (shipError) {
-					logger.error(shipError, "Failed to ship events during final flush", {
-						sessionId: this.sessionId,
-						eventCount: this.events.length,
-					});
-				}
+			await this.finishRun(config);
+		}
+	}
+
+	private buildSuccessResult(startTime: number): ExecutionResult {
+		return {
+			sessionId: this.sessionId,
+			success: true,
+			executionTime: Date.now() - startTime,
+			eventCount: this.events.length,
+			fileCount: this.fileCapture?.getStats().totalFiles || 0,
+		};
+	}
+
+	private buildFailureResult(error: unknown, startTime: number): ExecutionResult {
+		return {
+			sessionId: this.sessionId,
+			success: false,
+			error: error instanceof Error ? error.message : String(error),
+			executionTime: Date.now() - startTime,
+			eventCount: this.events.length,
+			fileCount: 0,
+		};
+	}
+
+	private async finishRun(config: Config): Promise<void> {
+		await this.flushFinalEvents(config);
+		await this.cleanup();
+	}
+
+	private async flushFinalEvents(config: Config): Promise<void> {
+		if (!config.shipping?.endpoint) return;
+
+		try {
+			// Wait for any in-flight flush to complete
+			while (this.isShipping) {
+				await new Promise((resolve) => setTimeout(resolve, 25));
 			}
-			await this.cleanup();
+			// Attempt final flush if events remain
+			await this.flushEvents("final");
+		} catch (shipError) {
+			logger.error(shipError, "Failed to ship events during final flush", {
+				sessionId: this.sessionId,
+				eventCount: this.events.length,
+			});
 		}
 	}
 
