@@ -3,10 +3,10 @@
  * Clear examples showing how to use the simplified system
  */
 
-import { loadConfig } from "./config-loader.js";
-import { logger } from "./logger.js";
-import { PuppeteerRunner } from "./puppeteer-runner.js";
-import type { Config, SelfContainedEvent } from "./types.js";
+import { loadConfig } from "../src/config-loader.js";
+import { logger } from "../src/logger.js";
+import { PuppeteerRunner } from "../src/puppeteer-runner.js";
+import type { Config, SelfContainedEvent } from "../src/types.js";
 
 // ============================================================================
 // BASIC USAGE EXAMPLES
@@ -381,8 +381,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		Object.keys(EXAMPLES).forEach((name) => {
 			logger.info(`- ${name}`);
 		});
-		logger.info("\nUsage: node examples.js <example-name>");
-		logger.info("       node examples.js (to run all examples)");
+		logger.info("\nUsage: tsx examples/examples.ts <example-name>");
+		logger.info("       tsx examples/examples.ts (to run all examples)");
 
 		if (!exampleName) {
 			runAllExamples().catch((err) =>

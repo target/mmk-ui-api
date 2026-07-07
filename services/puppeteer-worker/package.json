@@ -18,7 +18,7 @@
 		"worker:dist": "node dist/worker-main.js",
 		"worker:env": "node --env-file=.env dist/worker-main.js",
 		"dev": "tsx --watch src/index.ts",
-		"examples": "node dist/examples.js",
+		"examples": "tsx examples/examples.ts",
 		"demo": "tsx src/index.ts"
 	},
 	"keywords": [],
