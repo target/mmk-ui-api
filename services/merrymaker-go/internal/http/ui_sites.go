@@ -134,8 +134,7 @@ func (h *UIHandlers) Sites(w http.ResponseWriter, r *http.Request) {
 			rows, err := h.listSiteRows(ctx, filters, pageBounds{Limit: limit, Offset: offset})
 			if err != nil {
 				// Log the error for operational visibility
-				h.logger().Error("failed to load sites for UI",
-					"error", err,
+				h.logLoadError(ctx, "failed to load sites for UI", err,
 					"query", filters.Q,
 					"enabled", filters.Enabled,
 					"scope", filters.Scope,

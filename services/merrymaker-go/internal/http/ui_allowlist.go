@@ -20,8 +20,7 @@ func (h *UIHandlers) Allowlist(w http.ResponseWriter, r *http.Request) {
 			listOpts := model.DomainAllowlistListOptions{Limit: limit, Offset: offset}
 			items, err := h.AllowlistSvc.List(ctx, listOpts)
 			if err != nil {
-				h.logger().Error("failed to load allowlist for UI",
-					"error", err,
+				h.logLoadError(ctx, "failed to load allowlist for UI", err,
 					"page", pg.Page,
 					"page_size", pg.PageSize,
 				)

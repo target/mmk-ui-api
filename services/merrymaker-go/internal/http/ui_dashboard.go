@@ -261,7 +261,7 @@ func (h *UIHandlers) Alerts(w http.ResponseWriter, r *http.Request) {
 		pageOpts{Page: pageNum, PageSize: pageSize},
 	)
 	if err != nil {
-		h.logger().Error("failed to load alerts for UI", "error", err)
+		h.logLoadError(r.Context(), "failed to load alerts for UI", err)
 		page.Error = true
 		page.ErrorMessage = errMsgUnableLoadAlerts
 		h.renderDashboardPage(w, r, page)
