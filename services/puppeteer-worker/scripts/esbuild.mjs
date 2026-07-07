@@ -35,7 +35,6 @@ const rawPlugin = {
 
 const nodeEntries = [
 	"src/index.ts",
-	"src/examples.ts",
 	"src/worker-main.ts",
 	// Include core modules to keep dist in sync for tests
 	"src/file-capture.ts",

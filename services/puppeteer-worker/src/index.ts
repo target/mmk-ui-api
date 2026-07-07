@@ -49,7 +49,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export { loadConfig } from "./config-loader.js";
 export { EventMonitor } from "./event-monitor.js";
 export { EventShipper } from "./event-shipper.js";
-export * as Examples from "./examples.js";
 export { FileCapture } from "./file-capture.js";
 export { JobClient } from "./job-client.js";
 // Export main components for use as a library
