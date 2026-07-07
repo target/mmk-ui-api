@@ -126,7 +126,7 @@ func (h *UIHandlers) Sources(w http.ResponseWriter, r *http.Request) {
 			},
 			h.logger(),
 			"failed to load sources for UI",
-			func(filters sourcesFilters, pg pageOpts) []any {
+			func(filters sourcesFilters, _ pageOpts) []any {
 				return []any{"query", filters.Q, "include_tests", filters.IncludeTests}
 			},
 		),

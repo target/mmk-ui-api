@@ -133,7 +133,7 @@ func (h *UIHandlers) Sites(w http.ResponseWriter, r *http.Request) {
 			},
 			h.logger(),
 			"failed to load sites for UI",
-			func(filters sitesFilter, pg pageOpts) []any {
+			func(filters sitesFilter, _ pageOpts) []any {
 				return []any{
 					"query", filters.Q,
 					"enabled", filters.Enabled,

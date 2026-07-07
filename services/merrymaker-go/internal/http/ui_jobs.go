@@ -1283,7 +1283,7 @@ func (h *UIHandlers) JobsList(w http.ResponseWriter, r *http.Request) {
 			},
 			h.logger(),
 			"failed to load jobs for UI",
-			func(filters jobsFilter, pg pageOpts) []any {
+			func(filters jobsFilter, _ pageOpts) []any {
 				return []any{
 					"status", filters.Status,
 					"type", filters.Type,

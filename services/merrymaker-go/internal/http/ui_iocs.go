@@ -54,7 +54,7 @@ func (h *UIHandlers) IOCs(w http.ResponseWriter, r *http.Request) {
 			},
 			h.logger(),
 			"failed to load IOCs for UI",
-			func(filters iocsFilter, pg pageOpts) []any {
+			func(filters iocsFilter, _ pageOpts) []any {
 				return []any{"filters", filters}
 			},
 		),
