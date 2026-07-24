@@ -1244,31 +1244,6 @@ func buildJobListOptions(filters jobsFilter, limit, offset int) *model.JobListOp
 	return opts
 }
 
-// fetchJobsWithFilters fetches jobs with optional filtering.
-func (h *UIHandlers) fetchJobsWithFilters(
-	ctx context.Context,
-	filters jobsFilter,
-	pg pageOpts,
-) ([]*model.JobWithEventCount, error) {
-	limit, offset := pg.LimitAndOffset()
-
-	opts := buildJobListOptions(filters, limit, offset)
-
-	jobs, err := h.Jobs.List(ctx, opts)
-	if err != nil {
-		h.logger().ErrorContext(ctx, "failed to load jobs for UI",
-			"error", err,
-			"status", filters.Status,
-			"type", filters.Type,
-			"site_id", filters.SiteID,
-			"is_test", filters.IsTest,
-			"page", pg.Page,
-			"page_size", pg.PageSize,
-		)
-	}
-	return jobs, err
-}
-
 // enrichJobsData returns a data enricher that adds filter values and sites to template.
 func (h *UIHandlers) enrichJobsData() DataEnricher[*model.JobWithEventCount, jobsFilter] {
 	return func(builder *TemplateDataBuilder, _ []*model.JobWithEventCount, filters jobsFilter) {
@@ -1299,13 +1274,27 @@ func (h *UIHandlers) enrichJobsData() DataEnricher[*model.JobWithEventCount, job
 func (h *UIHandlers) JobsList(w http.ResponseWriter, r *http.Request) {
 	// Use generic list handler with filtering
 	HandleList(ListHandlerOpts[*model.JobWithEventCount, jobsFilter]{
-		Handler:         h,
-		W:               w,
-		R:               r,
-		FilteredFetcher: h.fetchJobsWithFilters,
-		FilterParser:    parseJobsFilter,
-		EnrichData:      h.enrichJobsData(),
-		BasePath:        "/jobs",
+		Handler: h,
+		W:       w,
+		R:       r,
+		FilteredFetcher: WrapFilteredFetcher(
+			func(ctx context.Context, filters jobsFilter, limit, offset int) ([]*model.JobWithEventCount, error) {
+				return h.Jobs.List(ctx, buildJobListOptions(filters, limit, offset))
+			},
+			h.logger(),
+			"failed to load jobs for UI",
+			func(filters jobsFilter, _ pageOpts) []any {
+				return []any{
+					"status", filters.Status,
+					"type", filters.Type,
+					"site_id", filters.SiteID,
+					"is_test", filters.IsTest,
+				}
+			},
+		),
+		FilterParser: parseJobsFilter,
+		EnrichData:   h.enrichJobsData(),
+		BasePath:     "/jobs",
 		PageMeta: PageMeta{
 			Title:       "Merrymaker - Jobs",
 			PageTitle:   "Jobs",
