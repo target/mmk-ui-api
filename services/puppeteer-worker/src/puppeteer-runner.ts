@@ -1042,22 +1042,18 @@ export class PuppeteerRunner {
 	private async cleanup(): Promise<void> {
 		this.stopEventStreaming();
 		this.responseEventIndexByRequestId.clear();
-		await safeAsync(
-			"EventMonitor cleanup",
-			() => this.eventMonitor?.cleanup() ?? Promise.resolve(),
-		);
-		await safeAsync(
-			"FileCapture cleanup",
-			() => this.fileCapture?.cleanup() ?? Promise.resolve(),
-		);
-		await safeAsync(
-			"Page close",
-			() => this.page?.close() ?? Promise.resolve(),
-		);
-		await safeAsync(
-			"Browser close",
-			() => this.browser?.close() ?? Promise.resolve(),
-		);
+		await safeAsync("EventMonitor cleanup", async () => {
+			await this.eventMonitor?.cleanup();
+		});
+		await safeAsync("FileCapture cleanup", async () => {
+			await this.fileCapture?.cleanup();
+		});
+		await safeAsync("Page close", async () => {
+			await this.page?.close();
+		});
+		await safeAsync("Browser close", async () => {
+			await this.browser?.close();
+		});
 	}
 
 	// Getter for events (useful for testing)
