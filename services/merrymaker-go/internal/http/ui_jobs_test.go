@@ -265,16 +265,8 @@ func TestUIHandlers_JobView_ShowsBasicJobInfo(t *testing.T) {
 
 	h.JobView(w, r)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	body := w.Body.String()
-
-	// Check that basic job information is displayed
-	assert.Contains(t, body, "test-job-123")
-	assert.Contains(t, body, "browser")
-	assert.Contains(t, body, "Completed")  // Status badge shows "Completed" (capitalized)
-	assert.Contains(t, body, "50")         // priority
-	assert.Contains(t, body, "Test Run")   // Test run field in expanded details
-	assert.Contains(t, body, "badge-info") // Test badge
+	AssertStatusAndBody(t, w, http.StatusOK,
+		"test-job-123", "browser", "Completed", "50", "Test Run", "badge-info")
 }
 
 func TestUIHandlers_JobView_ShowsFailedJobWithError(t *testing.T) {
@@ -312,15 +304,9 @@ func TestUIHandlers_JobView_ShowsFailedJobWithError(t *testing.T) {
 
 	h.JobView(w, r)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	body := w.Body.String()
-
-	// Check that error information is displayed
-	assert.Contains(t, body, "failed-job-456")
-	assert.Contains(t, body, "rules")
-	assert.Contains(t, body, "failed")
-	assert.Contains(t, body, "Connection timeout")
-	assert.NotContains(t, body, "<strong>Test Run:</strong> Yes") // should not show for non-test jobs
+	AssertStatusAndBody(t, w, http.StatusOK,
+		"failed-job-456", "rules", "failed", "Connection timeout")
+	assert.NotContains(t, w.Body.String(), "<strong>Test Run:</strong> Yes") // should not show for non-test jobs
 }
 
 func TestUIHandlers_JobView_HandlesNonExistentJob(t *testing.T) {
@@ -426,18 +412,9 @@ func TestUIHandlers_JobView_ShowsSiteAndSourceContext(t *testing.T) {
 	body := w.Body.String()
 
 	// Check that Context section is displayed (in expanded details)
-	assert.Contains(t, body, "Context")
-
-	// Check Site information
-	assert.Contains(t, body, "Example Site")
-	assert.Contains(t, body, "production")
-	assert.Contains(t, body, "15 minutes")
-	assert.Contains(t, body, "/sites/"+siteID)
-
-	// Check Source information
-	assert.Contains(t, body, "Example Source")
-	assert.Contains(t, body, "Script Preview")
-	assert.Contains(t, body, "/sources?highlight="+sourceID)
+	AssertBodyContains(t, body, "Context",
+		"Example Site", "production", "15 minutes", "/sites/"+siteID,
+		"Example Source", "Script Preview", "/sources?highlight="+sourceID)
 }
 
 func TestUIHandlers_JobView_ShowsAlertDeliveryPanel(t *testing.T) {
@@ -501,16 +478,10 @@ func TestUIHandlers_JobView_ShowsAlertDeliveryPanel(t *testing.T) {
 
 	h.JobView(w, r)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	body := w.Body.String()
-
-	assert.Contains(t, body, "Alert Delivery Result")
-	assert.Contains(t, body, "Status: completed")
-	assert.Contains(t, body, "Attempt 1")
-	assert.Contains(t, body, "https://alerts.example.com/hook")
-	assert.Contains(t, body, "Content-Type")
-	assert.Contains(t, body, "&#34;alert&#34;: &#34;test&#34;")
-	assert.Contains(t, body, "X-Request-ID")
+	AssertStatusAndBody(t, w, http.StatusOK,
+		"Alert Delivery Result", "Status: completed", "Attempt 1",
+		"https://alerts.example.com/hook", "Content-Type",
+		"&#34;alert&#34;: &#34;test&#34;", "X-Request-ID")
 }
 
 func TestUIHandlers_JobView_HidesAttemptedWhenZero(t *testing.T) {

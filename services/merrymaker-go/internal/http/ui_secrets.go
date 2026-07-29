@@ -557,42 +557,14 @@ func (h *UIHandlers) SecretDelete(w http.ResponseWriter, r *http.Request) {
 			return h.SecretSvc.Delete(ctx, id)
 		},
 		RedirectPath: "/secrets",
-		OnError: func(w http.ResponseWriter, r *http.Request, err error) {
-			h.handleSecretDeleteError(w, r, err)
-		},
-		OnSuccess: func(w http.ResponseWriter, r *http.Request, _ bool) {
-			// For HTMX requests, trigger success toast and return empty content to remove the row
-			if IsHTMX(r) {
-				triggerToast(w, "Secret deleted successfully", "success")
-				w.WriteHeader(http.StatusOK)
-				// Return empty content - the row will be swapped out with nothing (removed)
-				return
-			}
-			// For non-HTMX requests, redirect
-			http.Redirect(w, r, "/secrets", http.StatusSeeOther)
-		},
+		OnError: DefaultDeleteOnError(DeleteOnErrorOpts{
+			Logger: h.logger(),
+			ListRender: func(w http.ResponseWriter, r *http.Request, _ string) {
+				h.renderSecretListError(w, r, nil)
+			},
+		}),
+		OnSuccess: DefaultDeleteOnSuccess("/secrets", "Secret deleted successfully"),
 	})
-}
-
-// handleSecretDeleteError handles errors from secret deletion.
-// For HTMX requests, it triggers a toast notification and returns 204 No Content to prevent swap.
-// For non-HTMX requests, it re-renders the list with an error message.
-func (h *UIHandlers) handleSecretDeleteError(w http.ResponseWriter, r *http.Request, err error) {
-	// Get user-friendly error message
-	errMsg := processError(err, nil)
-	if errMsg == "" {
-		errMsg = "Unable to delete secret. Please try again."
-	}
-
-	// For HTMX requests, trigger error toast and keep the row (204 prevents swap)
-	if IsHTMX(r) {
-		triggerToast(w, errMsg, "error")
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	// For non-HTMX requests, re-render the list with error message
-	h.renderSecretListError(w, r, err)
 }
 
 // renderSecretListError renders the secret list page with an error message.

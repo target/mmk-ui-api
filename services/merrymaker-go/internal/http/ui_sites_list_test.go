@@ -97,15 +97,9 @@ func TestUIHandlers_Sites_ListWithNoFilters(t *testing.T) {
 
 		h.Sites(w, r)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+		AssertStatusAndBody(t, w, http.StatusOK, site1.Name, site2.Name, site3.Name)
 		assert.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
-		body := w.Body.String()
-
-		// Should contain all three sites
-		assert.Contains(t, body, site1.Name)
-		assert.Contains(t, body, site2.Name)
-		assert.Contains(t, body, site3.Name)
-		assert.NotContains(t, body, "No sites found")
+		assert.NotContains(t, w.Body.String(), "No sites found")
 	})
 }
 
@@ -151,14 +145,9 @@ func TestUIHandlers_Sites_ListWithEnabledFilter(t *testing.T) {
 
 		h.Sites(w, r)
 
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
-		body := w.Body.String()
-
-		// Should contain only enabled site
-		assert.Contains(t, body, enabledSite.Name)
-		assert.NotContains(t, body, disabledSite.Name)
-		assert.NotContains(t, body, "No sites found")
+		AssertStatusAndBody(t, w, http.StatusOK, enabledSite.Name)
+		assert.NotContains(t, w.Body.String(), disabledSite.Name)
+		assert.NotContains(t, w.Body.String(), "No sites found")
 	})
 }
 
@@ -207,13 +196,8 @@ func TestUIHandlers_Sites_ListWithScopeFilter(t *testing.T) {
 
 		h.Sites(w, r)
 
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
-		body := w.Body.String()
-
-		// Should contain only prod site
-		assert.Contains(t, body, prodSite.Name)
-		assert.NotContains(t, body, stagingSite.Name)
-		assert.NotContains(t, body, "No sites found")
+		AssertStatusAndBody(t, w, http.StatusOK, prodSite.Name)
+		assert.NotContains(t, w.Body.String(), stagingSite.Name)
+		assert.NotContains(t, w.Body.String(), "No sites found")
 	})
 }

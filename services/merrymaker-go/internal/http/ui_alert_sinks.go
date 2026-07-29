@@ -112,9 +112,12 @@ func (h *UIHandlers) AlertSinkDelete(w http.ResponseWriter, r *http.Request) {
 			return h.Sinks.Delete(ctx, id)
 		},
 		RedirectPath: alertSinksBasePath,
-		OnError: func(w http.ResponseWriter, r *http.Request, err error) {
-			h.handleAlertSinkDeleteError(w, r, err)
-		},
+		OnError: DefaultDeleteOnError(DeleteOnErrorOpts{
+			Logger: h.logger(),
+			ListRender: func(w http.ResponseWriter, r *http.Request, msg string) {
+				h.renderAlertSinksListError(w, r, msg)
+			},
+		}),
 		OnSuccess: func(w http.ResponseWriter, r *http.Request, _ bool) {
 			if IsHTMX(r) {
 				HTMX(w).Redirect(alertSinksBasePath)
@@ -125,83 +128,34 @@ func (h *UIHandlers) AlertSinkDelete(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleAlertSinkDeleteError handles errors during alert sink deletion.
-func (h *UIHandlers) handleAlertSinkDeleteError(w http.ResponseWriter, r *http.Request, err error) {
-	h.logger().Error("failed to delete alert sink", "error", err, "path", r.URL.Path)
-
+// renderAlertSinksListError re-renders the alert sinks list page with an error banner.
+func (h *UIHandlers) renderAlertSinksListError(w http.ResponseWriter, r *http.Request, msg string) {
 	page, pageSize := getPageParams(r.URL.Query())
 
+	builder := NewTemplateData(r, alertSinkListMeta()).
+		WithPagination(PaginationData{Page: page, PageSize: pageSize, BasePath: alertSinksBasePath}).
+		WithError(msg)
+
 	// Try to preserve list data for better UX
-	var additionalData map[string]any
-	if sinks, pagData := h.fetchAlertSinksForError(r.Context(), page, pageSize); sinks != nil {
-		additionalData = map[string]any{
-			"AlertSinks": sinks,
-			"HasPrev":    pagData.HasPrev,
-			"HasNext":    pagData.HasNext,
-			"StartIndex": pagData.StartIndex,
-			"EndIndex":   pagData.EndIndex,
-			"Page":       pagData.Page,
-			"PageSize":   pagData.PageSize,
+	if items, hasPrev, hasNext, start, end, err := paginate(
+		r.Context(),
+		pageOpts{Page: page, PageSize: pageSize},
+		func(ctx context.Context, limit, offset int) ([]*model.HTTPAlertSink, error) {
+			return h.Sinks.List(ctx, limit, offset)
+		},
+	); err == nil {
+		builder.With("AlertSinks", items).
+			With("HasPrev", hasPrev).With("HasNext", hasNext).
+			With("StartIndex", start).With("EndIndex", end)
+		if hasPrev {
+			builder.With("PrevURL", buildPageURL(alertSinksBasePath, r.URL.Query(), pageOpts{Page: page - 1, PageSize: pageSize}))
 		}
-		if pagData.HasPrev {
-			additionalData["PrevURL"] = buildPageURL(
-				alertSinksBasePath,
-				r.URL.Query(),
-				pageOpts{Page: page - 1, PageSize: pageSize},
-			)
-		}
-		if pagData.HasNext {
-			additionalData["NextURL"] = buildPageURL(
-				alertSinksBasePath,
-				r.URL.Query(),
-				pageOpts{Page: page + 1, PageSize: pageSize},
-			)
+		if hasNext {
+			builder.With("NextURL", buildPageURL(alertSinksBasePath, r.URL.Query(), pageOpts{Page: page + 1, PageSize: pageSize}))
 		}
 	}
 
-	// Determine appropriate status code based on error type
-	// Only set 409 Conflict for actual FK violations; otherwise use default (200 for HTMX)
-	status := DetermineErrorStatus(err)
-
-	// Use the error renderer for consistent error handling
-	RenderError(ErrorOpts{
-		W:          w,
-		R:          r,
-		Err:        err,
-		Renderer:   h.renderDashboardPage,
-		PageMeta:   alertSinkListMeta(),
-		Data:       additionalData,
-		StatusCode: status,
-	})
-}
-
-// fetchAlertSinksForError attempts to fetch alert sinks for error page display.
-func (h *UIHandlers) fetchAlertSinksForError(
-	ctx context.Context,
-	page, pageSize int,
-) ([]*model.HTTPAlertSink, PaginationData) {
-	limit := pageSize + 1
-	offset := (page - 1) * pageSize
-	sinks, err := h.Sinks.List(ctx, limit, offset)
-	if err != nil {
-		return nil, PaginationData{}
-	}
-
-	hasPrev := page > 1
-	hasNext := len(sinks) > pageSize
-	if hasNext {
-		sinks = sinks[:pageSize]
-	}
-
-	start, end := 0, 0
-	if len(sinks) > 0 {
-		start, end = offset+1, offset+len(sinks)
-	}
-
-	return sinks, PaginationData{
-		Page: page, PageSize: pageSize, HasPrev: hasPrev, HasNext: hasNext,
-		StartIndex: start, EndIndex: end, BasePath: alertSinksBasePath,
-	}
+	h.renderDashboardPage(w, r, builder.Build())
 }
 
 // AlertSinkTestFire handles test-firing an alert sink to validate configuration.
