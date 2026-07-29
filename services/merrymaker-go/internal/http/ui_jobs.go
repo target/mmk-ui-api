@@ -1385,23 +1385,11 @@ func (h *UIHandlers) JobDelete(w http.ResponseWriter, r *http.Request) {
 			}
 			return true, nil
 		},
-		OnError: func(w http.ResponseWriter, r *http.Request, err error) {
-			errMsg := getJobDeleteErrorMessage(err)
-			if IsHTMX(r) {
-				triggerToast(w, errMsg, "error")
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-			h.renderJobsError(w, r, errMsg)
-		},
-		OnSuccess: func(w http.ResponseWriter, r *http.Request, _ bool) {
-			if IsHTMX(r) {
-				triggerToast(w, "Job deleted successfully", "success")
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			http.Redirect(w, r, "/jobs", http.StatusSeeOther)
-		},
+		OnError: DefaultDeleteOnError(DeleteOnErrorOpts{
+			ErrorMessage: getJobDeleteErrorMessage,
+			Logger:       h.logger(),
+			ListRender:   h.renderJobsError,
+		}),
+		OnSuccess: DefaultDeleteOnSuccess("/jobs", "Job deleted successfully"),
 	})
 }

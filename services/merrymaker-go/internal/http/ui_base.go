@@ -228,6 +228,65 @@ func paginate[T any](
 	return items, hasPrev, hasNext, startIndex, endIndex, nil
 }
 
+// DeleteOnErrorOpts configures the shared delete-error handler that replaces
+// repeated OnError callbacks across UI handlers.
+type DeleteOnErrorOpts struct {
+	// ErrorMessage returns a user-facing error message for the given error.
+	// If nil, a generic message is used.
+	ErrorMessage func(err error) string
+	// ListRender re-renders the full list page with an error banner.
+	// Called for non-HTMX requests (or when ToastOnly is false).
+	ListRender func(w http.ResponseWriter, r *http.Request, msg string)
+	// Logger is used to log the delete error. Optional.
+	Logger *slog.Logger
+}
+
+// DefaultDeleteOnError returns a standard OnError callback that:
+//   - For HTMX requests: triggers a toast notification and returns 204 (no swap).
+//   - For non-HTMX requests: delegates to ListRender to re-render the list with an error.
+func DefaultDeleteOnError(opts DeleteOnErrorOpts) func(http.ResponseWriter, *http.Request, error) {
+	return func(w http.ResponseWriter, r *http.Request, err error) {
+		msg := "Unable to delete resource. Please try again."
+		if opts.ErrorMessage != nil {
+			if m := opts.ErrorMessage(err); m != "" {
+				msg = m
+			}
+		}
+
+		if opts.Logger != nil {
+			opts.Logger.Error("delete failed", "error", err)
+		}
+
+		if IsHTMX(r) {
+			triggerToast(w, msg, "error")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if opts.ListRender != nil {
+			opts.ListRender(w, r, msg)
+			return
+		}
+
+		// Fallback: plain text error
+		http.Error(w, msg, http.StatusInternalServerError)
+	}
+}
+
+// DefaultDeleteOnSuccess returns a standard OnSuccess callback that:
+//   - For HTMX requests: triggers a success toast and returns 200.
+//   - For non-HTMX requests: redirects to redirectPath.
+func DefaultDeleteOnSuccess(redirectPath, successMsg string) func(http.ResponseWriter, *http.Request, bool) {
+	return func(w http.ResponseWriter, r *http.Request, _ bool) {
+		if IsHTMX(r) {
+			triggerToast(w, successMsg, "success")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	}
+}
+
 // deleteHandlerOpts encapsulates common delete-handling behavior for UI endpoints.
 type deleteHandlerOpts struct {
 	ServiceAvailable func() bool

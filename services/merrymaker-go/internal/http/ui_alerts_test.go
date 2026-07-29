@@ -484,11 +484,7 @@ func TestAlertViewHandler(t *testing.T) {
 	handlers.AlertView(w, req)
 
 	// Verify response
-	assert.Equal(t, http.StatusOK, w.Code)
-	body := w.Body.String()
-	assert.Contains(t, body, "Test Alert")
-	assert.Contains(t, body, "Test Site")
-	assert.Contains(t, body, "unknown_domain")
+	AssertStatusAndBody(t, w, http.StatusOK, "Test Alert", "Test Site", "unknown_domain")
 }
 
 func TestAlertResolve_RowTargetSuccess(t *testing.T) {
@@ -527,20 +523,15 @@ func TestAlertResolve_RowTargetSuccess(t *testing.T) {
 	w := httptest.NewRecorder()
 	handlers.AlertResolve(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	AssertHTMXResponse(t, w, "showToast")
 	assert.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 
 	trigger := w.Header().Get("Hx-Trigger")
-	require.NotEmpty(t, trigger)
-	require.Contains(t, trigger, "showToast")
 	require.Contains(t, trigger, "Alert marked as resolved.")
 	require.Contains(t, trigger, "\"type\":\"success\"")
 
-	body := w.Body.String()
-	assert.Contains(t, body, `id="alert-row-alert-123"`)
-	assert.Contains(t, body, "row-resolved")
-	assert.Contains(t, body, "Example Site")
-	assert.NotContains(t, body, "/alerts/alert-123/resolve")
+	AssertBodyContains(t, w.Body.String(), `id="alert-row-alert-123"`, "row-resolved", "Example Site")
+	assert.NotContains(t, w.Body.String(), "/alerts/alert-123/resolve")
 }
 
 func TestAlertResolve_RowTargetError(t *testing.T) {

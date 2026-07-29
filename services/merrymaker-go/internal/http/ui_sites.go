@@ -171,8 +171,12 @@ func (h *UIHandlers) SiteDelete(w http.ResponseWriter, r *http.Request) {
 			return h.SiteSvc.Delete(ctx, id)
 		},
 		RedirectPath: "/sites",
-		OnError: func(w http.ResponseWriter, r *http.Request, _ error) {
-			h.renderSitesError(w, r, "Unable to delete site. It may be in use or have associated jobs.")
-		},
+		OnError: DefaultDeleteOnError(DeleteOnErrorOpts{
+			ErrorMessage: func(_ error) string {
+				return "Unable to delete site. It may be in use or have associated jobs."
+			},
+			Logger:     h.logger(),
+			ListRender: h.renderSitesError,
+		}),
 	})
 }

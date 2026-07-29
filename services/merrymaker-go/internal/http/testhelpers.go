@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/target/mmk-ui-api/internal/testutil"
 )
 
@@ -164,4 +166,51 @@ func getTestHTTPClient() *http.Client {
 		}
 	})
 	return testHTTPClient
+}
+
+// ---------------------------------------------------------------------------
+// Higher-level assertion helpers (Issue #178)
+// ---------------------------------------------------------------------------
+
+// AssertBodyContains verifies that the response body contains all expected substrings.
+// Each missing substring is reported as a separate test failure with context.
+func AssertBodyContains(t *testing.T, body string, expected ...string) {
+	t.Helper()
+	for _, exp := range expected {
+		assert.Contains(t, body, exp, "expected body to contain: %s", exp)
+	}
+}
+
+// AssertHTMXResponse verifies an HTMX response: status 200 and a non-empty HX-Trigger header.
+func AssertHTMXResponse(t *testing.T, resp *httptest.ResponseRecorder, expectedTrigger string) {
+	t.Helper()
+	assert.Equal(t, http.StatusOK, resp.Code)
+	if expectedTrigger != "" {
+		assert.Contains(t, resp.Header().Get("Hx-Trigger"), expectedTrigger)
+	} else {
+		assert.NotEmpty(t, resp.Header().Get("Hx-Trigger"))
+	}
+}
+
+// AssertHTMXToast verifies that the response carries a showToast trigger.
+func AssertHTMXToast(t *testing.T, resp *httptest.ResponseRecorder, statusCode int) {
+	t.Helper()
+	assert.Equal(t, statusCode, resp.Code)
+	assert.Contains(t, resp.Header().Get("Hx-Trigger"), "showToast")
+}
+
+// AssertStatus verifies the response has the expected HTTP status code.
+func AssertStatus(t *testing.T, resp *httptest.ResponseRecorder, expectedCode int) {
+	t.Helper()
+	assert.Equal(t, expectedCode, resp.Code)
+}
+
+// AssertStatusAndBody verifies the response status code and that the body contains all expected substrings.
+func AssertStatusAndBody(t *testing.T, resp *httptest.ResponseRecorder, expectedCode int, expected ...string) {
+	t.Helper()
+	assert.Equal(t, expectedCode, resp.Code)
+	body := resp.Body.String()
+	for _, exp := range expected {
+		assert.Contains(t, body, exp, "expected body to contain: %s", exp)
+	}
 }

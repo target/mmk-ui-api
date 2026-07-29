@@ -23,24 +23,28 @@ async function loadClientMonitoringSource(): Promise<string> {
 	return __clientMonitoringCache;
 }
 
+import {
+	type ClientEvent,
+	getClientEventCategory,
+	mapClientEventPayload,
+	mapClientEventToMethod,
+} from "./client-event-map.js";
 import { EventMonitor } from "./event-monitor.js";
 import { EventShipper } from "./event-shipper.js";
 import { type CapturedFile, FileCapture } from "./file-capture.js";
-import { logger, pageLogger } from "./logger.js";
+import {
+	attachConsoleLogger,
+	attachPageErrorLogger,
+	safeAsync,
+} from "./helpers.js";
+import { logger } from "./logger.js";
 import type {
 	Config,
-	ExecutionResult,
 	EventPayload,
+	ExecutionResult,
 	NetworkEventPayload,
 	SelfContainedEvent,
 } from "./types.js";
-
-import {
-	type ClientEvent,
-	mapClientEventToMethod,
-	mapClientEventPayload,
-	getClientEventCategory,
-} from "./client-event-map.js";
 
 type MonitoringGlobal = {
 	__puppeteerMonitoringActive?: boolean;
@@ -137,7 +141,10 @@ export class PuppeteerRunner {
 		};
 	}
 
-	private buildFailureResult(error: unknown, startTime: number): ExecutionResult {
+	private buildFailureResult(
+		error: unknown,
+		startTime: number,
+	): ExecutionResult {
 		return {
 			sessionId: this.sessionId,
 			success: false,
@@ -207,46 +214,9 @@ export class PuppeteerRunner {
 
 		this.cdpSession = await this.page.createCDPSession();
 
-		// Log browser console consistently at info; include original type for context
-		this.page.on("console", (msg) => {
-			const t = msg.type() as string;
-			const text = msg.text();
-			const loc = msg.location();
-			const ctx = {
-				source: "browser_console",
-				consoleType: t,
-				pageUrl: this.page?.url(),
-				...(loc && { location: loc }),
-				consoleText: text,
-			};
-			switch (t) {
-				case "error":
-				case "assert":
-					pageLogger.error(
-						{ name: "BrowserConsoleError", message: text },
-						"[Page] console error",
-						ctx,
-					);
-					break;
-				case "warning":
-					pageLogger.warn("[Page] console warn", ctx);
-					break;
-				case "debug":
-				case "trace":
-				case "timeEnd":
-					pageLogger.debug("[Page] console debug", ctx);
-					break;
-				default:
-					pageLogger.info("[Page] console", ctx);
-			}
-		});
-
-		this.page.on("pageerror", (error) => {
-			pageLogger.error(error, "[Page] runtime error", {
-				source: "browser_pageerror",
-				pageUrl: this.page?.url(),
-			});
-		});
+		// Log browser console and page errors via shared helpers
+		attachConsoleLogger(this.page, () => this.page?.url());
+		attachPageErrorLogger(this.page, () => this.page?.url());
 
 		// Initialize file capture
 		if (config.fileCapture?.enabled) {
@@ -1070,16 +1040,20 @@ export class PuppeteerRunner {
 	}
 
 	private async cleanup(): Promise<void> {
-		try {
-			this.stopEventStreaming();
-			this.responseEventIndexByRequestId.clear();
+		this.stopEventStreaming();
+		this.responseEventIndexByRequestId.clear();
+		await safeAsync("EventMonitor cleanup", async () => {
 			await this.eventMonitor?.cleanup();
+		});
+		await safeAsync("FileCapture cleanup", async () => {
 			await this.fileCapture?.cleanup();
+		});
+		await safeAsync("Page close", async () => {
 			await this.page?.close();
+		});
+		await safeAsync("Browser close", async () => {
 			await this.browser?.close();
-		} catch (error) {
-			logger.warn("Cleanup error", { err: error });
-		}
+		});
 	}
 
 	// Getter for events (useful for testing)
