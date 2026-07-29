@@ -148,10 +148,16 @@ func (h *UIHandlers) renderAlertSinksListError(w http.ResponseWriter, r *http.Re
 			With("HasPrev", hasPrev).With("HasNext", hasNext).
 			With("StartIndex", start).With("EndIndex", end)
 		if hasPrev {
-			builder.With("PrevURL", buildPageURL(alertSinksBasePath, r.URL.Query(), pageOpts{Page: page - 1, PageSize: pageSize}))
+			builder.With("PrevURL", buildPageURL(
+				alertSinksBasePath, r.URL.Query(),
+				pageOpts{Page: page - 1, PageSize: pageSize},
+			))
 		}
 		if hasNext {
-			builder.With("NextURL", buildPageURL(alertSinksBasePath, r.URL.Query(), pageOpts{Page: page + 1, PageSize: pageSize}))
+			builder.With("NextURL", buildPageURL(
+				alertSinksBasePath, r.URL.Query(),
+				pageOpts{Page: page + 1, PageSize: pageSize},
+			))
 		}
 	}
 

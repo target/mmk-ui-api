@@ -1386,9 +1386,7 @@ func (h *UIHandlers) JobDelete(w http.ResponseWriter, r *http.Request) {
 			return true, nil
 		},
 		OnError: DefaultDeleteOnError(DeleteOnErrorOpts{
-			ErrorMessage: func(err error) string {
-				return getJobDeleteErrorMessage(err)
-			},
+			ErrorMessage: getJobDeleteErrorMessage,
 			Logger:     h.logger(),
 			ListRender: h.renderJobsError,
 		}),
