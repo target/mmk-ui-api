@@ -5,7 +5,6 @@ import (
 	"errors"
 	"html/template"
 	"io/fs"
-	"log"
 	"log/slog"
 	"maps"
 	"net/http"
@@ -63,7 +62,7 @@ func NewTemplateRenderer(cfg TemplateRendererConfig) (*TemplateRenderer, error) 
 		// Production: load once and cache
 		cssBytes, err := fs.ReadFile(cfg.CriticalCSSFS, "css/critical.css")
 		if err != nil {
-			log.Printf("Warning: failed to load critical CSS from css/critical.css: %v", err)
+			slog.Warn("failed to load critical CSS from css/critical.css", "error", err)
 			// Fallback: use minimal critical CSS
 			criticalCSS = ":root{--color-background:#f6f7f9;--color-surface:#fff;--color-text-primary:#2e3138;}"
 		} else {
@@ -107,7 +106,7 @@ func (r *TemplateRenderer) getCriticalCSS() string {
 		// Dev mode: reload from disk on each request for hot reloading
 		cssBytes, err := fs.ReadFile(r.criticalCSSFS, "css/critical.css")
 		if err != nil {
-			log.Printf("Warning: failed to reload critical CSS in dev mode: %v", err)
+			slog.Warn("failed to reload critical CSS in dev mode", "error", err)
 			return ":root{--color-background:#f6f7f9;--color-surface:#fff;--color-text-primary:#2e3138;}"
 		}
 		return string(cssBytes)

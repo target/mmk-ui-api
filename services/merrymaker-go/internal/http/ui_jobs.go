@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"sort"
@@ -84,11 +84,11 @@ func (h *UIHandlers) fetchSiteForJob(ctx context.Context, job *model.Job) *model
 	}
 	site, err := h.SiteSvc.GetByID(ctx, *job.SiteID)
 	if err != nil {
-		log.Printf("fetchSiteForJob: failed to fetch site %s: %v", *job.SiteID, err)
+		h.logger().ErrorContext(ctx, "fetchSiteForJob: failed to fetch site", "site_id", *job.SiteID, "error", err)
 		return nil
 	}
 	if site == nil {
-		log.Printf("fetchSiteForJob: site %s not found", *job.SiteID)
+		h.logger().WarnContext(ctx, "fetchSiteForJob: site not found", "site_id", *job.SiteID)
 	}
 	return site
 }
@@ -100,11 +100,12 @@ func (h *UIHandlers) fetchSourceForJob(ctx context.Context, job *model.Job) *mod
 	}
 	source, err := h.SourceSvc.GetByID(ctx, *job.SourceID)
 	if err != nil {
-		log.Printf("fetchSourceForJob: failed to fetch source %s: %v", *job.SourceID, err)
+		h.logger().ErrorContext(ctx, "fetchSourceForJob: failed to fetch source",
+			"source_id", *job.SourceID, "error", err)
 		return nil
 	}
 	if source == nil {
-		log.Printf("fetchSourceForJob: source %s not found", *job.SourceID)
+		h.logger().WarnContext(ctx, "fetchSourceForJob: source not found", "source_id", *job.SourceID)
 	}
 	return source
 }
@@ -339,7 +340,7 @@ func (h *UIHandlers) fetchSecretForJob(ctx context.Context, job *model.Job) *Sec
 		SecretID string `json:"secret_id"`
 	}
 	if err := json.Unmarshal(job.Payload, &payload); err != nil {
-		log.Printf("fetchSecretForJob: failed to parse payload: %v", err)
+		h.logger().ErrorContext(ctx, "fetchSecretForJob: failed to parse payload", "error", err)
 		return nil
 	}
 	if payload.SecretID == "" {
@@ -348,11 +349,12 @@ func (h *UIHandlers) fetchSecretForJob(ctx context.Context, job *model.Job) *Sec
 
 	secret, err := h.SecretSvc.GetByID(ctx, payload.SecretID)
 	if err != nil {
-		log.Printf("fetchSecretForJob: failed to fetch secret %s: %v", payload.SecretID, err)
+		h.logger().ErrorContext(ctx, "fetchSecretForJob: failed to fetch secret",
+			"secret_id", payload.SecretID, "error", err)
 		return nil
 	}
 	if secret == nil {
-		log.Printf("fetchSecretForJob: secret %s not found", payload.SecretID)
+		h.logger().WarnContext(ctx, "fetchSecretForJob: secret not found", "secret_id", payload.SecretID)
 		return nil
 	}
 
@@ -393,7 +395,7 @@ func (h *UIHandlers) enrichJobContext(ctx context.Context, job *model.Job, data 
 
 	// Wait for all fetches to complete
 	if err := g.Wait(); err != nil {
-		log.Printf("enrichJobContext: background fetch failed: %v", err)
+		h.logger().ErrorContext(ctx, "enrichJobContext: background fetch failed", "error", err)
 	}
 
 	// Add site data if fetched successfully
@@ -1021,7 +1023,7 @@ func buildOffsetJobEventsPageState(
 			valueOrDefault(req.filters.SortDir, defaultEventSortDir),
 		)
 		if encodeErr != nil {
-			log.Printf("JobEvents: failed to encode next cursor for job %s: %v", req.jobID, encodeErr)
+			slog.Warn("JobEvents: failed to encode next cursor", "job_id", req.jobID, "error", encodeErr)
 		} else {
 			nextCursor = &token
 		}
@@ -1140,7 +1142,10 @@ func (h *UIHandlers) JobEventDetails(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if renderErr := h.T.t.ExecuteTemplate(w, "job-event-details-fragment", data); renderErr != nil {
-		log.Printf("JobEventDetails: template execution failed for job %s event %s: %v", jobID, eventID, renderErr)
+		h.logger().ErrorContext(r.Context(),
+			"JobEventDetails: template execution failed",
+			"job_id", jobID, "event_id", eventID, "error", renderErr,
+		)
 		http.Error(w, "failed to render event details", http.StatusInternalServerError)
 	}
 }

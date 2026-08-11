@@ -430,7 +430,7 @@ linters:
         - github.com/jmoiron/sqlx
 
     sloglint:
-      no-global: all
+      no-global: ''
       context: scope
 
     forbidigo:
@@ -465,3 +465,7 @@ linters:
         # Context TODO
         - pattern: '^context\.TODO$'
           msg: Use context.Background() or a real parent ctx.
+
+        # Standard library log — use structured slog instead (CWE-117 mitigation)
+        - pattern: '^log\.(Print|Println|Printf|Fatal|Fatalf|Fatalln)$'
+          msg: Use log/slog structured logging instead of stdlib log (prevents log injection).

@@ -3,7 +3,6 @@ package httpx
 import (
 	"bytes"
 	"io/fs"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -110,10 +109,9 @@ func setupDevMode(diskManifestPath string) (fs.FS, fs.FS, *AssetResolver) {
 
 	resolver, err := NewAssetResolverFromDisk(diskManifestPath)
 	if err != nil {
-		log.Printf(
-			"failed to load asset manifest %s: %v; falling back to logical asset names",
-			diskManifestPath,
-			err,
+		slog.Warn("failed to load asset manifest; falling back to logical asset names",
+			"manifest_path", diskManifestPath,
+			"error", err,
 		)
 	}
 	return templateFS, criticalCSSFS, resolver
@@ -123,7 +121,7 @@ func setupDevMode(diskManifestPath string) (fs.FS, fs.FS, *AssetResolver) {
 func setupProdMode(diskManifestPath string) (fs.FS, fs.FS, *AssetResolver) {
 	templateFS, err := fs.Sub(merrymaker.TemplateFS, "frontend/templates")
 	if err != nil {
-		log.Printf("failed to create sub-filesystem for templates: %v; falling back to disk", err)
+		slog.Warn("failed to create sub-filesystem for templates; falling back to disk", "error", err)
 		templateFS = os.DirFS(TemplatePathFromRoot)
 	}
 
@@ -135,13 +133,13 @@ func setupProdMode(diskManifestPath string) (fs.FS, fs.FS, *AssetResolver) {
 func setupProdAssets(diskManifestPath string) (fs.FS, *AssetResolver) {
 	staticSub, err := fs.Sub(merrymaker.StaticFS, "frontend/static")
 	if err != nil {
-		log.Printf("failed to create sub-filesystem for static assets: %v", err)
+		slog.Warn("failed to create sub-filesystem for static assets", "error", err)
 		return nil, tryDiskManifest(diskManifestPath)
 	}
 
 	resolver, err := NewAssetResolverFromFS(staticSub, "manifest.json")
 	if err != nil {
-		log.Printf("failed to load asset manifest from embedded FS: %v", err)
+		slog.Warn("failed to load asset manifest from embedded FS", "error", err)
 		return staticSub, tryDiskManifest(diskManifestPath)
 	}
 
@@ -152,10 +150,9 @@ func setupProdAssets(diskManifestPath string) (fs.FS, *AssetResolver) {
 func tryDiskManifest(diskManifestPath string) *AssetResolver {
 	resolver, err := NewAssetResolverFromDisk(diskManifestPath)
 	if err != nil {
-		log.Printf(
-			"failed to load asset manifest %s: %v; falling back to logical asset names",
-			diskManifestPath,
-			err,
+		slog.Warn("failed to load asset manifest; falling back to logical asset names",
+			"manifest_path", diskManifestPath,
+			"error", err,
 		)
 	}
 	return resolver
@@ -193,7 +190,7 @@ func setupUIHandlers(services RouterServices) *UIHandlers {
 		if services.Logger != nil {
 			services.Logger.Error("failed to create template renderer", slog.Any("error", err))
 		} else {
-			log.Printf("ERROR: failed to create template renderer: %v", err)
+			slog.Error("failed to create template renderer", slog.Any("error", err))
 		}
 		return nil
 	}
@@ -244,7 +241,7 @@ func staticWithFallback(isDev bool) http.Handler {
 	// Production mode: serve from embedded FS
 	staticSub, err := fs.Sub(merrymaker.StaticFS, "frontend/static")
 	if err != nil {
-		log.Printf("failed to create sub-filesystem for static assets: %v", err)
+		slog.Warn("failed to create sub-filesystem for static assets", "error", err)
 		// Fallback to disk serving if embed fails
 		return staticWithCacheHeaders(http.StripPrefix("/static/", http.FileServer(http.Dir("frontend/static"))))
 	}
@@ -354,7 +351,7 @@ func (c *captureWriter) flushTo(w http.ResponseWriter) {
 	}
 	w.WriteHeader(c.status)
 	if _, err := w.Write(c.buf.Bytes()); err != nil {
-		log.Printf("failed to write captured response: %v", err)
+		slog.Error("failed to write captured response", slog.Any("error", err))
 	}
 }
 
