@@ -204,7 +204,7 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 
 # Authentication
-AUTH_MODE=oauth                    # oauth or dev
+AUTH_MODE=oauth                    # oauth or mock (mock is for local development only)
 OAUTH_ISSUER=https://auth.example.com
 OAUTH_CLIENT_ID=your-client-id
 OAUTH_CLIENT_SECRET=your-secret
@@ -368,6 +368,15 @@ bun run format
 
 ## API Reference
 
+### Endpoint audiences
+
+| Namespace | Audience | Notes |
+| --- | --- | --- |
+| `/`, `/dashboard`, `/alerts`, `/sites`, `/sources`, `/jobs`, `/secrets`, `/alert-sinks` | Browser | Session authenticated. Administrative mutations also require the admin role and a CSRF token. |
+| `/auth/*` | Browser | Login, callback, and logout. |
+| `/static/*`, `/favicon.ico`, `/healthz` | Browser or load balancer | Assets and health checks. |
+| `/api/*` | Services | Cluster-internal transport between the scanner and the core service. See [Secure deployment](#secure-deployment). |
+
 ### REST API Endpoints
 
 **Jobs:**
@@ -403,6 +412,105 @@ Or URL-only format:
   "url": "https://example.com"
 }
 ```
+
+## Secure deployment
+
+Merrymaker ships services. The deployment determines which services a browser can
+reach, which are reachable only from other services in the cluster, and which
+networks the scanner can initiate connections to. Set those boundaries before you
+expose an instance.
+
+### Deployment responsibilities
+
+| Control | Enforced in | Owner |
+| --- | --- | --- |
+| Session authentication for the web UI | `merrymaker-go` | Merrymaker |
+| Admin role and CSRF checks for administrative UI mutations | `merrymaker-go` | Merrymaker |
+| Admin role checks for the secrets, alert sink, and IOC API resources | `merrymaker-go` | Merrymaker |
+| Restricting the service API to cluster traffic | Gateway (Traefik, Portainer) | Deployment |
+| Private reachability of PostgreSQL and Redis | Network policy | Deployment |
+| Outbound egress for instrumented browsers | Worker configuration | Deployment |
+| OAuth issuer, group mapping, and token validation | `AUTH_MODE`, `OAUTH_*`, `ADMIN_GROUP`, `USER_GROUP` | Deployment |
+
+### Network exposure
+
+The web UI and the service API are registered on a single listener. The service
+API is the transport that the scanner uses to reserve jobs, renew leases, report
+results, and ship captured events. It is not a browser interface, and it does not
+carry the session and CSRF protections that the UI namespace applies.
+
+> **Note:** Keeping the service API off browser-reachable networks is a deployment
+> responsibility. Publishing `/api/*` through the same gateway rule as the UI is
+> not a supported configuration.
+
+Recommended gateway policy:
+
+- Route `/`, `/dashboard`, `/alerts`, `/sites`, `/sources`, `/jobs`, `/secrets`,
+  `/alert-sinks`, and `/auth/*` to the UI.
+- Route `/api/*` only to service backends on the cluster's private network.
+- Serve `/static/*` and `/healthz` alongside the UI, and do not publish `/api/*`
+  on a public address.
+
+### Authentication and roles
+
+`AUTH_MODE` accepts `oauth` or `mock`. Use `oauth` in every deployed environment.
+
+> **Warning:** `AUTH_MODE=mock` bypasses the identity provider and issues
+> development sessions. Use it for local development and automated tests only.
+
+- UI reads require a browser session.
+- Administrative UI mutations, including source and secret creation, require the
+  admin role and a CSRF token.
+- The secrets, alert sink, and IOC resources under `/api/*` require the admin role.
+- Roles map from the groups named by `ADMIN_GROUP` and `USER_GROUP`. Both are
+  required when `AUTH_MODE=oauth`.
+
+### Browser egress
+
+The scanner visits third-party pages in instrumented Chromium instances. Constrain
+what those pages can reach independently of the policy of the pages themselves.
+
+- Route browser traffic through your egress proxy in `launch.args`, for example
+  `--proxy-server=socks5://<proxy-host>:1180`. See
+  [`services/puppeteer-worker/README.md`](services/puppeteer-worker/README.md).
+- Puppeteer 24.42 and later accept `launch.blocklist`, and 24.43 and later accept
+  `launch.allowlist` (Chrome 149 or later). Both take URLPattern strings and are
+  enforced in the browser's network service. A blocklist that covers loopback,
+  private address ranges, and cluster service names is a useful second layer.
+- Proxy configuration applies to the browser process. It does not constrain the
+  worker process, which reaches the service API directly to reserve jobs and ship
+  events.
+
+> **Note:** Puppeteer documents network allowlists and blocklists as guardrails
+> rather than as a network sandbox. Use container or operating system level
+> controls when you need an isolation guarantee.
+
+### Sources and job payloads
+
+Sources are automation scripts that the scanner executes on your behalf. Treat
+them as trusted operator input.
+
+- Create and edit sources from the web UI, which requires the admin role.
+- A source can reference stored secrets by name using `__NAME__` placeholders,
+  which the service resolves when it builds the job payload. Source authorship is
+  therefore equivalent to read access over the secrets that the source names.
+- Job payloads accept either a `script` string or a `url`. Prefer `url` payloads
+  for scheduled scans, and reserve `script` payloads for authored sources.
+
+### Data stores
+
+PostgreSQL and Redis hold jobs, events, captured artifacts, and encrypted secrets.
+Keep both on private networks and give the credentials only to the services that
+need them.
+
+### Pre-deployment checklist
+
+1. Set `AUTH_MODE=oauth` and configure `OAUTH_ISSUER`, `OAUTH_CLIENT_ID`,
+   `OAUTH_CLIENT_SECRET`, `ADMIN_GROUP`, and `USER_GROUP`.
+2. Confirm that a browser outside the cluster cannot reach `/api/*`.
+3. Confirm that PostgreSQL and Redis are unreachable from outside the cluster.
+4. Configure browser egress for the scanner and verify it with a test source.
+5. Confirm that source authorship is limited to the admin role.
 
 ## Documentation
 
