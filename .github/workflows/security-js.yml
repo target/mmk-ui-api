@@ -11,12 +11,15 @@ name: Security Scanning (JS)
 on:
   push:
     branches: [main]
-    paths: &js-paths
+    paths:
       - "services/puppeteer-worker/**"
       - "services/merrymaker-go/frontend/**"
       - ".github/workflows/security-js.yml"
   pull_request:
-    paths: *js-paths
+    paths:
+      - "services/puppeteer-worker/**"
+      - "services/merrymaker-go/frontend/**"
+      - ".github/workflows/security-js.yml"
   schedule:
     # Daily at 02:00 UTC — catches newly published CVEs between dependency bumps
     - cron: "0 2 * * *"
@@ -36,7 +39,7 @@ jobs:
   # ── npm audit (puppeteer-worker) ─────────────────────────────────────────
   npm-audit:
     name: npm audit (puppeteer-worker)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
       run:
@@ -67,7 +70,7 @@ jobs:
   # ── Trivy: filesystem scan — puppeteer-worker ────────────────────────────
   trivy-puppeteer:
     name: Trivy FS (puppeteer-worker)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -98,7 +101,11 @@ jobs:
   # ── CodeQL — JavaScript/TypeScript ───────────────────────────────────────
   codeql-javascript:
     name: CodeQL (javascript-typescript)
-    runs-on: ubuntu-latest
+    # Pinned, not `ubuntu-latest`: the label migrates from Ubuntu 24.04 to
+    # 26.04 between 2026-10-19 and 2026-11-19 (actions/runner-images#14748),
+    # so `latest` can change the OS under a job with no commit. See
+    # runner-os-canary.yml for the 26.04 rehearsal.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read

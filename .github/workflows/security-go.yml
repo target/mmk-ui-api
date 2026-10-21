@@ -11,12 +11,15 @@ name: Security Scanning (Go)
 on:
   push:
     branches: [main]
-    paths: &go-paths
+    paths:
       - "services/merrymaker-go/**"
       - "!services/merrymaker-go/frontend/**"
       - ".github/workflows/security-go.yml"
   pull_request:
-    paths: *go-paths
+    paths:
+      - "services/merrymaker-go/**"
+      - "!services/merrymaker-go/frontend/**"
+      - ".github/workflows/security-go.yml"
   schedule:
     # Daily at 02:00 UTC — catches newly published CVEs between dependency bumps
     - cron: "0 2 * * *"
@@ -36,7 +39,7 @@ jobs:
   # ── Go: govulncheck (Go vulnerability database) ──────────────────────────
   govulncheck:
     name: govulncheck (Go)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -83,7 +86,7 @@ jobs:
   # ── Trivy: filesystem scan — merrymaker-go ───────────────────────────────
   trivy-go:
     name: Trivy FS (merrymaker-go)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -114,7 +117,11 @@ jobs:
   # ── CodeQL — Go ──────────────────────────────────────────────────────────
   codeql-go:
     name: CodeQL (go)
-    runs-on: ubuntu-latest
+    # Pinned, not `ubuntu-latest`: the label migrates from Ubuntu 24.04 to
+    # 26.04 between 2026-10-19 and 2026-11-19 (actions/runner-images#14748),
+    # so `latest` can change the OS under a job with no commit. See
+    # runner-os-canary.yml for the 26.04 rehearsal.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
