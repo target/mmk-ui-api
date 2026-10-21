@@ -13,11 +13,15 @@ name: Puppeteer Worker CI
 on:
   push:
     branches: [main]
-    paths: &puppeteer-paths
+    paths:
       - "services/puppeteer-worker/**"
       - ".github/workflows/puppeteer-worker.yml"
+      - ".github/workflows/reusable-puppeteer-tests.yml"
   pull_request:
-    paths: *puppeteer-paths
+    paths:
+      - "services/puppeteer-worker/**"
+      - ".github/workflows/puppeteer-worker.yml"
+      - ".github/workflows/reusable-puppeteer-tests.yml"
   workflow_dispatch:
 
 permissions:
@@ -28,59 +32,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Puppeteer Worker Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome"
-      NODE_OPTIONS: "--max-old-space-size=4096"
-      TMPDIR: /home/runner/work/_temp
-    services:
-      redis:
-        # Digest-pinned so CI runs a fixed image. Neither Dependabot nor Renovate
-        # bumps service-container digests here, so refresh by hand:
-        #   docker buildx imagetools inspect redis:7-alpine
-        # then update the digest below.
-        image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    defaults:
-      run:
-        working-directory: services/puppeteer-worker
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: services/puppeteer-worker/package-lock.json
-
-      - name: Install Google Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget fonts-liberation
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-          rm -f google-chrome-stable_current_amd64.deb
-          google-chrome --version
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint (Biome)
-        run: npm run lint
-
-      - name: Test
-        run: npm test
+  # Job id, not a display name, for the same reason as go-tests in
+  # merrymaker-go.yml.
+  puppeteer-tests:
+    # Defined once in reusable-puppeteer-tests.yml so runner-os-canary.yml can
+    # run the identical job on ubuntu-26.04.
+    uses: $/.github/workflows/reusable-puppeteer-tests.yml
+    with:
+      runner: ubuntu-24.04

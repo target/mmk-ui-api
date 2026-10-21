@@ -35,7 +35,7 @@ concurrency:
 jobs:
   zizmor:
     name: zizmor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -60,7 +60,11 @@ jobs:
 
   actionlint:
     name: actionlint
-    runs-on: ubuntu-latest
+    # Pinned, not `ubuntu-latest`: the label migrates from Ubuntu 24.04 to
+    # 26.04 between 2026-10-19 and 2026-11-19 (actions/runner-images#14748),
+    # so `latest` can change the OS under a job with no commit. See
+    # runner-os-canary.yml for the 26.04 rehearsal.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout

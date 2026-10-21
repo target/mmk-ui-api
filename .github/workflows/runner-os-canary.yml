@@ -1,0 +1,42 @@
+name: Runner OS canary
+
+# The `ubuntu-latest` label migrates from Ubuntu 24.04 to Ubuntu 26.04 between
+# 2026-10-19 and 2026-11-19 (actions/runner-images#14748). Every workflow in
+# this repository pins `ubuntu-24.04` instead of `ubuntu-latest`, so the
+# migration cannot change the OS under a job without a commit.
+#
+# That buys determinism but defers the work: Ubuntu 24.04 will not be the
+# default forever. This workflow runs the real test jobs — the same reusable
+# workflows CI uses, not copies — on `ubuntu-26.04`, so the eventual switch is a
+# reviewed commit instead of a surprise failure.
+#
+# It runs on a schedule only: it costs nothing per pull request. When both jobs
+# are reliably green, change `runner: ubuntu-24.04` to `ubuntu-26.04` in
+# merrymaker-go.yml and puppeteer-worker.yml, then delete this workflow.
+
+on:
+  schedule:
+    # Thursdays at 05:00 UTC: after the Monday workflow-lint and Dependabot runs,
+    # early enough in the week to react inside the migration window.
+    - cron: "0 5 * * 4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runner-os-canary
+  cancel-in-progress: true
+
+jobs:
+  go-tests:
+    name: Go tests on ubuntu-26.04
+    uses: $/.github/workflows/reusable-go-tests.yml
+    with:
+      runner: ubuntu-26.04
+
+  puppeteer-worker:
+    name: Puppeteer worker tests on ubuntu-26.04
+    uses: $/.github/workflows/reusable-puppeteer-tests.yml
+    with:
+      runner: ubuntu-26.04

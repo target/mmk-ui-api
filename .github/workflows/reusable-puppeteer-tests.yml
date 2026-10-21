@@ -1,0 +1,74 @@
+name: Puppeteer worker tests (reusable)
+
+# Single source of truth for the worker test job. puppeteer-worker.yml calls
+# this with the pinned CI runner; runner-os-canary.yml calls it with
+# ubuntu-26.04 so an OS change is caught here rather than in production CI.
+#
+# Chrome is installed from a downloaded .deb together with fonts-liberation,
+# which makes this job the most OS-sensitive in the repository.
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: Runner image label, for example ubuntu-24.04
+        required: false
+        type: string
+        default: ubuntu-24.04
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Puppeteer Worker Tests
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 25
+    env:
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome"
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      TMPDIR: /home/runner/work/_temp
+    services:
+      redis:
+        image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: services/puppeteer-worker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: services/puppeteer-worker/package-lock.json
+
+      - name: Install Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget fonts-liberation
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+          rm -f google-chrome-stable_current_amd64.deb
+          google-chrome --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (Biome)
+        run: npm run lint
+
+      - name: Test
+        run: npm test

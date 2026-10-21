@@ -13,3 +13,12 @@ paths:
   .github/workflows/docker-puppeteer-worker.yml:
     ignore:
       - 'reusable workflow call "\$/'
+  .github/workflows/merrymaker-go.yml:
+    ignore:
+      - 'reusable workflow call "\$/'
+  .github/workflows/puppeteer-worker.yml:
+    ignore:
+      - 'reusable workflow call "\$/'
+  .github/workflows/runner-os-canary.yml:
+    ignore:
+      - 'reusable workflow call "\$/'
