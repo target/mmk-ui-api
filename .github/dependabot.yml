@@ -53,10 +53,18 @@ updates:
         patterns: ["*"]
     open-pull-requests-limit: 10
 
-  # ── Bun / npm (merrymaker-go frontend) ───────────────────────────────────
-  # Dependabot reads package.json semver ranges; full bun.lock pin updates
-  # require Renovate Bot (https://docs.renovatebot.com/modules/manager/bun/).
-  - package-ecosystem: npm
+  # ── Bun (merrymaker-go frontend) ─────────────────────────────────────────
+  # Must be the `bun` ecosystem, not `npm`. The npm ecosystem only rewrites
+  # package.json semver ranges and cannot write bun.lock, so every grouped bump
+  # failed CI at `bun install --frozen-lockfile` ("lockfile had changes, but
+  # lockfile is frozen" — see PR #213). The bun ecosystem updates bun.lock too.
+  # Requirements: bun >= 1.1.39 and the text bun.lock (not legacy bun.lockb);
+  # this repo uses text bun.lock and bun 1.3.x in CI.
+  # Caveat: the bun ecosystem offers version updates only — no security updates.
+  # Advisory detection for the frontend still comes from the Trivy FS
+  # (merrymaker-go) scan, which covers services/merrymaker-go/** including
+  # frontend/bun.lock.
+  - package-ecosystem: bun
     directory: /services/merrymaker-go/frontend
     schedule:
       interval: weekly
