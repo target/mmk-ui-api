@@ -8,8 +8,12 @@ name: Dependabot auto-merge
 # │  can be silently updated to point at malicious commits by automation.     │
 # │                                                                           │
 # │  What we auto-merge (after CI passes + 3-day cooldown in dependabot.yml):│
-# │    ✅ Security updates  — patch or minor, gomod / npm only               │
-# │    ✅ Regular patch bumps — gomod / npm only                             │
+# │    ✅ Security updates  — patch or minor, gomod / npm / bun only         │
+# │    ✅ Regular patch bumps — gomod / npm / bun only                       │
+# │                                                                           │
+# │  "Auto-merge" here means the merge is armed. A human approval is still    │
+# │  required by the default-branch-protection ruleset, because an approval    │
+# │  created with GITHUB_TOKEN does not satisfy a required review.             │
 # │                                                                           │
 # │  What always requires human review:                                       │
 # │    🔴 github-actions  — executes in CI with full secret access           │
@@ -65,15 +69,23 @@ jobs:
           echo "::notice::Major bump (${{ steps.meta.outputs.dependency-names }}) — manual review required."
 
       # ── Auto-merge gate ───────────────────────────────────────────────────
-      # Approve + enable auto-merge when ALL of:
-      #   • gomod or npm/yarn ecosystem (not github-actions, not docker)
+      # Arm auto-merge when ALL of:
+      #   • gomod, npm/yarn, or bun ecosystem (not github-actions, not docker)
       #   • patch bump  OR  any security update (ghsa-id is set)
       #   • not a major bump (belt-and-suspenders — already blocked above)
-      - name: Approve and enable auto-merge
+      #
+      # This step does not approve the PR. An approval created with
+      # GITHUB_TOKEN does not satisfy the required-review rule in the
+      # default-branch-protection ruleset, so the previous
+      # `gh pr review --approve` never counted and has been removed. A human
+      # approval is still required before merge: this gate decides whether
+      # auto-merge is armed, not whether review is skipped.
+      - name: Enable auto-merge
         if: |
           (
             steps.meta.outputs.package-ecosystem == 'go_modules' ||
-            steps.meta.outputs.package-ecosystem == 'npm_and_yarn'
+            steps.meta.outputs.package-ecosystem == 'npm_and_yarn' ||
+            steps.meta.outputs.package-ecosystem == 'bun'
           ) && (
             steps.meta.outputs.update-type == 'version-update:semver-patch' ||
             steps.meta.outputs.ghsa-id != ''
@@ -83,8 +95,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Auto-merging: ${{ steps.meta.outputs.dependency-names }}"
-          echo "Update type:  ${{ steps.meta.outputs.update-type }}"
-          echo "GHSA:         ${{ steps.meta.outputs.ghsa-id }}"
-          gh pr review --approve "$PR_URL"
+          echo "Arming auto-merge: ${{ steps.meta.outputs.dependency-names }}"
+          echo "Update type:       ${{ steps.meta.outputs.update-type }}"
+          echo "GHSA:              ${{ steps.meta.outputs.ghsa-id }}"
           gh pr merge --auto --squash "$PR_URL"
