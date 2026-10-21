@@ -1,10 +1,22 @@
-name: Security Scanning
+name: Security Scanning (Go)
+
+# Split out of security.yml so Go security scanning only runs when Go code
+# changes. Previously a single unfiltered workflow re-ran all six scanners
+# (Go + JS + Trivy x2 + audit) on every PR — including docs-only ones — and
+# JS CodeQL plus npm audit burned ~90s per Go-only PR.
+#
+# The frontend is excluded here: it is scanned by Security Scanning (JS), and
+# it is only rebuilt in this workflow as an embed dependency for CodeQL.
 
 on:
   push:
     branches: [main]
+    paths: &go-paths
+      - "services/merrymaker-go/**"
+      - "!services/merrymaker-go/frontend/**"
+      - ".github/workflows/security-go.yml"
   pull_request:
-    branches: [main]
+    paths: *go-paths
   schedule:
     # Daily at 02:00 UTC — catches newly published CVEs between dependency bumps
     - cron: "0 2 * * *"
@@ -15,7 +27,7 @@ permissions:
   security-events: write # SARIF upload to GitHub Security tab
 
 concurrency:
-  group: security-${{ github.event.pull_request.number || github.ref }}
+  group: security-go-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -63,34 +75,6 @@ jobs:
         working-directory: services/merrymaker-go
         run: govulncheck ./...
 
-  # ── npm audit (puppeteer-worker) ─────────────────────────────────────────
-  npm-audit:
-    name: npm audit (puppeteer-worker)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/puppeteer-worker
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: services/puppeteer-worker/package-lock.json
-
-      - name: Install dependencies (skip Chromium download)
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npm ci --ignore-scripts
-
-      - name: npm audit
-        # Pre-existing vulnerabilities in puppeteer-worker deps — tracked via
-        # GitHub Security tab. Remove continue-on-error once Dependabot PRs
-        # have cleared the existing CVE backlog.
-        continue-on-error: true
-        run: npm audit --audit-level=high
-
   # ── Trivy: filesystem scan — merrymaker-go ───────────────────────────────
   trivy-go:
     name: Trivy FS (merrymaker-go)
@@ -116,63 +100,31 @@ jobs:
           sarif_file: trivy-go.sarif
           category: trivy-merrymaker-go
 
-  # ── Trivy: filesystem scan — puppeteer-worker ────────────────────────────
-  trivy-puppeteer:
-    name: Trivy FS (puppeteer-worker)
+  # ── CodeQL — Go ──────────────────────────────────────────────────────────
+  codeql-go:
+    name: CodeQL (go)
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: services/puppeteer-worker
-          format: sarif
-          output: trivy-puppeteer.sarif
-          severity: CRITICAL,HIGH
-          exit-code: "0" # informational — SARIF results appear in Security tab; existing debt addressed via Dependabot
-          ignore-unfixed: true
-
-      - name: Upload SARIF to GitHub Security tab
-        if: always()
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
-        with:
-          sarif_file: trivy-puppeteer.sarif
-          category: trivy-puppeteer-worker
-
-  # ── CodeQL — Go + JavaScript/TypeScript ──────────────────────────────────
-  codeql:
-    name: CodeQL (${{ matrix.language }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [go, javascript-typescript]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
-          languages: ${{ matrix.language }}
+          languages: go
           queries: security-extended,security-and-quality
 
       - name: Setup Go
-        if: matrix.language == 'go'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: services/merrymaker-go/go.mod
           check-latest: true
 
       - name: Setup Bun (needed to build embed targets before CodeQL Go scan)
-        if: matrix.language == 'go'
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.13"
 
       - name: Build frontend assets (Go embed requires compiled assets)
-        if: matrix.language == 'go'
         working-directory: services/merrymaker-go/frontend
         run: |
           bun install --frozen-lockfile
@@ -184,4 +136,4 @@ jobs:
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
-          category: /language:${{ matrix.language }}
+          category: /language:go

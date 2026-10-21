@@ -121,5 +121,8 @@ jobs:
             VCS_REF=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: true
-          sbom: true
+          # Provenance and SBOM are only useful for artifacts we publish. On PR
+          # builds (push=false) they add attested-metadata generation to a build
+          # that is thrown away.
+          provenance: ${{ inputs.push }}
+          sbom: ${{ inputs.push }}
