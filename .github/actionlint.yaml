@@ -1,0 +1,15 @@
+# actionlint configuration.
+#
+# The two docker-* workflows call a reusable workflow with GitHub's
+# self-repository syntax (`uses: $/.github/workflows/docker-build.yml`), which
+# GitHub supports on github.com since 2026-07-30. actionlint 1.7.12 predates
+# that syntax and rejects it as a malformed workflow reference, so the rule is
+# ignored for exactly those two files. Remove these entries once actionlint
+# parses `$/`.
+paths:
+  .github/workflows/docker-merrymaker-go.yml:
+    ignore:
+      - 'reusable workflow call "\$/'
+  .github/workflows/docker-puppeteer-worker.yml:
+    ignore:
+      - 'reusable workflow call "\$/'

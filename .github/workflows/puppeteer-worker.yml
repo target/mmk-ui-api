@@ -31,6 +31,7 @@ jobs:
   test:
     name: Puppeteer Worker Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
       PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome"
@@ -38,7 +39,11 @@ jobs:
       TMPDIR: /home/runner/work/_temp
     services:
       redis:
-        image: redis:7-alpine
+        # Digest-pinned so CI runs a fixed image. Neither Dependabot nor Renovate
+        # bumps service-container digests here, so refresh by hand:
+        #   docker buildx imagetools inspect redis:7-alpine
+        # then update the digest below.
+        image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
         ports:
           - 6379:6379
         options: >-
@@ -52,6 +57,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

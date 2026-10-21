@@ -22,9 +22,11 @@ on:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
+# Workflow-level permissions are read-only. Jobs that upload SARIF raise
+# security-events to write themselves, so a compromised script step in any
+# other job cannot write to the Security tab.
 permissions:
   contents: read
-  security-events: write # SARIF upload to GitHub Security tab
 
 concurrency:
   group: security-go-${{ github.event.pull_request.number || github.ref }}
@@ -35,8 +37,11 @@ jobs:
   govulncheck:
     name: govulncheck (Go)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -79,8 +84,14 @@ jobs:
   trivy-go:
     name: Trivy FS (merrymaker-go)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # upload-sarif writes to the Security tab
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -104,8 +115,14 @@ jobs:
   codeql-go:
     name: CodeQL (go)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write # codeql-action/analyze uploads results
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
