@@ -32,7 +32,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  # Job id, not a display name, for the same reason as go-tests in
+  # merrymaker-go.yml.
+  puppeteer-tests:
     # Defined once in reusable-puppeteer-tests.yml so runner-os-canary.yml can
     # run the identical job on ubuntu-26.04.
     uses: $/.github/workflows/reusable-puppeteer-tests.yml

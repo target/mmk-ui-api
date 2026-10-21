@@ -85,8 +85,9 @@ jobs:
         continue-on-error: true
         run: gosec ./...
 
-  test:
-    name: Go Tests (integration)
+  # Job id, not a display name: a caller name would render as
+  # "Go Tests (integration) / Go Tests (integration)" in the checks list.
+  go-tests:
     # Defined once in reusable-go-tests.yml so runner-os-canary.yml can run the
     # identical job on ubuntu-26.04 instead of on a drifting copy.
     uses: $/.github/workflows/reusable-go-tests.yml
