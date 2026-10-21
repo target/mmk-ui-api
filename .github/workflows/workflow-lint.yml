@@ -1,0 +1,78 @@
+name: Workflow lint
+
+# Audits the workflow files themselves. zizmor covers security-relevant
+# configuration (credential persistence, template injection, permission scope,
+# cache poisoning, spoofable bot checks); actionlint covers syntax, expression
+# types, shellcheck findings in run blocks, and correct action inputs.
+#
+# Both tools run only when workflow configuration changes, plus weekly so a new
+# zizmor release can flag pre-existing configuration.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+      - ".github/zizmor.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint.yaml"
+      - ".github/zizmor.yml"
+  schedule:
+    # Mondays at 05:00 UTC, before the weekly Dependabot run.
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflow-lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write # uploads SARIF findings to the Security tab
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
+        with:
+          # Pinned: the audit set changes between releases, and an unpinned
+          # audit tool would change CI behaviour without a commit.
+          version: "1.31.1"
+          # Pedantic includes the informational and best-practice audits. The
+          # repository runs clean under this persona, so keep it strict.
+          persona: pedantic
+          inputs: .github/workflows
+          advanced-security: true
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        # The image is pinned by digest: a mutable tag on a container image is
+        # the same supply-chain hazard as a mutable action tag.
+        run: |
+          docker run --rm \
+            -v "$PWD:$PWD" -w "$PWD" \
+            rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            -color

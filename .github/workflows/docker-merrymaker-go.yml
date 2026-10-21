@@ -9,9 +9,10 @@ on:
     tags:
       - "merrymaker-go-v*.*.*"
 
+# Only read access is needed: the image is pushed to Docker Hub with the
+# credentials passed to the reusable workflow, not to GitHub Packages.
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: docker-merrymaker-go-${{ github.event.pull_request.number || github.ref }}
@@ -19,8 +20,14 @@ concurrency:
 
 jobs:
   docker:
-    uses: ./.github/workflows/docker-build.yml
-    secrets: inherit
+    # $/ is GitHub's self-repository syntax (GA on github.com since 2026-07-30):
+    # it resolves to this repository at the commit being run, without a checkout.
+    uses: $/.github/workflows/docker-build.yml
+    # Pass the two registry credentials explicitly instead of `secrets:
+    # inherit`, so this job cannot read any other repository secret.
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
       image: target/merrymaker-go
       tag_prefix: merrymaker-go

@@ -27,15 +27,30 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+# Default deny. The job grants pull-requests: write for itself below;
+# contents: write was previously granted here and never used.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   auto-merge:
     name: Auto-merge Dependabot PRs
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write # gh pr merge --auto arms the merge on this PR
+    concurrency:
+      # One arming run per pull request; a later push cancels an in-flight run.
+      group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    # Check the PR's author and branch prefix rather than `github.actor`, which
+    # only records who triggered the run. A workflow_dispatch or a rerun by
+    # another user would keep the actor check happy while the PR is not
+    # dependabot's.
+    if: |
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot/')
 
     steps:
       - name: Fetch Dependabot metadata
@@ -65,8 +80,10 @@ jobs:
       # ── Hard block: major version bumps ──────────────────────────────────
       - name: Skip — major version bump (manual review required)
         if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        env:
+          NAMES: ${{ steps.meta.outputs.dependency-names }}
         run: |
-          echo "::notice::Major bump (${{ steps.meta.outputs.dependency-names }}) — manual review required."
+          echo "::notice::Major bump ($NAMES) — manual review required."
 
       # ── Auto-merge gate ───────────────────────────────────────────────────
       # Arm auto-merge when ALL of:
@@ -94,8 +111,14 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Step outputs reach the shell through the environment. Interpolating
+          # them into the script would let a crafted dependency name inject
+          # commands into a job that holds a write-scoped token.
+          NAMES: ${{ steps.meta.outputs.dependency-names }}
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+          GHSA: ${{ steps.meta.outputs.ghsa-id }}
         run: |
-          echo "Arming auto-merge: ${{ steps.meta.outputs.dependency-names }}"
-          echo "Update type:       ${{ steps.meta.outputs.update-type }}"
-          echo "GHSA:              ${{ steps.meta.outputs.ghsa-id }}"
+          echo "Arming auto-merge: $NAMES"
+          echo "Update type:       $UPDATE_TYPE"
+          echo "GHSA:              $GHSA"
           gh pr merge --auto --squash "$PR_URL"

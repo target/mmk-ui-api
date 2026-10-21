@@ -33,12 +33,15 @@ jobs:
   lint:
     name: GolangCI-Lint + GoSec
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: services/merrymaker-go
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -83,12 +86,17 @@ jobs:
   test:
     name: Go Tests (integration)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: services/merrymaker-go
     services:
       postgres:
-        image: postgres:15
+        # Digest-pinned so CI runs a fixed image. Neither Dependabot nor Renovate
+        # bumps service-container digests here, so refresh by hand:
+        #   docker buildx imagetools inspect postgres:15.14
+        # then update the digest below.
+        image: postgres:15.14@sha256:822f8795764a670160640888508b2a68ea5c4b045012c2de17e1d0447bdbdc99
         env:
           POSTGRES_DB: merrymaker
           POSTGRES_USER: merrymaker
@@ -101,7 +109,11 @@ jobs:
           --health-timeout 5s
           --health-retries 10
       redis:
-        image: redis:7-alpine
+        # Digest-pinned so CI runs a fixed image. Neither Dependabot nor Renovate
+        # bumps service-container digests here, so refresh by hand:
+        #   docker buildx imagetools inspect redis:7-alpine
+        # then update the digest below.
+        image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
         ports:
           - 6379:6379
         options: >-
@@ -112,6 +124,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -137,7 +151,7 @@ jobs:
 
       - name: Wait for Postgres
         run: |
-          for i in {1..30}; do
+          for _ in {1..30}; do
             if pg_isready -h 127.0.0.1 -p 5432 -U merrymaker >/dev/null 2>&1; then
               exit 0
             fi
@@ -148,7 +162,7 @@ jobs:
 
       - name: Wait for Redis
         run: |
-          for i in {1..30}; do
+          for _ in {1..30}; do
             if redis-cli -h 127.0.0.1 -p 6379 ping >/dev/null 2>&1; then
               exit 0
             fi
@@ -173,12 +187,15 @@ jobs:
   frontend:
     name: Frontend Lint & Test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: services/merrymaker-go/frontend
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
