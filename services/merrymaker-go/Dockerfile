@@ -1,5 +1,5 @@
 # ---------- Builder ----------
-FROM golang:1.27.2-bookworm AS builder
+FROM golang:1.27.3-bookworm AS builder
 
 
 ENV CGO_ENABLED=0 \
