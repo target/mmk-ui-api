@@ -29,8 +29,8 @@
 		"node": ">=24.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.7",
-		"@types/node": "^24.19.2",
+		"@biomejs/biome": "2.6.2",
+		"@types/node": "^26.6.5",
 		"esbuild": "^0.28.1",
 		"tsx": "^4.23.10",
 		"typescript": "^7.0.2"
@@ -40,7 +40,7 @@
 	},
 	"dependencies": {
 		"ioredis": "^6.0.0",
-		"puppeteer": "^25.5.0",
+		"puppeteer": "^25.16.0",
 		"undici": "^8.10.2",
 		"yaml": "^2.9.0"
 	}
