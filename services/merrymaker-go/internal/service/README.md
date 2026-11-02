@@ -108,7 +108,7 @@ Services depend on **minimal interfaces**, not large interfaces with unused meth
 
 ## Service Pattern
 
-See [TEMPLATE.go](./TEMPLATE.go) for a fully documented example.
+See [service-pattern.go](../../docs/service-pattern.go) for a fully documented example.
 
 ### Basic Structure
 
@@ -412,8 +412,6 @@ All services have been successfully migrated from `internal/core/*_service.go` t
 - ✅ merrymaker-admin
 - ✅ All tests
 
-**See:** [Migration Guide](../../docs/migration-guides/core-to-service-migration.md) for detailed documentation of the migration process.
-
 ---
 
 ### ℹ️ AllowlistChecker context propagation
@@ -427,7 +425,5 @@ These changes keep allowlist evaluation within request lifecycles and make timeo
 
 ## References
 
-- [TEMPLATE.go](./TEMPLATE.go) - Fully documented service template
-- [ADR 001: Service Layer Architecture](../../docs/adr/001-service-layer-architecture.md)
-- [Service Layer Audit](../../docs/service-layer-audit.md)
+- [service-pattern.go](../../docs/service-pattern.go) - Fully documented service template
 - [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/)
